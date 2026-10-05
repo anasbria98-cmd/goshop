@@ -7,9 +7,12 @@ import {
   PackageCheck,
   Headphones,
   Check,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import { categories, products } from "@/data/catalog";
 import { ProductSection } from "./product-section";
+import { ProductCard } from "./product-card";
 export function Benefits() {
   return (
     <div className="benefits wrap">
@@ -156,49 +159,95 @@ export function CategorySection() {
     </section>
   );
 }
-export function PromoBanners() {
+export function PhilipsCampaign() {
+  const philips = products.filter((product) => product.brand === "Philips");
+
   return (
-    <section className="promo-banners wrap">
-      <div className="solar-promo">
-        <div>
-          <span className="eyebrow">L’ÉNERGIE DE DEMAIN, AUJOURD’HUI</span>
-          <h2>
-            Le soleil marocain.
-            <br />
-            Votre nouvelle énergie.
-          </h2>
+    <section className="campaign campaign-philips wrap">
+      <div className="campaign-story philips-story">
+        <span className="campaign-brand">PHILIPS</span>
+        <div className="campaign-copy">
+          <span className="campaign-kicker">LUMIÈRE SUR VOS PROJETS</span>
+          <h2>Une belle lumière change toute la pièce.</h2>
           <p>
-            Équipez votre installation photovoltaïque
-            <br />
-            avec des solutions performantes.
+            Une sélection LED efficace, chaleureuse et pensée pour durer.
           </p>
-          <Link className="button white" href="/categorie/photovoltaique">
-            Découvrir le photovoltaïque
+          <div className="campaign-offer">
+            <strong>-20%</strong>
+            <span>sur la sélection éclairage</span>
+          </div>
+          <Link className="button white" href="/categorie/eclairage">
+            Voir tout l’éclairage <ArrowRight size={16} />
           </Link>
         </div>
         <Image
-          src="/products/solar.webp"
-          width={290}
-          height={240}
-          alt="Panneau photovoltaïque"
+          className="campaign-hero-product"
+          src="/products/bulb.webp"
+          width={330}
+          height={330}
+          alt="Ampoule LED Philips"
         />
+        <span className="light-orbit" aria-hidden="true" />
       </div>
-      <div className="brand-promo">
-        <div>
-          <span className="schneider-word">Schneider Electric</span>
-          <h2>
-            La fiabilité,
-            <br />à chaque connexion.
-          </h2>
-          <p>Équipez vos projets en toute confiance.</p>
-          <Link href="/recherche?q=Schneider">Voir la sélection Schneider</Link>
+      <div className="campaign-shelf">
+        <div className="campaign-shelf-heading">
+          <div>
+            <span>OFFRE SPÉCIALE</span>
+            <h3>Les essentiels Philips</h3>
+          </div>
+          <Link href="/recherche?q=Philips">Toute la marque</Link>
         </div>
-        <Image
-          src="/products/breaker.webp"
-          width={180}
-          height={240}
-          alt="Équipement électrique modulaire"
-        />
+        <div className="campaign-product-grid philips-products">
+          {philips.map((product) => (
+            <ProductCard product={product} key={product.id} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function OctoberCampaign() {
+  const selection = [products[1], products[0], products[8], products[2]];
+
+  return (
+    <section className="campaign campaign-october wrap">
+      <div className="campaign-story october-story">
+        <span className="month-chip">SÉLECTION OCTOBRE</span>
+        <div className="campaign-copy">
+          <span className="campaign-kicker">LE CHANTIER DU MOIS</span>
+          <h2>Tout ce qu’il faut pour une installation bien pensée.</h2>
+          <p>
+            Protection, appareillage et coffrets : une sélection claire pour
+            avancer sans perdre de temps.
+          </p>
+          <ul className="project-points">
+            <li><b>01</b> Choisir</li>
+            <li><b>02</b> Équiper</li>
+            <li><b>03</b> Installer</li>
+          </ul>
+          <Link className="button white" href="/categorie/materiel-electrique">
+            Voir la sélection <ArrowRight size={16} />
+          </Link>
+        </div>
+        <div className="october-visual" aria-hidden="true">
+          <Zap size={38} fill="currentColor" />
+          <span>GO</span>
+        </div>
+      </div>
+      <div className="campaign-shelf">
+        <div className="campaign-shelf-heading">
+          <div>
+            <span>PRÊT POUR LE CHANTIER</span>
+            <h3>La sélection de nos experts</h3>
+          </div>
+          <Link href="/recherche">Voir le catalogue</Link>
+        </div>
+        <div className="campaign-product-grid october-products">
+          {selection.map((product) => (
+            <ProductCard product={product} key={product.id} />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -213,7 +262,8 @@ export function Home() {
         eyebrow="LES ESSENTIELS DE VOS CHANTIERS"
         products={products.slice(0, 6)}
       />
-      <PromoBanners />
+      <PhilipsCampaign />
+      <OctoberCampaign />
       <ProductSection
         title="Les bons plans du moment"
         eyebrow="BIEN S’ÉQUIPER, MOINS DÉPENSER"
