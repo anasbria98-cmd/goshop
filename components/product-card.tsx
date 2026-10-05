@@ -88,7 +88,7 @@ export function ProductCard({ product: p }: { product: Product }) {
         <small>({p.reviews})</small>
       </div>
       <p className="reference">
-        Réf. Goshop : {p.id}
+        Réf. GO ELEC : {p.id}
         <br />
         Réf. fabricant : {p.manufacturerRef}
       </p>

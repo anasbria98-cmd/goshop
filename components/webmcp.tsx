@@ -29,9 +29,9 @@ export function WebMCP() {
       void Promise.resolve(
         ctx.registerTool(
           {
-            name: "read_goshop_cart",
+            name: "read_go_elec_cart",
             description:
-              "Read the current device-local Goshop demo cart and product total in MAD. Does not place an order.",
+              "Read the current device-local GO ELEC demo cart and product total in MAD. Does not place an order.",
             inputSchema: {
               type: "object",
               properties: {},

@@ -334,7 +334,7 @@ export const money = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value) + " DH";
 export const storeInfo = {
-  email: "contact@goshop.ma",
+  email: "contact@goelec.ma",
   phone: "+212 (0)5 XX XX XX XX",
   address: "Adresse et points de retrait à confirmer",
 };

@@ -1,8 +1,8 @@
 export const information: Record<string, { title: string; body: string[] }> = {
   "a-propos": {
-    title: "À propos de Goshop.ma",
+    title: "À propos de GO ELEC",
     body: [
-      "Goshop.ma prépare une boutique de matériel électrique destinée aux professionnels et aux particuliers au Maroc. Notre sélection réunit les essentiels pour équiper, rénover et moderniser vos installations.",
+      "GO ELEC prépare une boutique de matériel électrique destinée aux professionnels et aux particuliers au Maroc. Notre sélection réunit les essentiels pour équiper, rénover et moderniser vos installations.",
       "Cette première version présente un catalogue de démonstration. Les prix, les stocks et les avis sont des exemples et ne constituent pas une offre commerciale.",
     ],
   },
@@ -10,7 +10,7 @@ export const information: Record<string, { title: string; body: string[] }> = {
     title: "Nous contacter",
     body: [
       "Les coordonnées de notre service client seront confirmées avant l’ouverture de la boutique.",
-      "E-mail prévu : contact@goshop.ma · Téléphone : +212 (0)5 XX XX XX XX (à compléter).",
+      "E-mail prévu : contact@goelec.ma · Téléphone : +212 (0)5 XX XX XX XX (à compléter).",
     ],
   },
   "service-client": {
@@ -69,7 +69,7 @@ export const information: Record<string, { title: string; body: string[] }> = {
     title: "Mentions légales",
     body: [
       "Éditeur, raison sociale, adresse, identifiants de société et coordonnées : à compléter avant ouverture commerciale.",
-      "Goshop.ma est ici une démonstration de boutique. Les marques citées appartiennent à leurs propriétaires respectifs. Les photos sont des visuels temporaires et ne garantissent pas la référence exacte.",
+      "GO ELEC est ici une démonstration de boutique. Les marques citées appartiennent à leurs propriétaires respectifs. Les photos sont des visuels temporaires et ne garantissent pas la référence exacte.",
     ],
   },
 };

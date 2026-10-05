@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { categories, money } from "@/data/catalog";
 import { useStore } from "./store-provider";
+import { BrandLogo } from "./brand-logo";
 export function Header() {
   const { count, total, favorites } = useStore();
   const [active, setActive] = useState<string | null>(null);
@@ -86,11 +87,7 @@ export function Header() {
           >
             <Menu />
           </button>
-          <Link href="/" className="logo" aria-label="Goshop.ma — accueil">
-            go<span>shop</span>
-            <small>.ma</small>
-            <i />
-          </Link>
+          <BrandLogo />
           <form action="/recherche" role="search" className="search">
             <input
               name="q"

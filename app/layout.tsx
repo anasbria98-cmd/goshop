@@ -6,11 +6,11 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 export const metadata: Metadata = {
   title: {
-    default: "Goshop.ma | Matériel électrique au Maroc",
-    template: "%s | Goshop.ma",
+    default: "GO ELEC | Matériel électrique au Maroc",
+    template: "%s | GO ELEC",
   },
   description:
-    "Votre sélection de matériel électrique, éclairage, câbles et outillage au Maroc. Découvrez les grandes marques et préparez vos projets avec Goshop.ma.",
+    "Votre sélection de matériel électrique, éclairage, câbles et outillage au Maroc. Découvrez les grandes marques et préparez vos projets avec GO ELEC.",
   icons: { icon: "/favicon.svg" },
 };
 export default function RootLayout({

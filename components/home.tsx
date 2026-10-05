@@ -332,7 +332,7 @@ export function Home() {
         <div>
           <span className="eyebrow">LE BON MATÉRIEL. LE BON PARTENAIRE.</span>
           <h2>
-            Goshop.ma, votre spécialiste
+            GO ELEC, votre spécialiste
             <br />
             du matériel électrique au Maroc
           </h2>
@@ -340,7 +340,7 @@ export function Home() {
         <div>
           <p>
             Un chantier à équiper, une pièce à rénover ou une installation à
-            moderniser ? Goshop.ma réunit les essentiels de l’électricité pour
+            moderniser ? GO ELEC réunit les essentiels de l’électricité pour
             les professionnels et les particuliers : protection électrique,
             prises et interrupteurs, câbles, éclairage et solutions connectées.
           </p>

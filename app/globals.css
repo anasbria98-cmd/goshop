@@ -3007,3 +3007,94 @@ img {
     gap: 10px;
   }
 }
+
+/* GO ELEC identity, adapted from the physical storefront */
+.brand-sign {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 225px;
+  color: #333940;
+  line-height: 1;
+  white-space: nowrap;
+}
+.brand-emblem {
+  width: 50px;
+  height: 47px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 3px 3px #1e252d22);
+}
+.brand-sign-copy {
+  display: grid;
+  gap: 5px;
+}
+.brand-wordmark {
+  color: #464c52;
+  font-size: 31px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  text-shadow: 0 1px 0 #fff, 0 2px 2px #1b222a1c;
+}
+.brand-wordmark span {
+  color: inherit;
+}
+.brand-tagline {
+  color: #70777d;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+.brand-sign-footer {
+  min-width: 0;
+  margin-bottom: 20px;
+}
+.brand-sign-footer .brand-wordmark {
+  color: #f1f2f3;
+  text-shadow: 0 1px 0 #ffffff25;
+}
+.brand-sign-footer .brand-tagline {
+  color: #aeb7c0;
+}
+
+@media (max-width: 1100px) {
+  .brand-sign {
+    min-width: 190px;
+    gap: 8px;
+  }
+  .brand-emblem {
+    width: 43px;
+    height: 40px;
+  }
+  .brand-wordmark {
+    font-size: 27px;
+  }
+  .brand-tagline {
+    font-size: 6px;
+  }
+}
+
+@media (max-width: 700px) {
+  .brand-sign {
+    min-width: 0;
+    gap: 6px;
+  }
+  .brand-emblem {
+    width: 34px;
+    height: 33px;
+  }
+  .brand-wordmark {
+    font-size: 23px;
+    letter-spacing: 0;
+  }
+  .brand-tagline {
+    display: none;
+  }
+  .brand-sign-footer .brand-emblem {
+    width: 45px;
+    height: 42px;
+  }
+  .brand-sign-footer .brand-wordmark {
+    font-size: 28px;
+  }
+}

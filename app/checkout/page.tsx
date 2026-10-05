@@ -7,7 +7,7 @@ export default function Page() {
       <ShieldCheck size={44} />
       <h1>Votre sélection est prête</h1>
       <p>
-        Goshop.ma est actuellement en démonstration. La commande en ligne et le
+        GO ELEC est actuellement en démonstration. La commande en ligne et le
         paiement ne sont pas encore activés.
       </p>
       <p>

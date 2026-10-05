@@ -11,6 +11,7 @@ import {
   Linkedin,
 } from "lucide-react";
 import { storeInfo } from "@/data/catalog";
+import { BrandLogo } from "./brand-logo";
 export function Footer() {
   const [message, setMessage] = useState("");
   return (
@@ -21,7 +22,7 @@ export function Footer() {
             <Mail size={27} />
             <div>
               <h2>Les bons plans, directement chez vous.</h2>
-              <p>Nouveautés, sélections et offres Goshop.ma.</p>
+              <p>Nouveautés, sélections et offres GO ELEC.</p>
             </div>
           </div>
           <form
@@ -49,10 +50,7 @@ export function Footer() {
       <div className="footer-main">
         <div className="wrap footer-grid">
           <div className="footer-about">
-            <Link href="/" className="logo">
-              go<span>shop</span>
-              <small>.ma</small>
-            </Link>
+            <BrandLogo footer />
             <p>
               Le bon matériel pour tous vos projets.
               <br />
@@ -84,7 +82,7 @@ export function Footer() {
             </div>
           </div>
           <FooterGroup
-            title="Goshop.ma"
+            title="GO ELEC"
             links={[
               ["À propos", "a-propos"],
               ["Nous contacter", "contact"],
@@ -118,7 +116,7 @@ export function Footer() {
         </div>
         <div className="wrap footer-bottom">
           <span>
-            © {new Date().getFullYear()} Goshop.ma — Tous droits réservés.
+            © {new Date().getFullYear()} GO ELEC — Tous droits réservés.
           </span>
           <div>
             <ShieldCheck size={16} />

@@ -5,7 +5,7 @@ export default function Page() {
   return (
     <section className="wrap placeholder-page">
       <UserRound size={40} />
-      <h1>Votre espace Goshop.ma</h1>
+      <h1>Votre espace GO ELEC</h1>
       <p>
         La création de compte et le suivi des commandes seront disponibles à
         l’ouverture de la boutique.

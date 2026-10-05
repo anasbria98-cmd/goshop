@@ -34,7 +34,7 @@ export function ProductDetail({ product: p }: { product: Product }) {
           <span className="product-brand">{p.brand}</span>
           <h1>{p.name}</h1>
           <p className="reference">
-            Réf. Goshop : {p.id} · Réf. fabricant : {p.manufacturerRef}
+            Réf. GO ELEC : {p.id} · Réf. fabricant : {p.manufacturerRef}
           </p>
           <div className={`stock ${!p.stock ? "unavailable" : ""}`}>
             {p.stock ? "En stock" : "Indisponible"}
