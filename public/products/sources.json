@@ -1,0 +1,13 @@
+{
+  "note": "Temporary mock catalogue product photos. No broad reuse license verified; replace with authorized merchant/manufacturer assets before production. No 123elec assets.",
+  "sources": {
+    "breaker.jpg": "https://www.se.com/za/en/assets/v2/410/media/438851/900/A9F43103-2-IC-2360x1180.jpg",
+    "socket.jpg": "https://assets.legrand.com/pim/PHOTOS-WEB/LEGRAND/60/LG-600337-WEB-R.jpg",
+    "panel.jpg": "https://www.legrandbatiment.ci/6896-large_default/coffret-saillie-72-m-porte-transparent-hager-vs418tf.jpg",
+    "bulb.jpg": "https://image.maudau.com.ua/size/origin/products/35/78/bc/3578bc129942eb78c2d3670e88b1e074.jpg",
+    "wago.jpg": "https://www.falconsupply.com/cdn/shop/files/Wago-221-412.jpg?v=1709849919&width=1214",
+    "cable.jpg": "https://utbshop.b-cdn.net/poze/25716/1.jpg?auto_optimize=medium&height=800&v=1&width=800",
+    "drill.png": "https://www.bosch-professional.com/binary/ocsmedia/optimized/1434x828/o257089v54_GSR_18V-21_2_0Ah_dyn_3848.png",
+    "solar.jpg": "https://www.assets.signify.com/is/image/Signify/450Wp-41V-Monocrystalline-PV-panel-RTP"
+  }
+}
