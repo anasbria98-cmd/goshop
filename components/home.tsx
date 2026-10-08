@@ -13,6 +13,11 @@ import {
 import { categories, products } from "@/data/catalog";
 import { ProductSection } from "./product-section";
 import { ProductCard } from "./product-card";
+const selectProducts = (ids: string[]) =>
+  ids.flatMap((id) => {
+    const product = products.find((item) => item.id === id);
+    return product ? [product] : [];
+  });
 export function Benefits() {
   return (
     <div className="benefits wrap">
@@ -208,7 +213,7 @@ export function PhilipsCampaign() {
 }
 
 export function OctoberCampaign() {
-  const selection = [products[1], products[0], products[8], products[2]];
+  const selection = selectProducts(["GS1002", "GS1001", "GS1009", "GS1003"]);
 
   return (
     <section className="campaign campaign-october wrap">
@@ -319,14 +324,7 @@ export function Home() {
       </section>
       <ProductSection
         title="Notre sélection pour vos projets"
-        products={[
-          products[8],
-          products[5],
-          products[6],
-          products[7],
-          products[4],
-          products[2],
-        ]}
+        products={selectProducts(["GS1009", "GS1006", "GS1007", "GS1008", "GS1005", "GS1003"])}
       />
       <section className="seo wrap">
         <div>
