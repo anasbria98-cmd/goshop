@@ -207,19 +207,47 @@ export function Header() {
                     ))}
                   </div>
                 ) : (
-                  <div className="mega-groups">
-                    {activeCategory?.groups.map((group) => (
-                      <div className="mega-group" key={group.title}>
-                        <h3>{group.title}</h3>
-                        {group.items.map((menuItem) => (
-                          <Link
-                            key={menuItem.href}
-                            href={menuItem.href}
-                            onClick={() => setActive(null)}
-                          >
-                            {menuItem.name}
-                          </Link>
-                        ))}
+                  <div
+                    className={`mega-columns mega-columns-${Math.max(
+                      1,
+                      Math.min(3, activeCategory?.columns.length ?? 1),
+                    )}`}
+                  >
+                    {activeCategory?.columns.map((column, columnIndex) => (
+                      <div className="mega-column" key={columnIndex}>
+                        {column.map((menuItem) =>
+                          menuItem.children?.length ? (
+                            <div className="mega-node mega-parent" key={menuItem.href}>
+                              <Link
+                                className="mega-parent-link"
+                                href={menuItem.href}
+                                onClick={() => setActive(null)}
+                              >
+                                {menuItem.name}
+                              </Link>
+                              <div className="mega-children">
+                                {menuItem.children.map((child) => (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={() => setActive(null)}
+                                  >
+                                    {child.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <Link
+                              className="mega-node mega-direct"
+                              key={menuItem.href}
+                              href={menuItem.href}
+                              onClick={() => setActive(null)}
+                            >
+                              {menuItem.name}
+                            </Link>
+                          ),
+                        )}
                       </div>
                     ))}
                   </div>
@@ -259,7 +287,7 @@ export function Header() {
         </div>
         <div className="mobile-category-list">
           {navigationCategories.map((c) =>
-            c.groups.length > 0 ? (
+            c.columns.length > 0 ? (
               <details key={c.slug}>
                 <summary>
                   {c.name}
@@ -268,20 +296,45 @@ export function Header() {
                 <Link href={c.href} onClick={() => setMobile(false)}>
                   Tout voir
                 </Link>
-                {c.groups.map((group) => (
-                  <div className="mobile-subgroup" key={group.title}>
-                    <strong>{group.title}</strong>
-                    {group.items.map((menuItem) => (
+                <div className="mobile-nodes">
+                  {c.columns.flat().map((menuItem) =>
+                    menuItem.children?.length ? (
+                      <details className="mobile-parent" key={menuItem.href}>
+                        <summary>
+                          {menuItem.name}
+                          <ChevronDown size={15} />
+                        </summary>
+                        <Link
+                          className="mobile-parent-all"
+                          href={menuItem.href}
+                          onClick={() => setMobile(false)}
+                        >
+                          Voir tout
+                        </Link>
+                        <div className="mobile-children">
+                          {menuItem.children.map((child) => (
+                            <Link
+                              href={child.href}
+                              key={child.href}
+                              onClick={() => setMobile(false)}
+                            >
+                              {child.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
                       <Link
+                        className="mobile-node-direct"
                         href={menuItem.href}
                         key={menuItem.href}
                         onClick={() => setMobile(false)}
                       >
                         {menuItem.name}
                       </Link>
-                    ))}
-                  </div>
-                ))}
+                    ),
+                  )}
+                </div>
               </details>
             ) : (
               <Link
