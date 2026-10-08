@@ -213,7 +213,7 @@ export function PhilipsCampaign() {
 }
 
 export function OctoberCampaign() {
-  const selection = selectProducts(["GS1002", "GS1001", "GS1009", "GS1003"]);
+  const selection = selectProducts(["GS1005", "GS1006", "GS1007", "GS1008"]);
 
   return (
     <section className="campaign campaign-october wrap">
