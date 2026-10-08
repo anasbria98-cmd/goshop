@@ -57,14 +57,10 @@ export function Footer() {
               Votre spécialiste électrique au Maroc.
             </p>
             <p>
-              <Phone size={14} />
-              {storeInfo.phone}
-              <br />
+              {storeInfo.phone && <><Phone size={14} />{storeInfo.phone}<br /></>}
               <Mail size={14} />
               {storeInfo.email}
-              <br />
-              <MapPin size={14} />
-              {storeInfo.address}
+              {storeInfo.address && <><br /><MapPin size={14} />{storeInfo.address}</>}
             </p>
             <div
               className="socials"
@@ -127,9 +123,9 @@ export function Footer() {
           </div>
         </div>
         <div className="wrap demo-note">
-          Catalogue de démonstration · Visuels, prix et disponibilités
-          indicatifs · *Modalités de paiement et de livraison à confirmer avant
-          ouverture.
+          Les prix, références et disponibilités sont affichés uniquement après
+          validation des données catalogue. *Modalités de paiement et de
+          livraison selon les conditions de vente.
         </div>
       </div>
     </footer>
