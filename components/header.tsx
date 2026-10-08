@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Zap,
 } from "lucide-react";
-import { categories, money } from "@/data/catalog";
+import { money } from "@/data/catalog";
+import { navigationCategories } from "@/data/navigation";
 import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 export function Header() {
@@ -26,6 +27,7 @@ export function Header() {
   const nav = useRef<HTMLElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLDialogElement>(null);
+  const activeCategory = navigationCategories.find((c) => c.slug === active);
   useEffect(() => {
     function close(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -134,38 +136,44 @@ export function Header() {
           className="desktop-nav"
           ref={nav}
           aria-label="Catégories de produits"
+          onMouseLeave={() => setActive(null)}
         >
           <div className="wrap nav-row">
             <button
               className={`all-categories ${active === "all" ? "active" : ""}`}
               aria-expanded={active === "all"}
               onClick={() => setActive(active === "all" ? null : "all")}
+              onMouseEnter={() => setActive("all")}
             >
               <Menu size={18} /> Toutes les catégories
               <ChevronDown size={14} />
             </button>
-            {categories.slice(0, 6).map((c) => (
-              <button
-                key={c.slug}
-                aria-expanded={active === c.slug}
-                onClick={() => setActive(active === c.slug ? null : c.slug)}
-                className={active === c.slug ? "active" : ""}
-              >
-                {c.name}
-              </button>
-            ))}
-            <Link href="/recherche?promo=1" className="nav-promo">
-              <Zap size={15} /> Bons plans
+            {navigationCategories
+              .filter((c) => c.showInMainBar)
+              .map((c) => (
+                <button
+                  key={c.slug}
+                  aria-expanded={active === c.slug}
+                  onClick={() => setActive(active === c.slug ? null : c.slug)}
+                  onMouseEnter={() => setActive(c.slug)}
+                  className={active === c.slug ? "active" : ""}
+                >
+                  {c.shortName ?? c.name}
+                </button>
+              ))}
+            <Link href="/categorie/destockage" className="nav-promo">
+              <Zap size={15} /> Destockage
             </Link>
           </div>
           {active && (
             <div className="mega-menu wrap">
               <div className="mega-sidebar">
-                {categories.map((c) => (
+                {navigationCategories.map((c) => (
                   <button
                     key={c.slug}
                     className={active === c.slug ? "active" : ""}
                     onClick={() => setActive(c.slug)}
+                    onMouseEnter={() => setActive(c.slug)}
                   >
                     {c.name}
                     <ChevronRight size={15} />
@@ -177,7 +185,7 @@ export function Header() {
                   <h2>
                     {active === "all"
                       ? "Tous nos univers"
-                      : categories.find((c) => c.slug === active)?.name}
+                      : activeCategory?.name}
                   </h2>
                   <button
                     aria-label="Fermer le menu"
@@ -186,26 +194,38 @@ export function Header() {
                     <X size={20} />
                   </button>
                 </div>
-                <div className="mega-links">
-                  {(active === "all"
-                    ? categories.map((c) => ({ name: c.name, slug: c.slug }))
-                    : categories
-                        .find((c) => c.slug === active)!
-                        .subcategories.map((name) => ({ name, slug: active }))
-                  ).map((c) => (
-                    <Link
-                      key={c.name}
-                      href={`/categorie/${c.slug}`}
-                      onClick={() => setActive(null)}
-                    >
-                      {c.name}
-                    </Link>
-                  ))}
-                </div>
+                {active === "all" ? (
+                  <div className="mega-links mega-links-all">
+                    {navigationCategories.map((c) => (
+                      <Link
+                        key={c.slug}
+                        href={c.href}
+                        onClick={() => setActive(null)}
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mega-groups">
+                    {activeCategory?.groups.map((group) => (
+                      <div className="mega-group" key={group.title}>
+                        <h3>{group.title}</h3>
+                        {group.items.map((menuItem) => (
+                          <Link
+                            key={menuItem.href}
+                            href={menuItem.href}
+                            onClick={() => setActive(null)}
+                          >
+                            {menuItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <Link
-                  href={
-                    active === "all" ? "/recherche" : `/categorie/${active}`
-                  }
+                  href={active === "all" ? "/recherche" : activeCategory!.href}
                   className="text-link"
                   onClick={() => setActive(null)}
                 >
@@ -238,29 +258,42 @@ export function Header() {
           </button>
         </div>
         <div className="mobile-category-list">
-          {categories.map((c) => (
-            <details key={c.slug}>
-              <summary>
-                {c.name}
-                <ChevronDown size={16} />
-              </summary>
+          {navigationCategories.map((c) =>
+            c.groups.length > 0 ? (
+              <details key={c.slug}>
+                <summary>
+                  {c.name}
+                  <ChevronDown size={16} />
+                </summary>
+                <Link href={c.href} onClick={() => setMobile(false)}>
+                  Tout voir
+                </Link>
+                {c.groups.map((group) => (
+                  <div className="mobile-subgroup" key={group.title}>
+                    <strong>{group.title}</strong>
+                    {group.items.map((menuItem) => (
+                      <Link
+                        href={menuItem.href}
+                        key={menuItem.href}
+                        onClick={() => setMobile(false)}
+                      >
+                        {menuItem.name}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </details>
+            ) : (
               <Link
-                href={`/categorie/${c.slug}`}
+                className="mobile-category-direct"
+                href={c.href}
+                key={c.slug}
                 onClick={() => setMobile(false)}
               >
-                Tout voir
+                {c.name}
               </Link>
-              {c.subcategories.map((s) => (
-                <Link
-                  href={`/categorie/${c.slug}`}
-                  key={s}
-                  onClick={() => setMobile(false)}
-                >
-                  {s}
-                </Link>
-              ))}
-            </details>
-          ))}
+            ),
+          )}
         </div>
         <Link href="/compte" onClick={() => setMobile(false)}>
           Mon compte
