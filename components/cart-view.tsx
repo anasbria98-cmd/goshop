@@ -24,9 +24,9 @@ export function CartView() {
         <div className="empty-state">
           <ShoppingCart size={46} />
           <h2>Votre panier attend vos projets</h2>
-          <p>Parcourez les familles et ajoutez vos références lorsqu’elles seront disponibles.</p>
+          <p>Découvrez nos équipements et ajoutez votre première sélection.</p>
           <Link href="/recherche" className="button orange">
-            Parcourir les catégories
+            Découvrir les produits
           </Link>
         </div>
       ) : (
@@ -90,7 +90,8 @@ export function CartView() {
               Préparer ma commande
             </Link>
             <p>
-              <ShieldCheck size={16} /> Commande protégée et récapitulatif vérifié.
+              <ShieldCheck size={16} /> Aucune transaction en mode
+              démonstration.
             </p>
           </aside>
         </div>

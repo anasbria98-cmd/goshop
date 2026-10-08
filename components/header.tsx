@@ -16,7 +16,7 @@ import {
   ChevronRight,
   Zap,
 } from "lucide-react";
-import { categories, money, products } from "@/data/catalog";
+import { categories, money } from "@/data/catalog";
 import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 export function Header() {
@@ -26,10 +26,6 @@ export function Header() {
   const nav = useRef<HTMLElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLDialogElement>(null);
-  const primaryCategories = categories.filter((category) =>
-    ["materiel-electrique", "interrupteurs-prises", "cables-fils", "eclairage", "photovoltaique"].includes(category.slug),
-  );
-  const hasPromotions = products.some((product) => product.oldPrice);
   useEffect(() => {
     function close(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -148,7 +144,7 @@ export function Header() {
               <Menu size={18} /> Toutes les catégories
               <ChevronDown size={14} />
             </button>
-            {primaryCategories.map((c) => (
+            {categories.slice(0, 6).map((c) => (
               <button
                 key={c.slug}
                 aria-expanded={active === c.slug}
@@ -158,15 +154,9 @@ export function Header() {
                 {c.name}
               </button>
             ))}
-            {hasPromotions ? (
-              <Link href="/recherche?promo=1" className="nav-promo">
-                <Zap size={15} /> Bons plans
-              </Link>
-            ) : (
-              <Link href="/recherche" className="nav-promo catalogue-link">
-                <Zap size={15} /> Catalogue
-              </Link>
-            )}
+            <Link href="/recherche?promo=1" className="nav-promo">
+              <Zap size={15} /> Bons plans
+            </Link>
           </div>
           {active && (
             <div className="mega-menu wrap">
@@ -219,7 +209,7 @@ export function Header() {
                   className="text-link"
                   onClick={() => setActive(null)}
                 >
-                  {active === "all" ? "Ouvrir le catalogue" : "Voir cette catégorie"}
+                  Voir tous les produits
                 </Link>
               </div>
             </div>

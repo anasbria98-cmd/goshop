@@ -31,7 +31,7 @@ export function WebMCP() {
           {
             name: "read_go_elec_cart",
             description:
-              "Read the current device-local GO ELEC cart and product total in MAD. Does not place an order.",
+              "Read the current device-local GO ELEC demo cart and product total in MAD. Does not place an order.",
             inputSchema: {
               type: "object",
               properties: {},
@@ -57,6 +57,7 @@ export function WebMCP() {
                     quantity: state.current.cart[p.id],
                     unitPrice: p.price,
                   })),
+                demo: true,
               };
             },
           },

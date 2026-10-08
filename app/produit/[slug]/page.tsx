@@ -1,11 +1,8 @@
 import { notFound } from "next/navigation";
 import { products } from "@/data/catalog";
 import { ProductDetail } from "@/components/product-detail";
-const emptyCataloguePath = "catalogue-vide";
 export function generateStaticParams() {
-  return products.length
-    ? products.map((p) => ({ slug: p.slug }))
-    : [{ slug: emptyCataloguePath }];
+  return products.map((p) => ({ slug: p.slug }));
 }
 export async function generateMetadata({
   params,
@@ -13,7 +10,6 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!products.length && slug === emptyCataloguePath) return { title: "Produit indisponible" };
   return { title: products.find((p) => p.slug === slug)?.name || "Produit" };
 }
 export default async function Page({

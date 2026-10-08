@@ -18,7 +18,6 @@ export function ProductSection({
   href?: string;
 }) {
   const rail = useRef<HTMLDivElement>(null);
-  if (!products.length) return null;
   return (
     <section className="product-section wrap" id={id}>
       <div className="section-heading">
