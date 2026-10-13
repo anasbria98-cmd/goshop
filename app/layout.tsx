@@ -1,9 +1,9 @@
+import { cookies } from "next/headers";
+import { LOCALE_COOKIE } from "@/lib/storefront-locale";
 import type { Metadata } from "next";
 import "./globals.css";
-import { StoreProvider } from "@/components/store-provider";
-import { WebMCP } from "@/components/webmcp";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { ApplicationShell } from "@/components/application-shell";
+import { getPublicStoreSettings } from "@/lib/settings";
 export const metadata: Metadata = {
   title: {
     default: "GO ELEC | Matériel électrique au Maroc",
@@ -11,25 +11,22 @@ export const metadata: Metadata = {
   },
   description:
     "Votre sélection de matériel électrique, éclairage, câbles et outillage au Maroc. Découvrez les grandes marques et préparez vos projets avec GO ELEC.",
-  icons: { icon: "/favicon.svg" },
+  icons: {
+    icon: "/branding/isometric_electrical_repair_cube_logo.png",
+    apple: "/branding/isometric_electrical_repair_cube_logo.png",
+  },
 };
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await getPublicStoreSettings();
+  const locale = (await cookies()).get(LOCALE_COOKIE)?.value === "ar" ? "ar" : "fr";
   return (
-    <html lang="fr">
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body>
-        <StoreProvider>
-          <WebMCP />
-          <a className="skip-link" href="#main">
-            Aller au contenu
-          </a>
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-        </StoreProvider>
+        <ApplicationShell settings={settings} locale={locale}>{children}</ApplicationShell>
       </body>
     </html>
   );

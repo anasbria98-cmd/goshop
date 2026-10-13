@@ -1,4 +1,5 @@
 "use client";
+import { StoreText, LanguageSwitcher, useStorefrontLanguage } from "@/components/storefront-language";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -15,12 +16,35 @@ import {
   RotateCcw,
   ChevronRight,
   Zap,
+  Star,
 } from "lucide-react";
-import { money } from "@/data/catalog";
-import { navigationCategories } from "@/data/navigation";
+import { money } from "@/lib/catalog-model";
+import { navigationCategories, type NavigationNode } from "@/data/navigation";
 import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
+import { NavigationFeedback } from "./navigation-feedback";
+
+function SubmenuLinks({ items, onNavigate, mobile = false }: {
+  items: NavigationNode[];
+  onNavigate: () => void;
+  mobile?: boolean;
+}) {
+  return items.map((item) => item.children?.length ? (
+    <div key={item.href}>
+      <Link href={item.href} onClick={onNavigate}><StoreText>{item.name}</StoreText></Link>
+      <div className={`${mobile ? "mobile-children" : "mega-children"}${item.href === "/categorie/eclairage/exterieur/applique-jardin" ? " garden-applique-children" : ""}`}>
+        <SubmenuLinks items={item.children} onNavigate={onNavigate} mobile={mobile} />
+      </div>
+    </div>
+  ) : (
+    <Link key={item.href} href={item.href} onClick={onNavigate}>
+      <StoreText>{item.name}</StoreText>
+    </Link>
+  ));
+}
+
 export function Header() {
+  const { t } = useStorefrontLanguage();
   const { count, total, favorites } = useStore();
   const [active, setActive] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -63,19 +87,23 @@ export function Header() {
       <div className="topbar">
         <div className="wrap topbar-inner">
           <span>
-            <Truck size={14} /> Livraison partout au Maroc
-          </span>
+            <Truck size={14} /><StoreText> Livraison partout au Maroc
+          </StoreText></span>
           <div>
             <span>
-              <ShieldCheck size={14} /> Paiement sécurisé
-            </span>
+              <ShieldCheck size={14} /><StoreText> Paiement sécurisé
+            </StoreText></span>
             <Link href="/informations/service-client">
-              <Headphones size={14} /> Service client
-            </Link>
+              <Headphones size={14} /><StoreText> Service client
+            </StoreText></Link>
             <Link href="/informations/retours">
-              <RotateCcw size={14} /> Retours
-            </Link>
-            <span className="country">🇲🇦 &nbsp; Maroc · Français</span>
+              <RotateCcw size={14} /><StoreText> Retours
+            </StoreText></Link>
+            <LanguageSwitcher />
+            <span className="google-rating" dir="ltr" aria-label="Google : 4,3/5">
+              <Star size={15} fill="currentColor" aria-hidden="true" />
+              <span>4,3/5</span>
+            </span>
           </div>
         </div>
       </div>
@@ -84,7 +112,7 @@ export function Header() {
           <button
             className="mobile-menu icon-button"
             ref={toggle}
-            aria-label="Ouvrir les catégories"
+            aria-label={t("Ouvrir les catégories")}
             onClick={() => setMobile(true)}
           >
             <Menu />
@@ -93,24 +121,25 @@ export function Header() {
           <form action="/recherche" role="search" className="search">
             <input
               name="q"
-              aria-label="Rechercher un produit"
-              placeholder="Rechercher un produit, une marque, une catégorie, une réf."
+              aria-label={t("Rechercher un produit")}
+              placeholder={t("Rechercher un produit, une marque, une catégorie, une réf.")}
             />
-            <button aria-label="Rechercher">
+            <button aria-label={t("Rechercher")}>
               <Search size={22} />
             </button>
           </form>
           <div className="header-actions">
-            <Link href="/compte" className="header-action account">
+            <Link href="/compte" prefetch={true} className="header-action account navigation-link">
               <UserRound size={25} />
-              <span>
-                Bienvenue<strong>Mon compte</strong>
+              <span><StoreText>
+                Bienvenue</StoreText><strong><StoreText>Mon compte</StoreText></strong>
               </span>
+              <NavigationFeedback />
             </Link>
             <Link
               href="/favoris"
               className="header-action favorite-link"
-              aria-label={`Mes favoris (${favorites.length})`}
+              aria-label={`${t("Mes favoris")} (${favorites.length})`}
             >
               <Heart size={25} />
               {favorites.length > 0 && (
@@ -120,14 +149,14 @@ export function Header() {
             <Link
               href="/panier"
               className="header-action cart-link"
-              aria-label={`Mon panier, ${count} article${count !== 1 ? "s" : ""}, ${money(total)}`}
+              aria-label={`${t("Mon panier")}, ${count} ${t(count !== 1 ? "articles" : "article")}, ${money(total)}`}
             >
               <div className="cart-icon">
                 <ShoppingCart size={26} />
                 <b className="count">{count}</b>
               </div>
-              <span>
-                Mon panier<strong>{money(total)}</strong>
+              <span><StoreText>
+                Mon panier</StoreText><strong>{money(total)}</strong>
               </span>
             </Link>
           </div>
@@ -135,7 +164,7 @@ export function Header() {
         <nav
           className="desktop-nav"
           ref={nav}
-          aria-label="Catégories de produits"
+          aria-label={t("Catégories de produits")}
           onMouseLeave={() => setActive(null)}
         >
           <div className="wrap nav-row">
@@ -145,8 +174,8 @@ export function Header() {
               onClick={() => setActive(active === "all" ? null : "all")}
               onMouseEnter={() => setActive("all")}
             >
-              <Menu size={18} /> Toutes les catégories
-              <ChevronDown size={14} />
+              <Menu size={18} /><StoreText> Toutes les catégories
+              </StoreText><ChevronDown size={14} />
             </button>
             {navigationCategories
               .filter((c) => c.showInMainBar)
@@ -158,12 +187,12 @@ export function Header() {
                   onMouseEnter={() => setActive(c.slug)}
                   className={active === c.slug ? "active" : ""}
                 >
-                  {c.shortName ?? c.name}
+                  <StoreText>{c.shortName ?? c.name}</StoreText>
                 </button>
               ))}
             <Link href="/categorie/destockage" className="nav-promo">
-              <Zap size={15} /> Destockage
-            </Link>
+              <Zap size={15} /><StoreText> Destockage
+            </StoreText></Link>
           </div>
           {active && (
             <div className="mega-menu wrap">
@@ -175,7 +204,7 @@ export function Header() {
                     onClick={() => setActive(c.slug)}
                     onMouseEnter={() => setActive(c.slug)}
                   >
-                    {c.name}
+                    <StoreText>{c.name}</StoreText>
                     <ChevronRight size={15} />
                   </button>
                 ))}
@@ -183,12 +212,12 @@ export function Header() {
               <div className="mega-content">
                 <div className="mega-heading">
                   <h2>
-                    {active === "all"
+                    <StoreText>{active === "all"
                       ? "Tous nos univers"
-                      : activeCategory?.name}
+                      : activeCategory?.name}</StoreText>
                   </h2>
                   <button
-                    aria-label="Fermer le menu"
+                    aria-label={t("Fermer le menu")}
                     onClick={() => setActive(null)}
                   >
                     <X size={20} />
@@ -202,7 +231,7 @@ export function Header() {
                         href={c.href}
                         onClick={() => setActive(null)}
                       >
-                        {c.name}
+                        <StoreText>{c.name}</StoreText>
                       </Link>
                     ))}
                   </div>
@@ -223,18 +252,10 @@ export function Header() {
                                 href={menuItem.href}
                                 onClick={() => setActive(null)}
                               >
-                                {menuItem.name}
+                                <StoreText>{menuItem.name}</StoreText>
                               </Link>
                               <div className="mega-children">
-                                {menuItem.children.map((child) => (
-                                  <Link
-                                    key={child.href}
-                                    href={child.href}
-                                    onClick={() => setActive(null)}
-                                  >
-                                    {child.name}
-                                  </Link>
-                                ))}
+                                <SubmenuLinks items={menuItem.children} onNavigate={() => setActive(null)} />
                               </div>
                             </div>
                           ) : (
@@ -244,7 +265,7 @@ export function Header() {
                               href={menuItem.href}
                               onClick={() => setActive(null)}
                             >
-                              {menuItem.name}
+                              <StoreText>{menuItem.name}</StoreText>
                             </Link>
                           ),
                         )}
@@ -256,9 +277,9 @@ export function Header() {
                   href={active === "all" ? "/recherche" : activeCategory!.href}
                   className="text-link"
                   onClick={() => setActive(null)}
-                >
+                ><StoreText>
                   Voir tous les produits
-                </Link>
+                </StoreText></Link>
               </div>
             </div>
           )}
@@ -267,16 +288,16 @@ export function Header() {
       <dialog
         ref={drawer}
         className="mobile-drawer"
-        aria-label="Navigation mobile"
+        aria-label={t("Navigation mobile")}
         onCancel={() => setMobile(false)}
         onClick={(e) => {
           if (e.target === e.currentTarget) setMobile(false);
         }}
       >
         <div className="drawer-heading">
-          <strong>Nos catégories</strong>
+          <strong><StoreText>Nos catégories</StoreText></strong>
           <button
-            aria-label="Fermer les catégories"
+            aria-label={t("Fermer les catégories")}
             onClick={() => {
               setMobile(false);
               toggle.current?.focus();
@@ -290,37 +311,29 @@ export function Header() {
             c.columns.length > 0 ? (
               <details key={c.slug}>
                 <summary>
-                  {c.name}
+                  <StoreText>{c.name}</StoreText>
                   <ChevronDown size={16} />
                 </summary>
-                <Link href={c.href} onClick={() => setMobile(false)}>
+                <Link href={c.href} onClick={() => setMobile(false)}><StoreText>
                   Tout voir
-                </Link>
+                </StoreText></Link>
                 <div className="mobile-nodes">
                   {c.columns.flat().map((menuItem) =>
                     menuItem.children?.length ? (
                       <details className="mobile-parent" key={menuItem.href}>
                         <summary>
-                          {menuItem.name}
+                          <StoreText>{menuItem.name}</StoreText>
                           <ChevronDown size={15} />
                         </summary>
                         <Link
                           className="mobile-parent-all"
                           href={menuItem.href}
                           onClick={() => setMobile(false)}
-                        >
+                        ><StoreText>
                           Voir tout
-                        </Link>
+                        </StoreText></Link>
                         <div className="mobile-children">
-                          {menuItem.children.map((child) => (
-                            <Link
-                              href={child.href}
-                              key={child.href}
-                              onClick={() => setMobile(false)}
-                            >
-                              {child.name}
-                            </Link>
-                          ))}
+                          <SubmenuLinks items={menuItem.children} onNavigate={() => setMobile(false)} mobile />
                         </div>
                       </details>
                     ) : (
@@ -330,7 +343,7 @@ export function Header() {
                         key={menuItem.href}
                         onClick={() => setMobile(false)}
                       >
-                        {menuItem.name}
+                        <StoreText>{menuItem.name}</StoreText>
                       </Link>
                     ),
                   )}
@@ -343,16 +356,17 @@ export function Header() {
                 key={c.slug}
                 onClick={() => setMobile(false)}
               >
-                {c.name}
+                <StoreText>{c.name}</StoreText>
               </Link>
             ),
           )}
         </div>
-        <Link href="/compte" onClick={() => setMobile(false)}>
+        <Link href="/compte" prefetch={true} className="navigation-link" onClick={() => setMobile(false)}><StoreText>
           Mon compte
+          </StoreText><NavigationFeedback />
         </Link>
-        <Link href="/favoris" onClick={() => setMobile(false)}>
-          Mes favoris ({favorites.length})
+        <Link href="/favoris" onClick={() => setMobile(false)}><StoreText>
+          Mes favoris (</StoreText>{favorites.length})
         </Link>
       </dialog>
     </>

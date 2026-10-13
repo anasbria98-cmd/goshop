@@ -21,11 +21,11 @@ const link = (path: string, name: string): NavigationNode => ({
 const parent = (
   path: string,
   name: string,
-  children: Array<[name: string, slug: string]>,
+  children: Array<[name: string, slug: string] | NavigationNode>,
 ): NavigationNode => ({
   ...link(path, name),
-  children: children.map(([childName, childSlug]) =>
-    link(`${path}/${childSlug}`, childName),
+  children: children.map((child) =>
+    Array.isArray(child) ? link(`${path}/${child[1]}`, child[0]) : child,
   ),
 });
 
@@ -146,7 +146,13 @@ export const navigationCategories: NavigationCategory[] = [
           ["Projecteur", "projecteur"],
           ["Piqué jardin", "pique-jardin"],
           ["Poteau jardin", "poteau-jardin"],
-          ["Applique jardin", "applique-jardin"],
+          {
+            ...link("eclairage/exterieur/applique-jardin", "Applique jardin"),
+            children: [
+              { name: "Spot au sol", href: "/recherche?q=Spot%20au%20sol" },
+              { name: "Contre marche", href: "/recherche?q=Contre%20marche" },
+            ],
+          },
         ]),
       ],
       [
@@ -162,8 +168,8 @@ export const navigationCategories: NavigationCategory[] = [
     showInMainBar: true,
     columns: [
       [
-        link("cables-fils/cable-u500v", "Câble U500V"),
-        link("cables-fils/cable-u500sv", "Câble U500SV"),
+        link("cables-fils/cable-u500v", "Câble U500V H07VU"),
+        link("cables-fils/cable-u500sv", "Câble U500SV H07VK"),
         link("cables-fils/cable-ro2v", "Câble RO2V"),
         link("cables-fils/cable-rvfv", "Câble RVFV"),
         link("cables-fils/cable-rvk", "Câble RVK"),
@@ -235,6 +241,7 @@ export const navigationCategories: NavigationCategory[] = [
     slug: "securite",
     name: "Sécurité",
     href: "/categorie/securite",
+    showInMainBar: true,
     columns: [
       [
         link("securite/cameras", "Caméras"),
@@ -244,6 +251,27 @@ export const navigationCategories: NavigationCategory[] = [
         link("securite/controle-acces", "Contrôle d’accès"),
       ],
     ],
+  },
+  {
+    slug: "sonorisation",
+    name: "Sonorisation",
+    href: "/categorie/sonorisation",
+    showInMainBar: true,
+    columns: [],
+  },
+  {
+    slug: "materiel-informatique",
+    name: "Matériel informatique",
+    href: "/categorie/materiel-informatique",
+    showInMainBar: true,
+    columns: [],
+  },
+  {
+    slug: "multiprise-enrouleur",
+    name: "Multiprise et enrouleur",
+    href: "/categorie/multiprise-enrouleur",
+    showInMainBar: true,
+    columns: [],
   },
   {
     slug: "photovoltaique",

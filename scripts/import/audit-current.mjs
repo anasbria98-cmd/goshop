@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import dns from 'node:dns';
+import {Agent,setGlobalDispatcher} from 'undici';
+import {createClient} from '@supabase/supabase-js';
+import {excelProducts,matchProduct} from './common.mjs';
+dns.setDefaultResultOrder('ipv4first');setGlobalDispatcher(new Agent({allowH2:true,connect:{timeout:30000}}));
+const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+const tables=['products','categories','brands','inventory','product_categories','product_images','product_attribute_values'];
+const snapshot=Object.fromEntries(await Promise.all(tables.map(async t=>{const {data,error}=await db.from(t).select('*');if(error)throw new Error(error.message);return[t,data];})));
+await fs.writeFile('/tmp/goshop-before-organization.json',JSON.stringify(snapshot,null,2));
+const rows=excelProducts(JSON.parse(await fs.readFile('/tmp/goshop-workbook-2.json','utf8')));
+const categoryPath=c=>c.parent_id?`${categoryPath(snapshot.categories.find(p=>p.id===c.parent_id))}/${c.slug}`:c.slug;
+const excel=rows.map(r=>{const p=matchProduct(snapshot.products,r);const primary=p&&snapshot.product_categories.find(a=>a.product_id===p.id&&a.is_primary);return{reference:r.reference,name:r.name,id:p?.id,expected:r.path,actual:primary&&categoryPath(snapshot.categories.find(c=>c.id===primary.category_id)),priceMatches:p?.price===r.price};});
+const source=JSON.parse(await fs.readFile('scripts/import/reports/123elec-collected.json','utf8')).products;
+const sources=source.map(r=>{const p=matchProduct(snapshot.products,r);const primary=p&&snapshot.product_categories.find(a=>a.product_id===p.id&&a.is_primary);return{reference:r.reference,id:p?.id,path:r.path,actual:primary&&categoryPath(snapshot.categories.find(c=>c.id===primary.category_id)),urls:r.source.categoryUrls};});
+const plan={timestamp:new Date().toISOString(),counts:Object.fromEntries(tables.map(t=>[t,snapshot[t].length])),excel,sources,missingExcel:excel.filter(r=>!r.id),missingSources:sources.filter(r=>!r.id),roots:snapshot.categories.filter(c=>!c.parent_id).map(c=>({id:c.id,name:c.name,slug:c.slug,sort_order:c.sort_order})),changes:[{sku:'GS1008',category:'photovoltaique/panneaux-solaires',preserveOtherAssignments:true}],notes:['New workbook is byte-identical to the prior workbook. All 31 rows already exist.','All 60 requested source products already exist. Preserve current prices, images, publication and inventory.','Only fix JA Solar primary category to existing solar-panel leaf. Homepage sections will use real category memberships.']};
+await fs.writeFile('scripts/import/reports/organization-plan.json',JSON.stringify(plan,null,2));console.log(JSON.stringify({counts:plan.counts,excelRows:rows.length,missingExcel:plan.missingExcel.length,missingSources:plan.missingSources.length,wrongCategories:[...excel,...sources].filter(r=>r.actual!==(r.expected||r.path)),roots:plan.roots},null,2));

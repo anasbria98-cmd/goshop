@@ -1,9 +1,10 @@
 "use client";
+import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
-import { type Product, money } from "@/data/catalog";
+import { type CatalogProduct, money } from "@/lib/catalog-model";
 import { useStore } from "./store-provider";
 export function Quantity({
   value,
@@ -16,20 +17,21 @@ export function Quantity({
   max?: number;
   label?: string;
 }) {
+  const { t } = useStorefrontLanguage();
   return (
     <div className="quantity">
       <button
         type="button"
-        aria-label={`Diminuer ${label}`}
+        aria-label={`${t("Diminuer")} ${t(label)}`}
         disabled={value <= 1}
         onClick={() => onChange(value - 1)}
       >
         <Minus size={13} />
       </button>
-      <span aria-label={label}>{value}</span>
+      <span aria-label={t(label)}>{value}</span>
       <button
         type="button"
-        aria-label={`Augmenter ${label}`}
+        aria-label={`${t("Augmenter")} ${t(label)}`}
         disabled={value >= max}
         onClick={() => onChange(value + 1)}
       >
@@ -38,24 +40,25 @@ export function Quantity({
     </div>
   );
 }
-export function ProductCard({ product: p }: { product: Product }) {
+export function ProductCard({ product: p }: { product: CatalogProduct }) {
+  const { t } = useStorefrontLanguage();
   const [qty, setQty] = useState(1);
   const { add, favorites, toggleFavorite } = useStore();
   return (
     <article className="product-card">
       <div className="product-top">
-        {p.oldPrice ? (
+        {p.compareAtPrice ? (
           <span className="discount">
-            -{Math.round((1 - p.price / p.oldPrice) * 100)}%
+            -{Math.round((1 - p.price / p.compareAtPrice) * 100)}%
           </span>
-        ) : p.fresh ? (
-          <span className="new-badge">Nouveau</span>
+        ) : p.isNew ? (
+          <span className="new-badge"><StoreText>Nouveau</StoreText></span>
         ) : (
           <span />
         )}
         <button
           className={`favorite ${favorites.includes(p.id) ? "selected" : ""}`}
-          aria-label={`${favorites.includes(p.id) ? "Retirer" : "Ajouter"} ${p.name} ${favorites.includes(p.id) ? "des" : "aux"} favoris`}
+          aria-label={`${t(favorites.includes(p.id) ? "Retirer des favoris" : "Ajouter à mes favoris")} — ${p.name}`}
           aria-pressed={favorites.includes(p.id)}
           onClick={() => toggleFavorite(p.id)}
         >
@@ -63,53 +66,53 @@ export function ProductCard({ product: p }: { product: Product }) {
         </button>
       </div>
       <Link href={`/produit/${p.slug}`} className="product-image">
-        <Image
-          src={`/products/${p.image}.webp`}
+        {p.imageUrl ? <Image
+          src={p.imageUrl}
           width={220}
           height={180}
           alt={p.name}
           sizes="(max-width: 600px) 45vw, 220px"
-        />
+        /> : <span className="product-image-placeholder" aria-hidden="true" />}
       </Link>
       <div
         className={`product-brand brand-${p.brand.split(" ")[0].toLowerCase()}`}
       >
-        {p.brand}
+        <bdi>{p.brand}</bdi>
       </div>
       <Link href={`/produit/${p.slug}`} className="product-title">
-        {p.name}
+        <bdi>{p.name}</bdi>
       </Link>
       <div className="rating">
-        <span aria-label={`${p.rating} sur 5`}>
+        <span aria-label={`${p.rating} ${t("sur 5")}`}>
           {[0, 1, 2, 3, 4].map((i) => (
-            <Star key={i} size={12} fill="currentColor" />
+            <Star key={i} size={12} fill={i < Math.round(p.rating) ? "currentColor" : "none"} />
           ))}
         </span>
-        <small>({p.reviews})</small>
+        <small>({p.reviewCount})</small>
       </div>
-      <p className="reference">
-        Réf. GO ELEC : {p.id}
-        <br />
-        Réf. fabricant : {p.manufacturerRef}
+      <p className="reference"><StoreText>
+        Réf. GO ELEC : </StoreText><bdi>{p.sku}</bdi>
+        <br /><StoreText>
+        Réf. fabricant : </StoreText><bdi>{p.manufacturerReference || "—"}</bdi>
       </p>
       <div className={`stock ${!p.stock ? "unavailable" : ""}`}>
-        {p.stock ? "En stock" : "Indisponible"}
+        <StoreText>{p.stock || p.allowBackorder ? "En stock" : "Indisponible"}</StoreText>
       </div>
       <div className="price-line">
         <strong>{money(p.price)}</strong>
-        {p.oldPrice && <del>{money(p.oldPrice)}</del>}
+        {p.compareAtPrice && <del>{money(p.compareAtPrice)}</del>}
       </div>
-      <small className="tax">TTC / unité</small>
+      <small className="tax"><StoreText>TTC / unité</StoreText></small>
       <div className="purchase">
-        <Quantity value={qty} onChange={setQty} max={p.stock} label={p.id} />
+        <Quantity value={qty} onChange={setQty} max={p.allowBackorder ? 999 : p.stock} label={p.sku} />
         <button
           className="add-button"
-          disabled={!p.stock}
-          onClick={() => add(p.id, qty)}
-          aria-label={`Ajouter ${p.name} au panier`}
+          disabled={!p.stock && !p.allowBackorder}
+          onClick={() => add(p, qty)}
+          aria-label={`${t("Ajouter au panier")} — ${p.name}`}
         >
           <ShoppingCart size={16} />
-          <span>Ajouter</span>
+          <span><StoreText>Ajouter</StoreText></span>
         </button>
       </div>
     </article>

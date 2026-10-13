@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { products } from "@/data/catalog";
 import { useStore } from "./store-provider";
 type Context = {
   registerTool: (
@@ -31,7 +30,7 @@ export function WebMCP() {
           {
             name: "read_go_elec_cart",
             description:
-              "Read the current device-local GO ELEC demo cart and product total in MAD. Does not place an order.",
+              "Read the current GO ELEC cart and product total in MAD. This read-only tool does not place an order.",
             inputSchema: {
               type: "object",
               properties: {},
@@ -49,15 +48,13 @@ export function WebMCP() {
               return {
                 currency: "MAD",
                 total: state.current.total,
-                items: products
-                  .filter((p) => state.current.cart[p.id])
-                  .map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    quantity: state.current.cart[p.id],
-                    unitPrice: p.price,
-                  })),
-                demo: true,
+                items: Object.values(state.current.cart).map(({ product, quantity }) => ({
+                  id: product.id,
+                  sku: product.sku,
+                  name: product.name,
+                  quantity,
+                  unitPrice: product.price,
+                })),
               };
             },
           },

@@ -1,3 +1,4 @@
+import { StoreText } from "@/components/storefront-language";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { information } from "@/data/information";
@@ -23,17 +24,17 @@ export default async function Page({
   return (
     <section className="wrap information-page">
       <div className="breadcrumbs">
-        <Link href="/">Accueil</Link>
+        <Link href="/"><StoreText>Accueil</StoreText></Link>
         <span>/</span>
-        {info.title}
+        <StoreText>{info.title}</StoreText>
       </div>
-      <h1>{info.title}</h1>
+      <h1><StoreText>{info.title}</StoreText></h1>
       {info.body.map((p) => (
-        <p key={p}>{p}</p>
+        <p key={p}><StoreText>{p}</StoreText></p>
       ))}
-      <Link href="/" className="text-link">
+      <Link href="/" className="text-link"><StoreText>
         Retour à la boutique
-      </Link>
+      </StoreText></Link>
     </section>
   );
 }

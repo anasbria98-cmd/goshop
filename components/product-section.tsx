@@ -1,8 +1,9 @@
 "use client";
+import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
-import { type Product } from "@/data/catalog";
+import { type CatalogProduct } from "@/lib/catalog-model";
 import { ProductCard } from "./product-card";
 export function ProductSection({
   title,
@@ -13,32 +14,33 @@ export function ProductSection({
 }: {
   title: string;
   eyebrow?: string;
-  products: Product[];
+  products: CatalogProduct[];
   id?: string;
   href?: string;
 }) {
+  const { t, locale } = useStorefrontLanguage();
   const rail = useRef<HTMLDivElement>(null);
   return (
     <section className="product-section wrap" id={id}>
       <div className="section-heading">
         <div>
-          {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-          <h2>{title}</h2>
+          {eyebrow && <span className="eyebrow"><StoreText>{eyebrow}</StoreText></span>}
+          <h2><StoreText>{title}</StoreText></h2>
         </div>
         <div className="section-actions">
-          <Link href={href}>Tout voir</Link>
+          <Link href={href}><StoreText>Tout voir</StoreText></Link>
           <button
-            aria-label={`Précédents — ${title}`}
+            aria-label={`${t("Précédents")} — ${t(title)}`}
             onClick={() =>
-              rail.current?.scrollBy({ left: -500, behavior: "smooth" })
+              rail.current?.scrollBy({ left: locale === "ar" ? 500 : -500, behavior: "smooth" })
             }
           >
             <ChevronLeft size={19} />
           </button>
           <button
-            aria-label={`Suivants — ${title}`}
+            aria-label={`${t("Suivants")} — ${t(title)}`}
             onClick={() =>
-              rail.current?.scrollBy({ left: 500, behavior: "smooth" })
+              rail.current?.scrollBy({ left: locale === "ar" ? -500 : 500, behavior: "smooth" })
             }
           >
             <ChevronRight size={19} />

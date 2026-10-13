@@ -1,66 +1,68 @@
 "use client";
+import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
 import Link from "next/link";
 import Image from "next/image";
 import { Trash2, ShoppingCart, ShieldCheck } from "lucide-react";
 import { useStore } from "./store-provider";
-import { products, money } from "@/data/catalog";
+import { money } from "@/lib/catalog-model";
 import { Quantity } from "./product-card";
 export function CartView() {
+  const { t, locale } = useStorefrontLanguage();
   const { cart, count, total, setQuantity } = useStore();
-  const items = products.filter((p) => cart[p.id]);
+  const items = Object.values(cart);
   return (
     <div className="wrap cart-page">
       <div className="breadcrumbs">
-        <Link href="/">Accueil</Link>
-        <span>/</span>Mon panier
-      </div>
-      <h1>
-        Mon panier{" "}
+        <Link href="/"><StoreText>Accueil</StoreText></Link>
+        <span>/</span><StoreText>Mon panier
+      </StoreText></div>
+      <h1><StoreText>
+        Mon panier</StoreText>{" "}
         <span>
-          ({count} article{count !== 1 ? "s" : ""})
+          ({count} {locale === "ar" ? "منتج" : `article${count !== 1 ? "s" : ""}`})
         </span>
       </h1>
       {!items.length ? (
         <div className="empty-state">
           <ShoppingCart size={46} />
-          <h2>Votre panier attend vos projets</h2>
-          <p>Découvrez nos équipements et ajoutez votre première sélection.</p>
-          <Link href="/recherche" className="button orange">
+          <h2><StoreText>Votre panier attend vos projets</StoreText></h2>
+          <p><StoreText>Découvrez nos équipements et ajoutez votre première sélection.</StoreText></p>
+          <Link href="/recherche" className="button orange"><StoreText>
             Découvrir les produits
-          </Link>
+          </StoreText></Link>
         </div>
       ) : (
         <div className="cart-layout">
           <div>
-            {items.map((p) => (
+            {items.map(({ product: p, quantity }) => (
               <article className="cart-item" key={p.id}>
                 <Link href={`/produit/${p.slug}`}>
-                  <Image
-                    src={`/products/${p.image}.webp`}
+                  {p.imageUrl ? <Image
+                    src={p.imageUrl}
                     width={110}
                     height={110}
                     alt={p.name}
-                  />
+                  /> : <span className="product-image-placeholder" />}
                 </Link>
                 <div>
-                  <span className="product-brand">{p.brand}</span>
+                  <span className="product-brand"><bdi>{p.brand}</bdi></span>
                   <Link href={`/produit/${p.slug}`}>
-                    <h2>{p.name}</h2>
+                    <h2><bdi>{p.name}</bdi></h2>
                   </Link>
-                  <p className="reference">
-                    Réf. {p.id} · {money(p.price)} / unité
-                  </p>
+                  <p className="reference"><StoreText>
+                    Réf. </StoreText><bdi>{p.sku}</bdi> · {money(p.price)}<StoreText> / unité
+                  </StoreText></p>
                   <Quantity
-                    value={cart[p.id]}
+                    value={quantity}
                     onChange={(n) => setQuantity(p.id, n)}
-                    max={p.stock}
-                    label={p.id}
+                    max={p.allowBackorder ? 999 : p.stock}
+                    label={p.sku}
                   />
                 </div>
                 <div className="cart-item-total">
-                  <strong>{money(p.price * cart[p.id])}</strong>
+                  <strong>{money(p.price * quantity)}</strong>
                   <button
-                    aria-label={`Supprimer ${p.name}`}
+                    aria-label={`${t("Supprimer")} ${p.name}`}
                     onClick={() => setQuantity(p.id, 0)}
                   >
                     <Trash2 size={18} />
@@ -68,31 +70,31 @@ export function CartView() {
                 </div>
               </article>
             ))}
-            <Link className="continue-shopping" href="/recherche">
+            <Link className="continue-shopping" href="/recherche"><StoreText>
               Continuer mes achats
-            </Link>
+            </StoreText></Link>
           </div>
           <aside className="cart-summary">
-            <h2>Récapitulatif</h2>
+            <h2><StoreText>Récapitulatif</StoreText></h2>
             <div>
-              <span>Sous-total TTC</span>
+              <span><StoreText>Sous-total TTC</StoreText></span>
               <strong>{money(total)}</strong>
             </div>
             <div>
-              <span>Livraison</span>
-              <span>À confirmer</span>
+              <span><StoreText>Livraison</StoreText></span>
+              <span><StoreText>À confirmer</StoreText></span>
             </div>
             <div className="cart-grand-total">
-              <strong>Total produits</strong>
+              <strong><StoreText>Total produits</StoreText></strong>
               <strong>{money(total)}</strong>
             </div>
-            <Link className="button orange" href="/checkout">
+            <Link className="button orange" href="/checkout"><StoreText>
               Préparer ma commande
-            </Link>
+            </StoreText></Link>
             <p>
-              <ShieldCheck size={16} /> Aucune transaction en mode
-              démonstration.
-            </p>
+              <ShieldCheck size={16} /><StoreText> Vos prix et disponibilités seront
+              vérifiés avant validation.
+            </StoreText></p>
           </aside>
         </div>
       )}

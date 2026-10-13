@@ -1,75 +1,13 @@
 export const information: Record<string, { title: string; body: string[] }> = {
-  "a-propos": {
-    title: "À propos de GO ELEC",
-    body: [
-      "GO ELEC prépare une boutique de matériel électrique destinée aux professionnels et aux particuliers au Maroc. Notre sélection réunit les essentiels pour équiper, rénover et moderniser vos installations.",
-      "Cette première version présente un catalogue de démonstration. Les prix, les stocks et les avis sont des exemples et ne constituent pas une offre commerciale.",
-    ],
-  },
-  contact: {
-    title: "Nous contacter",
-    body: [
-      "Les coordonnées de notre service client seront confirmées avant l’ouverture de la boutique.",
-      "E-mail prévu : contact@goelec.ma · Téléphone : +212 (0)5 XX XX XX XX (à compléter).",
-    ],
-  },
-  "service-client": {
-    title: "Service client",
-    body: [
-      "Un accompagnement pour choisir vos équipements et préparer vos projets. Les horaires et moyens de contact seront publiés lors de l’ouverture.",
-    ],
-  },
-  magasins: {
-    title: "Nos points de retrait",
-    body: [
-      "Les adresses, horaires et modalités de retrait seront annoncés avant l’ouverture. Aucun point de retrait n’est actuellement confirmé.",
-    ],
-  },
-  livraison: {
-    title: "Livraison au Maroc",
-    body: [
-      "La boutique est conçue pour proposer la livraison partout au Maroc. Les zones desservies, les frais et les délais seront précisés avant toute commande.",
-      "Les tarifs de livraison ne sont pas encore configurés dans cette version de démonstration.",
-    ],
-  },
-  paiement: {
-    title: "Moyens de paiement",
-    body: [
-      "Le paiement en ligne et le paiement à la livraison sont prévus sous réserve de validation des prestataires. Aucun paiement n’est accepté dans cette version.",
-    ],
-  },
-  retours: {
-    title: "Retours & garanties",
-    body: [
-      "Les conditions de retour et les modalités de garantie seront publiées avant la mise en vente. Cette démonstration ne permet pas de commander de produits.",
-    ],
-  },
-  faq: {
-    title: "Questions fréquentes",
-    body: [
-      "Puis-je passer une commande ? La boutique est en démonstration : vous pouvez préparer un panier, mais aucune commande ni aucun paiement ne sont transmis.",
-      "Mon panier est-il conservé ? Oui, sur cet appareil et ce navigateur si le stockage local est disponible.",
-      "Les références sont-elles définitives ? Non. Les visuels, caractéristiques, stocks, prix et avis sont indicatifs et seront vérifiés avant commercialisation.",
-    ],
-  },
-  cgv: {
-    title: "Conditions générales de vente",
-    body: [
-      "Document à compléter et à faire valider avant l’ouverture commerciale. Aucune vente n’est possible sur cette version de démonstration.",
-    ],
-  },
-  confidentialite: {
-    title: "Politique de confidentialité",
-    body: [
-      "Cette démonstration enregistre uniquement le contenu du panier et les favoris dans le stockage local de votre navigateur. Ces informations ne sont pas envoyées à un serveur de boutique.",
-      "Le formulaire de newsletter ne transmet ni ne conserve votre adresse e-mail. La politique complète et les coordonnées du responsable seront publiées avant l’ouverture.",
-    ],
-  },
-  "mentions-legales": {
-    title: "Mentions légales",
-    body: [
-      "Éditeur, raison sociale, adresse, identifiants de société et coordonnées : à compléter avant ouverture commerciale.",
-      "GO ELEC est ici une démonstration de boutique. Les marques citées appartiennent à leurs propriétaires respectifs. Les photos sont des visuels temporaires et ne garantissent pas la référence exacte.",
-    ],
-  },
+  "a-propos": { title: "À propos de GO ELEC", body: ["GO ELEC propose du matériel électrique aux professionnels et aux particuliers au Maroc. Notre catalogue réunit les équipements nécessaires pour installer, rénover et moderniser les bâtiments.", "Les produits publiés sont administrés par notre équipe avec leurs prix, disponibilités et références fabricant."] },
+  contact: { title: "Nous contacter", body: ["Retrouvez les coordonnées à jour de notre service client dans le pied de page. Notre équipe peut vous accompagner avant et après votre commande."] },
+  "service-client": { title: "Service client", body: ["Notre équipe vous accompagne dans le choix des équipements, la préparation de vos projets et le suivi de vos commandes."] },
+  magasins: { title: "Nos points de retrait", body: ["Les adresses, horaires et modalités de retrait confirmés sont communiqués par le service client lors de la préparation de la commande."] },
+  livraison: { title: "Livraison au Maroc", body: ["GO ELEC organise la livraison au Maroc selon la zone, le poids et le volume de la commande.", "Les frais et le délai applicables sont confirmés avant expédition."] },
+  paiement: { title: "Moyens de paiement", body: ["Une commande enregistrée reste en attente tant que son mode de paiement n’a pas été confirmé. Le site ne présente jamais un paiement comme réussi sans confirmation du prestataire concerné."] },
+  retours: { title: "Retours & garanties", body: ["Contactez le service client avec votre numéro de commande pour toute demande de retour ou de garantie. Les conditions applicables dépendent du produit, de son état et de la garantie fabricant."] },
+  faq: { title: "Questions fréquentes", body: ["Puis-je passer une commande ? Oui. Le stock et les prix sont vérifiés de nouveau au moment de la validation.", "Mon panier est-il conservé ? Oui. Les paniers invités et les paniers des clients connectés sont persistants.", "Comment suivre ma commande ? Connectez-vous à votre compte pour consulter son statut, ou contactez le service client avec son numéro."] },
+  cgv: { title: "Conditions générales de vente", body: ["Les conditions générales de vente définitives, l’identité juridique du vendeur, les modalités de paiement, de livraison et de retour doivent être validées et publiées par l’exploitant avant l’ouverture commerciale."] },
+  confidentialite: { title: "Politique de confidentialité", body: ["Le site traite les données nécessaires à l’authentification, aux favoris, au panier, aux adresses, aux commandes et au service client. Les accès sont limités par des politiques de sécurité au niveau de la base de données.", "L’exploitant doit compléter cette page avec les durées de conservation, la base juridique, les coordonnées du responsable et les modalités d’exercice des droits avant l’ouverture commerciale."] },
+  "mentions-legales": { title: "Mentions légales", body: ["L’exploitant doit renseigner ici sa raison sociale, sa forme juridique, son adresse, ses identifiants d’entreprise, ses coordonnées et les informations relatives à l’hébergeur avant l’ouverture commerciale.", "Les marques et visuels publiés restent la propriété de leurs titulaires respectifs."] },
 };

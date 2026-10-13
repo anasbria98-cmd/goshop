@@ -1,44 +1,58 @@
-# Goshop.ma — Phase 1
+# Goshop.ma / GO ELEC
 
-A French Moroccan electrical retail storefront built with Next.js 16.3.8 (latest stable verified at implementation), App Router, React, TypeScript, Tailwind CSS 4, and Lucide icons.
+Production-oriented Moroccan electrical ecommerce storefront built with Next.js App Router, TypeScript, Supabase Postgres, Auth, Storage, and Row Level Security.
 
-## Run
+## Local setup
+
+1. Create a Supabase project.
+2. Copy `.env.example` to `.env.local` and fill the three keys.
+3. Apply all files in `supabase/migrations` in filename order. The third migration enforces safe order status transitions and stock release/restocking.
+4. Run `supabase/seed.sql`. It creates the GO ELEC category hierarchy, dynamic filter definitions, and store settings. It creates no products.
+5. Promote the first administrator once, from the SQL editor:
+
+```sql
+update public.profiles
+set role = 'super_admin'
+where id = (select id from auth.users where email = 'owner@example.com');
+```
+
+6. Start the app:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Validate with `npm run typecheck` and `npm run build`.
+In Supabase Auth URL Configuration, set the production Site URL and add `https://your-domain/auth/callback` plus `http://localhost:3000/auth/callback` to Redirect URLs. Keep email confirmation enabled for production.
 
-The production build exports to `out/` for static hosting. `npm run start` is for a future Node deployment after removing `output: 'export'`; use a static file server for the current export.
+## Environment variables
 
-## Organization
+- `NEXT_PUBLIC_SUPABASE_URL`: project URL.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: browser-safe publishable key.
+- `SUPABASE_SECRET_KEY`: server-only secret/service key. Never expose this to the browser.
 
-- `app/`: page routes, shared layout, metadata, responsive CSS.
-- `components/`: header/mega menu/mobile drawer, product cards and carousels, homepage sections, catalogue filters, cart, detail page, footer, store context.
-- `data/catalog.ts`: typed category and product records, DH formatting, editable contact placeholders.
-- `data/information.ts`: original informational copy and clearly marked legal/contact placeholders.
-- `public/products/`: compressed WebP demonstration imagery and source provenance.
-- `.openai/hosting.json`: private Sites identity and static output configuration.
+## Architecture
 
-## Implemented routes
+- `supabase/migrations`: normalized commerce schema, constraints, indexes, triggers, RLS, Storage policies, inventory RPC, and atomic checkout RPC.
+- `supabase/seed.sql`: real navigation hierarchy and configuration defaults; no demo products.
+- `lib/supabase`: browser, authenticated server, and server-only privileged clients.
+- `lib/catalog.ts`: database-backed storefront catalogue adapter.
+- `app/admin`: protected operational dashboard and management screens.
+- `app/api/cart` and `app/api/favorites`: persistent cart and favorites synchronization.
+- `data/navigation.ts`: presentation grouping for the approved GO ELEC mega menu. Catalogue records and product data live in Supabase.
 
-`/`, `/categorie/[slug]` (10 departments), `/produit/[slug]` (12 examples), `/recherche`, `/panier`, `/favoris`, `/compte`, `/checkout`, `/informations/[slug]`.
+Product prices and inventory are always recalculated by the database during checkout. Client totals are display-only. Checkout creates pending orders and reserves stock; it never invents a successful payment.
 
-Search matches names, brands, references and category names, ignoring accents/case. Catalogue filters support department, brand, maximum price, stock, sorting and promotional/new selections. Empty departments intentionally show an empty catalogue rather than unrelated products. Subcategory labels are examples; their mega-menu links open the parent department pending a complete taxonomy.
+## Checks
 
-The cart and favorites use the `goshop-store` localStorage key. Data is validated on hydration; quantities are bounded by stock, unavailable products cannot be added, and the state layer is replaceable by a backend. These are device-local selections, not server orders. The optional feature-detected WebMCP `read_goshop_cart` tool exposes a read-only cart summary.
+```sh
+npm run typecheck
+npm run lint
+npm run build -- --webpack
+```
 
-## Phase 1 boundaries
+The default Turbopack build may require local worker port permissions. The Webpack build is the deterministic CI fallback.
 
-- All prices, references, ratings, reviews, stock and product photos are illustrative. Photos may show a different reference or variant.
-- Replace temporary third-party product photos with authorized, exact-SKU merchant assets before commercial release. Provenance is in `public/products/sources.json`; redistribution licenses are not confirmed.
-- Account/authentication, orders, checkout, payment providers and newsletter delivery are not connected. Their screens state this explicitly; no money or email addresses are collected.
-- Contact details, company/legal documents, delivery rates and return rules must be finalized by the merchant.
-- Next Image handles dimensions, loading and layout. Local source assets were resized and compressed to WebP. Runtime image optimization is disabled because this Phase 1 is a static export; enable it on a future Next server or configure a CDN loader.
-- No logo, imagery, source code or copy from 123elec is used.
+## Deployment
 
-## Future backend integration
-
-Keep the `Product` and `Category` contracts while replacing data imports with a server data adapter. Replace StoreProvider mutations with authenticated cart API calls. Validate inventory and prices on the server at checkout; never trust client totals. Remove static export mode when enabling dynamic inventory/authentication. Generate catalogue routes from the real data source, and add exact product specifications and authorized imagery.
+This application requires a Next.js server runtime. It is no longer a static export. Configure all three environment variables on the hosting platform before building. Apply migrations and seed data before exposing the storefront. The legacy `.openai/hosting.json` describes the previous static prototype and must not be used for this dynamic release.
