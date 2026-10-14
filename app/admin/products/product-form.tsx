@@ -6,6 +6,10 @@ import { useFormStatus } from "react-dom";
 import { Eye, ImagePlus, LoaderCircle, PackageCheck, Search, SlidersHorizontal, Tag, Warehouse } from "lucide-react";
 import type { BrandRow, CategoryRow, ProductRow } from "@/lib/database.types";
 import { saveProduct } from "../actions";
+import { isAppareillage } from "@/lib/product-variants";
+import type { ColorVariantDraft } from "@/lib/variant-input";
+import { colorVariantListSchema } from "@/lib/variant-input";
+import { ColorVariants } from "./_color-variants";
 import { CategorySelector } from "./_category-selector";
 
 type ProductFormValue = Partial<ProductRow> & {
@@ -34,7 +38,10 @@ function ProductSaveActions({ editing, published, setStatus }: { editing: boolea
   );
 }
 
-export function ProductForm({ product = {}, brands, categories, defaultTaxRate = 20 }: { product?: ProductFormValue; brands: BrandRow[]; categories: CategoryRow[]; defaultTaxRate?: number }) {
+export function ProductForm({ product = {}, brands, categories, defaultTaxRate = 20, colorVariants, colorChoices }: { product?: ProductFormValue; brands: BrandRow[]; categories: CategoryRow[]; defaultTaxRate?: number; colorVariants?: ColorVariantDraft[]; colorChoices?: { name: string; hex: string }[] }) {
+  const [selectedCategories, setSelectedCategories] = useState(product.categories ?? []);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const colorEnabled = isAppareillage(selectedCategories, categories);
   const [name, setName] = useState(product.name ?? "");
   const [slug, setSlug] = useState(product.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(product.slug));
@@ -46,7 +53,11 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
   const setStatus = (status: "draft" | "active") => { if (statusRef.current) statusRef.current.value = status; };
 
   return (
-    <form action={saveProduct} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={() => setShowValidationMessage(false)}>
+    <form action={saveProduct} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={(event) => {
+      const input = new FormData(event.currentTarget).get("color_variants");
+      if (uploadBusy || (input && !colorVariantListSchema.safeParse(JSON.parse(String(input))).success)) { event.preventDefault(); setShowValidationMessage(true); return; }
+      setShowValidationMessage(false);
+    }}>
       {product.id ? <input type="hidden" name="id" value={product.id} /> : null}
       <input ref={statusRef} type="hidden" name="status" defaultValue={product.status ?? "draft"} />
       <input type="hidden" name="main_image_url" value={product.main_image_url ?? ""} />
@@ -101,6 +112,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
               {editing ? <a className="admin-secondary" href="#attributes">Ouvrir</a> : null}
             </div>
           </section>
+          {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} onBusy={setUploadBusy} /> : null}
         </div>
 
         <aside className="product-editor-sidebar">
@@ -114,7 +126,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
           <section className="admin-panel product-side-card" aria-labelledby="product-categories-title">
             <div className="product-side-title"><Tag aria-hidden="true" size={17} /><h2 id="product-categories-title">Catégorie et marque</h2></div>
             <label>Marque<select name="brand_id" defaultValue={product.brand_id ?? ""}><option value="">Sans marque</option>{brands.map((brand) => <option value={brand.id} key={brand.id}>{brand.name}</option>)}</select></label>
-            <CategorySelector categories={categories} initialSelected={product.categories} initialPrimary={product.primaryCategory} />
+            <CategorySelector categories={categories} initialSelected={product.categories} initialPrimary={product.primaryCategory} onSelectionChange={setSelectedCategories} />
           </section>
 
           <section className="admin-panel product-side-card" aria-labelledby="product-organization-title">

@@ -1,3 +1,5 @@
+import { getAdminColorVariants } from "@/lib/admin-product-variants";
+import { isAppareillage } from "@/lib/product-variants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -48,6 +50,8 @@ export default async function EditProductPage({ params, searchParams }: { params
   const categoryIds = assignments.map((item) => item.category_id);
   const relevantIds = new Set(categoryAttributes.filter((item) => categoryIds.includes(item.category_id)).map((item) => item.attribute_id));
   const attributes = relevantIds.size ? allAttributes.filter((attribute) => relevantIds.has(attribute.id)) : [];
+  const colorEnabled = isAppareillage(categoryIds, categories);
+  const colorData = await getAdminColorVariants(id);
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
   return (
@@ -56,7 +60,7 @@ export default async function EditProductPage({ params, searchParams }: { params
         <Link className="admin-secondary" href="/admin/products">Retour au catalogue</Link>
       </AdminHeader>
       {saved ? <div className="admin-feedback admin-feedback--success" role="status"><CheckCircle2 size={18} /> Les modifications ont été enregistrées.</div> : null}
-      <ProductForm product={{ ...product, categories: categoryIds, primaryCategory: assignments.find((item) => item.is_primary)?.category_id, stock: stock?.quantity, lowStockThreshold: stock?.low_stock_threshold }} brands={brands} categories={categories} />
+      <ProductForm product={{ ...product, categories: categoryIds, primaryCategory: assignments.find((item) => item.is_primary)?.category_id, stock: stock?.quantity, lowStockThreshold: stock?.low_stock_threshold }} brands={brands} categories={categories} colorVariants={colorData.rows} colorChoices={colorData.choices} />
 
       <section className="admin-panel admin-product-manager" id="images">
         <PanelHeader title="Galerie d’images" description="Importez, ordonnez et choisissez l’image principale." count={images.length} />
@@ -89,7 +93,7 @@ export default async function EditProductPage({ params, searchParams }: { params
         ) : <EmptyState title="Aucune caractéristique applicable">Associez des attributs aux catégories du produit pour les renseigner ici.</EmptyState>}
       </section>
 
-      <section className="admin-panel admin-product-manager">
+      {!colorEnabled ? <section className="admin-panel admin-product-manager">
         <PanelHeader title="Variantes" description="Déclinaisons avec SKU et prix propres." count={variants.length} />
         {variants.length ? <div className="admin-table-wrap"><table><thead><tr><th>Nom</th><th>SKU</th><th>Prix</th><th>Statut</th><th>Action</th></tr></thead><tbody>{variants.map((variant) => <tr key={variant.id}><td data-label="Nom"><strong>{variant.name}</strong></td><td data-label="SKU"><code>{variant.sku}</code></td><td data-label="Prix">{money(Number(variant.price ?? product.price))}</td><td data-label="Statut"><Status>{variant.is_active ? "Active" : "Inactive"}</Status></td><td data-label="Action"><form action={deleteVariant}><input type="hidden" name="id" value={variant.id} /><input type="hidden" name="product_id" value={id} /><button className="admin-danger-link">Supprimer</button></form></td></tr>)}</tbody></table></div> : <EmptyState title="Aucune variante">Le produit utilise actuellement son SKU principal.</EmptyState>}
         <form action={saveVariant} className="admin-form-grid admin-variant-form">
@@ -105,7 +109,7 @@ export default async function EditProductPage({ params, searchParams }: { params
           <label className="admin-checkbox"><input name="is_active" type="checkbox" defaultChecked /> Variante active</label>
           <SubmitButton>Ajouter la variante</SubmitButton>
         </form>
-      </section>
+      </section> : null}
     </>
   );
 }

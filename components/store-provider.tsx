@@ -9,6 +9,7 @@ import {
 } from "react";
 import { StoreText } from "./storefront-language";
 import type { CatalogProduct } from "@/lib/catalog-model";
+import { cartLineKey } from "@/lib/product-variants";
 type CartLine = { product: CatalogProduct; quantity: number };
 type Store = {
   cart: Record<string, CartLine>;
@@ -39,7 +40,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const candidate = line as Partial<CartLine>;
         const product = candidate.product;
         const n = candidate.quantity;
-        if (product?.id === id && Number.isInteger(n) && Number(n) > 0)
+        if (product && cartLineKey(product) === id && (!product.hasColorVariants || product.selectedVariant) && Number.isInteger(n) && Number(n) > 0)
           restoredCart[id] = {
             product,
             quantity: Math.min(Number(n), product.stock || (product.allowBackorder ? 999 : 0)),
@@ -59,8 +60,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     fetch("/api/cart", { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((payload: { lines?: CartLine[] }) => {
-        if (payload.lines?.length) setCart(Object.fromEntries(payload.lines.map((line) => [line.product.id, line])));
+      .then((payload: { lines?: CartLine[]; unavailableLineKeys?: string[] }) => {
+        if (payload.lines?.length) setCart(Object.fromEntries(payload.lines.map((line) => [cartLineKey(line.product), line])));
+        else if (payload.unavailableLineKeys?.length) setCart((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !payload.unavailableLineKeys!.includes(key))));
       })
       .catch(() => {})
       .finally(() => setRemoteReady(true));
@@ -86,7 +88,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!remoteReady) return;
     const timer = setTimeout(() => {
-      void fetch("/api/cart", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ lines: Object.values(cart).map(({ product, quantity }) => ({ product_id: product.id, quantity })) }) });
+      void fetch("/api/cart", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ lines: Object.values(cart).map(({ product, quantity }) => ({ product_id: product.id, variant_id: product.selectedVariant?.id ?? null, quantity })) }) });
     }, 350);
     return () => clearTimeout(timer);
   }, [cart, remoteReady]);
@@ -114,14 +116,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
   const add = useCallback((product: CatalogProduct, n: number) => {
+    if (product.hasColorVariants && !product.selectedVariant) return;
     if (!product.stock && !product.allowBackorder) return;
     setCart((c) => {
       const max = product.allowBackorder ? 999 : product.stock;
       return {
         ...c,
-        [product.id]: {
+        [cartLineKey(product)]: {
           product,
-          quantity: Math.min(max, (c[product.id]?.quantity || 0) + Math.max(1, Math.floor(n))),
+          quantity: Math.min(max, (c[cartLineKey(product)]?.quantity || 0) + Math.max(1, Math.floor(n))),
         },
       };
     });

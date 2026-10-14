@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { colorVariantListSchema } from "@/lib/variant-input";
+import { isAppareillage } from "@/lib/product-variants";
 
 const slugify = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const optional = (value: FormDataEntryValue | null) => {
@@ -69,6 +71,9 @@ export async function deleteBrand(data: FormData) {
 
 export async function saveProduct(data: FormData) {
   const supabase = await staffClient();
+  const colorVariants = colorVariantListSchema.parse(JSON.parse(String(data.get("color_variants") || "[]")));
+  const categoryIds = data.getAll("category_id").map(String).filter(Boolean);
+  const primary = optional(data.get("primary_category_id")) || categoryIds[0];
   const id = optional(data.get("id"));
   const name = z.string().min(2).max(220).parse(data.get("name"));
   const price = z.number().nonnegative().parse(number(data, "price"));
@@ -92,6 +97,18 @@ export async function saveProduct(data: FormData) {
     stock_tracking: checked(data, "stock_tracking"), allow_backorder: checked(data, "allow_backorder"), featured: checked(data, "featured"), is_new: checked(data, "is_new"), is_best_seller: checked(data, "is_best_seller"), is_on_sale: checked(data, "is_on_sale"),
     seo_title: optional(data.get("seo_title")), seo_description: optional(data.get("seo_description")),
   };
+  if (colorVariants.length) {
+    const { data: categories, error: categoryError } = await supabase.from("categories").select("id,slug,parent_id");
+    if (categoryError) throw new Error(categoryError.message);
+    if (!isAppareillage(categoryIds, categories ?? [])) throw new Error("Les couleurs sont réservées aux produits Appareillage.");
+    const { data: savedId, error } = await supabase.rpc("save_product_with_color_variants", {
+      p_product_id: id, p_product: payload, p_category_ids: categoryIds, p_primary_category_id: primary,
+      p_stock: number(data, "stock"), p_low_stock_threshold: number(data, "low_stock_threshold", 5), p_variants: colorVariants,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin/products"); revalidatePath("/", "layout");
+    redirect(`/admin/products/${savedId}?saved=1`);
+  }
   let productId = id;
   if (id) {
     const { error } = await supabase.from("products").update(payload).eq("id", id);
@@ -102,10 +119,8 @@ export async function saveProduct(data: FormData) {
     productId = product.id;
   }
   if (!productId) throw new Error("Produit introuvable");
-  const categoryIds = data.getAll("category_id").map(String).filter(Boolean);
   await supabase.from("product_categories").delete().eq("product_id", productId);
   if (categoryIds.length) {
-    const primary = optional(data.get("primary_category_id")) || categoryIds[0];
     const { error } = await supabase.from("product_categories").insert(categoryIds.map((category_id) => ({ product_id: productId!, category_id, is_primary: category_id === primary })));
     if (error) throw new Error(error.message);
   }

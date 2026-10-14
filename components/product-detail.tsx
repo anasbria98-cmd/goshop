@@ -7,10 +7,16 @@ import { ShoppingCart, Heart, Truck, ShieldCheck } from "lucide-react";
 import { type CatalogProduct, money } from "@/lib/catalog-model";
 import { Quantity } from "./product-card";
 import { useStore } from "./store-provider";
+import "./product-variants.css";
+import { initialProductVariant, selectProductVariant } from "@/lib/product-variants";
 export function ProductDetail({ product: p }: { product: CatalogProduct }) {
   const { t } = useStorefrontLanguage();
   const [qty, setQty] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(p.imageUrl);
+  const initialVariant = initialProductVariant(p);
+  const [selectedVariant, setSelectedVariant] = useState(initialVariant);
+  const [selectedImage, setSelectedImage] = useState(initialVariant?.imageUrl ?? p.imageUrl);
+  const selected = selectedVariant ? selectProductVariant(p, selectedVariant) : p;
+  const unavailable = Boolean(p.hasColorVariants && !selectedVariant) || (!selected.stock && !p.allowBackorder);
   const { add, favorites, toggleFavorite } = useStore();
   const cat = p.category;
   return (
@@ -27,8 +33,10 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
             src={selectedImage}
             width={550}
             height={500}
-            alt={p.name}
+            alt={`${p.name}${selectedVariant ? ` — ${selectedVariant.colorName}` : ""}`}
             priority
+            key={p.hasColorVariants ? selectedImage : undefined}
+            className={p.hasColorVariants ? "variant-product-image" : undefined}
           /> : <span className="product-image-placeholder detail-placeholder" />}
           {p.images.length > 1 ? <div className="detail-thumbnails">{p.images.map((image) => <button type="button" className={selectedImage === image.url ? "active" : ""} onClick={() => setSelectedImage(image.url)} key={image.url} aria-label={`${t("Afficher")} ${image.alt}`}><Image src={image.url} width={72} height={72} alt="" /></button>)}</div> : null}
         </div>
@@ -36,22 +44,28 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
           <span className="product-brand"><bdi>{p.brand}</bdi></span>
           <h1><bdi>{p.name}</bdi></h1>
           <p className="reference"><StoreText>
-            Réf. GO ELEC : </StoreText><bdi>{p.sku}</bdi><StoreText> · Réf. fabricant : </StoreText><bdi>{p.manufacturerReference || "—"}</bdi>
+            Réf. GO ELEC : </StoreText><bdi>{selected.sku}</bdi><StoreText> · Réf. fabricant : </StoreText><bdi>{p.manufacturerReference || "—"}</bdi>
           </p>
-          <div className={`stock ${!p.stock ? "unavailable" : ""}`}>
-            <StoreText>{p.stock || p.allowBackorder ? "En stock" : "Indisponible"}</StoreText>
+          {p.hasColorVariants ? <fieldset className="product-color-selection">
+            <legend><StoreText>Couleur</StoreText>{selectedVariant ? ` : ${selectedVariant.colorName}${selectedVariant.finish ? ` · ${selectedVariant.finish}` : ""}` : ""}</legend>
+            <div className="product-color-swatches">{p.variants?.map((variant) => <button type="button" key={variant.id} aria-pressed={selectedVariant?.id === variant.id} aria-label={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} title={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} onClick={() => { setSelectedVariant(variant); setSelectedImage(variant.imageUrl); setQty(1); }}>
+              <span aria-hidden="true" style={{ backgroundColor: variant.colorHex }} /><span>{variant.colorName}{variant.finish ? ` · ${variant.finish}` : ""}</span>
+            </button>)}</div>
+          </fieldset> : null}
+          <div className={`stock ${(p.hasColorVariants ? unavailable : !p.stock) ? "unavailable" : ""}`} aria-live={p.hasColorVariants ? "polite" : undefined}>
+            <StoreText>{unavailable ? "Indisponible" : "En stock"}</StoreText>
           </div>
           <div className="price-line">
-            <strong>{money(p.price)}</strong>
-            {p.compareAtPrice && <del>{money(p.compareAtPrice)}</del>}
+            <strong>{money(selected.price)}</strong>
+            {selected.compareAtPrice && <del>{money(selected.compareAtPrice)}</del>}
           </div>
           <p className="tax"><StoreText>TTC / unité</StoreText></p>
           <div className="detail-purchase">
-            <Quantity value={qty} onChange={setQty} max={p.allowBackorder ? 999 : p.stock} />
+            <Quantity value={qty} onChange={setQty} max={p.allowBackorder ? 999 : selected.stock} />
             <button
               className="button orange"
-              disabled={!p.stock && !p.allowBackorder}
-              onClick={() => add(p, qty)}
+              disabled={unavailable}
+              onClick={() => add(selected, qty)}
             >
               <ShoppingCart size={18} /><StoreText> Ajouter au panier
             </StoreText></button>

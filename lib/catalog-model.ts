@@ -17,6 +17,20 @@ export type CatalogAttribute = {
 };
 export type CatalogFilter = { slug: string; name: string; unit: string | null };
 
+export type CatalogVariant = {
+  id: string;
+  name: string;
+  colorName: string;
+  colorHex: string;
+  finish: string | null;
+  sku: string;
+  barcode: string | null;
+  price: number;
+  compareAtPrice: number | null;
+  stock: number;
+  imageUrl: string;
+};
+
 export type CatalogProduct = {
   id: string;
   slug: string;
@@ -42,6 +56,9 @@ export type CatalogProduct = {
   shortDescription: string | null;
   description: string | null;
   attributes: CatalogAttribute[];
+  hasColorVariants?: boolean;
+  variants?: CatalogVariant[];
+  selectedVariant?: CatalogVariant;
 };
 
 export const money = (value: number) =>
