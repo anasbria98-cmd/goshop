@@ -2,7 +2,7 @@
 .launcher { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; min-height: 48px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 14px; background: var(--blue-dark); color: white; font-weight: 700; box-shadow: 0 5px 20px #0002; }
 .launcher:hover { background: var(--blue); }
 .launcherAvatar { display: contents; }
-.widget:has(.launcher[aria-expanded="false"]) { right: env(safe-area-inset-right, 0px); top: 75%; bottom: auto; }
+.widget:has(.launcher[aria-expanded="false"]) { right: env(safe-area-inset-right, 0px); top: auto; bottom: max(20px, env(safe-area-inset-bottom)); }
 .launcher[aria-expanded="false"] { width: 171px; max-width: calc(100vw - 24px); min-height: 52px; padding: 8px 12px; gap: 8px; border: 0; border-radius: 6px 0 0 6px; background: var(--blue-dark); font-size: 14px; line-height: 1.2; font-weight: 500; letter-spacing: normal; white-space: nowrap; box-shadow: 0 3px 10px #0002; }
 .launcher[aria-expanded="false"]:hover { background: var(--blue-dark); }
 .launcher[aria-expanded="false"] .launcherAvatar { display: block; flex: none; width: 36px; height: 36px; border-radius: 50%; background: white; overflow: hidden; }
@@ -41,5 +41,5 @@
 }
 
 @media (max-width: 767px) {
-  .widget:has(.launcher[aria-expanded="false"]) { top: auto; bottom: max(176px, env(safe-area-inset-bottom)); }
+  .widget:has(.launcher[aria-expanded="false"]) { top: auto; bottom: max(12px, env(safe-area-inset-bottom)); }
 }
