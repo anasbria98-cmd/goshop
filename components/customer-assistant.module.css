@@ -2,10 +2,10 @@
 .launcher { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; min-height: 48px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 14px; background: var(--blue-dark); color: white; font-weight: 700; box-shadow: 0 5px 20px #0002; }
 .launcher:hover { background: var(--blue); }
 .launcherAvatar { display: contents; }
-.launcher[aria-expanded="false"] { position: relative; min-height: 44px; padding: 10px 14px 10px 38px; gap: 0; border-color: var(--navy); border-radius: 8px; background: var(--navy); font-size: 16px; line-height: 1.25; white-space: nowrap; }
-.launcher[aria-expanded="false"]:hover { background: var(--navy); }
-.launcher[aria-expanded="false"] .launcherAvatar { position: absolute; left: -8px; top: 50%; transform: translateY(-50%); display: block; width: 36px; height: 36px; border-radius: 50%; }
-.launcher[aria-expanded="false"] .launcherAvatar svg { display: block; width: 100%; height: 100%; }
+.launcher[aria-expanded="false"] { width: 300px; max-width: calc(100vw - 40px); min-height: 78px; padding: 6px 14px 6px 18px; gap: 12px; border-color: var(--blue-dark); border-radius: 18px; background: var(--blue-dark); font-size: 24px; line-height: 1.2; font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; box-shadow: 0 5px 16px #0002; }
+.launcher[aria-expanded="false"]:hover { background: var(--blue-dark); }
+.launcher[aria-expanded="false"] .launcherAvatar { display: block; flex: none; width: 64px; height: 64px; border-radius: 50%; background: white; overflow: hidden; }
+.launcher[aria-expanded="false"] .launcherAvatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .panel { position: absolute; right: 0; bottom: calc(100% + 12px); display: flex; flex-direction: column; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100dvh - 280px)); min-height: 180px; border: 1px solid var(--line); border-radius: 16px; background: white; color: var(--ink); box-shadow: 0 12px 40px #0003; overflow: clip; }
 .panel[hidden] { display: none; }
 .header { display: flex; align-items: center; gap: 10px; flex: none; padding: 15px; background: var(--blue-dark); color: white; }
@@ -36,7 +36,7 @@
 @media (max-width: 600px) {
   .widget { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
   .launcher { min-height: 44px; padding: 10px 14px; font-size: 13px; border-radius: 12px; }
-  .launcher[aria-expanded="false"] { min-height: 44px; padding: 10px 12px 10px 36px; font-size: 15px; border-radius: 8px; }
-  .launcher[aria-expanded="false"] .launcherAvatar { width: 34px; height: 34px; }
+  .launcher[aria-expanded="false"] { width: 270px; max-width: calc(100vw - 24px); min-height: 70px; padding: 6px 12px 6px 16px; gap: 11px; font-size: 21.5px; border-radius: 16px; }
+  .launcher[aria-expanded="false"] .launcherAvatar { width: 56px; height: 56px; }
   .panel { width: min(380px, calc(100vw - 24px)); height: min(520px, calc(100dvh - 260px)); }
 }
