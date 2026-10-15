@@ -88,10 +88,12 @@ export function CategorySelector({
   categories,
   initialSelected = [],
   initialPrimary,
+  onSelectionChange,
 }: {
   categories: CategoryRow[];
   initialSelected?: string[];
   initialPrimary?: string;
+  onSelectionChange?: (ids: string[]) => void;
 }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(() => new Set(initialSelected));
@@ -125,14 +127,13 @@ export function CategorySelector({
   const selectedIds = [...selected];
 
   const changeSelection = (id: string, checked: boolean) => {
-    setSelected((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
-      if (checked && !primary) setPrimary(id);
-      if (!checked && primary === id) setPrimary([...next][0] ?? "");
-      return next;
-    });
+    const next = new Set(selected);
+    if (checked) next.add(id);
+    else next.delete(id);
+    if (checked && !primary) setPrimary(id);
+    if (!checked && primary === id) setPrimary([...next][0] ?? "");
+    setSelected(next);
+    onSelectionChange?.([...next]);
   };
 
   return (

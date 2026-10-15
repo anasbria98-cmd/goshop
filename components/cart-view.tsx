@@ -6,6 +6,7 @@ import { Trash2, ShoppingCart, ShieldCheck } from "lucide-react";
 import { useStore } from "./store-provider";
 import { money } from "@/lib/catalog-model";
 import { Quantity } from "./product-card";
+import { cartLineKey } from "@/lib/product-variants";
 export function CartView() {
   const { t, locale } = useStorefrontLanguage();
   const { cart, count, total, setQuantity } = useStore();
@@ -35,7 +36,7 @@ export function CartView() {
         <div className="cart-layout">
           <div>
             {items.map(({ product: p, quantity }) => (
-              <article className="cart-item" key={p.id}>
+              <article className="cart-item" key={cartLineKey(p)}>
                 <Link href={`/produit/${p.slug}`}>
                   {p.imageUrl ? <Image
                     src={p.imageUrl}
@@ -49,12 +50,13 @@ export function CartView() {
                   <Link href={`/produit/${p.slug}`}>
                     <h2><bdi>{p.name}</bdi></h2>
                   </Link>
+                  {p.selectedVariant ? <p className="reference">{p.selectedVariant.colorName}{p.selectedVariant.finish ? ` · ${p.selectedVariant.finish}` : ""}</p> : null}
                   <p className="reference"><StoreText>
                     Réf. </StoreText><bdi>{p.sku}</bdi> · {money(p.price)}<StoreText> / unité
                   </StoreText></p>
                   <Quantity
                     value={quantity}
-                    onChange={(n) => setQuantity(p.id, n)}
+                    onChange={(n) => setQuantity(cartLineKey(p), n)}
                     max={p.allowBackorder ? 999 : p.stock}
                     label={p.sku}
                   />
@@ -63,7 +65,7 @@ export function CartView() {
                   <strong>{money(p.price * quantity)}</strong>
                   <button
                     aria-label={`${t("Supprimer")} ${p.name}`}
-                    onClick={() => setQuantity(p.id, 0)}
+                    onClick={() => setQuantity(cartLineKey(p), 0)}
                   >
                     <Trash2 size={18} />
                   </button>

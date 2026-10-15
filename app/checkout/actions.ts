@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const schema = z.object({ email: z.string().email(), phone: z.string().min(8).max(30), first_name: z.string().min(2), last_name: z.string().min(2), address_line_1: z.string().min(5), address_line_2: z.string().optional(), city: z.string().min(2), region: z.string().optional(), postal_code: z.string().optional(), customer_note: z.string().max(1000).optional(), items: z.string().transform((value) => JSON.parse(value)).pipe(z.array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().positive().max(99) })).min(1).max(100)) });
+const schema = z.object({ email: z.string().email(), phone: z.string().min(8).max(30), first_name: z.string().min(2), last_name: z.string().min(2), address_line_1: z.string().min(5), address_line_2: z.string().optional(), city: z.string().min(2), region: z.string().optional(), postal_code: z.string().optional(), customer_note: z.string().max(1000).optional(), items: z.string().transform((value) => JSON.parse(value)).pipe(z.array(z.object({ product_id: z.string().uuid(), variant_id: z.string().uuid().nullable().optional(), quantity: z.number().int().positive().max(99) })).min(1).max(100)) });
 export async function placeOrder(formData: FormData) {
   const values = schema.parse(Object.fromEntries(formData));
   const userClient = await createSupabaseServerClient();

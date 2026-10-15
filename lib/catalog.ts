@@ -4,6 +4,7 @@ import { hasSupabaseEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { homepageDepartments } from "@/lib/homepage-model";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
+import { isAppareillage } from "@/lib/product-variants";
 
 type RawCategory = {
   id: string;
@@ -22,6 +23,7 @@ type RawProduct = {
   sku: string;
   manufacturer_reference: string | null;
   main_image_url: string | null;
+  color_variants_enabled?: boolean;
   price: number | string;
   compare_at_price: number | string | null;
   allow_backorder: boolean;
@@ -41,7 +43,8 @@ type RawProduct = {
     alt_text: string | null;
     sort_order: number;
   }>;
-  inventory: Array<{ quantity: number; reserved_quantity: number }>;
+  inventory: Array<{ variant_id: string | null; quantity: number; reserved_quantity: number }>;
+  product_variants: Array<{ id: string; name: string; sku: string; barcode: string | null; price: number | null; compare_at_price: number | null; is_active: boolean; color_name?: string | null; color_hex?: string | null; finish?: string | null; image_path?: string | null }>;
   reviews: Array<{ rating: number }>;
   product_attribute_values: Array<{
     text_value: string | null;
@@ -118,6 +121,17 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     0,
   );
   const ratingTotal = row.reviews.reduce((sum, review) => sum + Number(review.rating), 0);
+  const categoryIds = row.product_categories.flatMap((item) => item.categories?.id ? [item.categories.id] : []);
+  const colors = isAppareillage(categoryIds, categories) ? (row.product_variants ?? []).filter((variant) => variant.color_name && variant.color_hex && variant.image_path) : [];
+  const hasColorVariants = isAppareillage(categoryIds, categories) && (row.color_variants_enabled || colors.length > 0);
+  const variants = colors.filter((variant) => variant.is_active).map((variant) => {
+    const inventory = row.inventory.find((item) => item.variant_id === variant.id);
+    return { id: variant.id, name: variant.name, sku: variant.sku, barcode: variant.barcode,
+      colorName: variant.color_name!, colorHex: variant.color_hex!, finish: variant.finish ?? null,
+      price: Number(variant.price ?? row.price), compareAtPrice: variant.compare_at_price == null ? null : Number(variant.compare_at_price),
+      imageUrl: storageUrl(variant.image_path!, baseUrl),
+      stock: Math.max(0, (inventory?.quantity ?? 0) - (inventory?.reserved_quantity ?? 0)) };
+  });
   return {
     id: row.id,
     slug: row.slug,
@@ -126,7 +140,7 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     brand: row.brands?.name ?? "",
     brandSlug: row.brands?.slug ?? null,
     category,
-    categoryIds: row.product_categories.flatMap((item) => item.categories?.id ? [item.categories.id] : []),
+    categoryIds,
     imageUrl: images[0]?.url ?? null,
     images,
     price: Number(row.price),
@@ -134,7 +148,8 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     rating: row.reviews.length ? ratingTotal / row.reviews.length : 0,
     reviewCount: row.reviews.length,
     manufacturerReference: row.manufacturer_reference,
-    stock,
+    stock: hasColorVariants ? variants.reduce((sum, variant) => sum + variant.stock, 0) : stock,
+    ...(hasColorVariants ? { hasColorVariants: true, variants } : {}),
     allowBackorder: row.allow_backorder,
     isNew: row.is_new,
     isBestSeller: row.is_best_seller,
@@ -190,12 +205,12 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
   let builder = supabase
     .from("products")
     .select(`
-      id,name,slug,sku,manufacturer_reference,main_image_url,price,compare_at_price,
-      allow_backorder,is_new,is_best_seller,is_on_sale,featured,short_description,description,
+      *,
       brands(name,slug),
       product_categories(is_primary,categories(id,name,slug,description,parent_id,image_url,sort_order)),
       product_images(storage_path,alt_text,sort_order),
-      inventory(quantity,reserved_quantity),
+      inventory(variant_id,quantity,reserved_quantity),
+      product_variants(*),
       reviews!left(rating),
       product_attribute_values(text_value,number_value,boolean_value,attributes(name,slug,unit),attribute_options(label))
     `)

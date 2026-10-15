@@ -224,6 +224,10 @@ export type Database = {
       is_admin: { Args: Record<string, never>; Returns: boolean };
       is_super_admin: { Args: Record<string, never>; Returns: boolean };
       category_descendants: { Args: { root_slug: string }; Returns: { id: string }[] };
+      save_product_with_color_variants: {
+        Args: { p_product_id: string | null; p_product: Json; p_category_ids: string[]; p_primary_category_id: string; p_stock: number; p_low_stock_threshold: number; p_variants: Json };
+        Returns: string;
+      };
       adjust_inventory: {
         Args: {
           inventory_id: string;
