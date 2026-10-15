@@ -2,9 +2,10 @@
 .launcher { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; min-height: 48px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 14px; background: var(--blue-dark); color: white; font-weight: 700; box-shadow: 0 5px 20px #0002; }
 .launcher:hover { background: var(--blue); }
 .launcherAvatar { display: contents; }
-.launcher[aria-expanded="false"] { width: 144px; max-width: calc(100vw - 40px); min-height: 37.44px; padding: 2.88px 6.72px 2.88px 8.64px; gap: 5.76px; border-width: 0.48px; border-color: var(--blue-dark); border-radius: 8.64px; background: var(--blue-dark); font-size: 11.52px; line-height: 1.2; font-weight: 800; letter-spacing: -0.24px; white-space: nowrap; box-shadow: 0 2.4px 7.68px #0002; }
+.widget:has(.launcher[aria-expanded="false"]) { right: env(safe-area-inset-right, 0px); top: 75%; bottom: auto; }
+.launcher[aria-expanded="false"] { width: 171px; max-width: calc(100vw - 24px); min-height: 52px; padding: 8px 12px; gap: 8px; border: 0; border-radius: 6px 0 0 6px; background: var(--blue-dark); font-size: 14px; line-height: 1.2; font-weight: 500; letter-spacing: normal; white-space: nowrap; box-shadow: 0 3px 10px #0002; }
 .launcher[aria-expanded="false"]:hover { background: var(--blue-dark); }
-.launcher[aria-expanded="false"] .launcherAvatar { display: block; flex: none; width: 30.72px; height: 30.72px; border-radius: 50%; background: white; overflow: hidden; }
+.launcher[aria-expanded="false"] .launcherAvatar { display: block; flex: none; width: 36px; height: 36px; border-radius: 50%; background: white; overflow: hidden; }
 .launcher[aria-expanded="false"] .launcherAvatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .panel { position: absolute; right: 0; bottom: calc(100% + 12px); display: flex; flex-direction: column; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100dvh - 280px)); min-height: 180px; border: 1px solid var(--line); border-radius: 16px; background: white; color: var(--ink); box-shadow: 0 12px 40px #0003; overflow: clip; }
 .panel[hidden] { display: none; }
@@ -36,7 +37,9 @@
 @media (max-width: 600px) {
   .widget { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
   .launcher { min-height: 44px; padding: 10px 14px; font-size: 13px; border-radius: 12px; }
-  .launcher[aria-expanded="false"] { width: 129.6px; max-width: calc(100vw - 24px); min-height: 33.6px; padding: 2.88px 5.76px 2.88px 7.68px; gap: 5.28px; font-size: 10.32px; border-radius: 7.68px; }
-  .launcher[aria-expanded="false"] .launcherAvatar { width: 26.88px; height: 26.88px; }
   .panel { width: min(380px, calc(100vw - 24px)); height: min(520px, calc(100dvh - 260px)); }
+}
+
+@media (max-width: 767px) {
+  .widget:has(.launcher[aria-expanded="false"]) { top: auto; bottom: max(176px, env(safe-area-inset-bottom)); }
 }

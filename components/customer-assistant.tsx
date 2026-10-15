@@ -21,7 +21,7 @@ export function CustomerAssistant() {
   const { locale } = useStorefrontLanguage();
   // Keep authentication and transactional screens free of floating controls.
   if (pathname.startsWith("/auth") || pathname.startsWith("/checkout") || pathname.startsWith("/compte") || pathname === "/panier") return null;
-  const label = locale === "ar" ? "تحتاج إلى مساعدة؟" : "Besoin d’aide ?";
+  const label = locale === "ar" ? "تحتاج إلى مساعدة؟" : "Besoin d'aide ?";
   function close() { setOpen(false); launcher.current?.focus(); }
   return <div className={styles.widget} dir={locale === "ar" ? "rtl" : "ltr"}>
     {loaded ? <AssistantChat open={open} onClose={close} /> : null}
