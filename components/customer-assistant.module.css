@@ -1,6 +1,11 @@
 .widget { position: fixed; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 40; font-size: 14px; line-height: 1.5; }
 .launcher { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; min-height: 48px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 14px; background: var(--blue-dark); color: white; font-weight: 700; box-shadow: 0 5px 20px #0002; }
 .launcher:hover { background: var(--blue); }
+.launcherAvatar { display: contents; }
+.launcher[aria-expanded="false"] { min-height: 64px; padding: 8px 18px 8px 12px; gap: 12px; border-color: var(--navy); border-radius: 12px; background: var(--navy); font-size: 20px; line-height: 1.2; white-space: nowrap; }
+.launcher[aria-expanded="false"]:hover { background: var(--navy); }
+.launcher[aria-expanded="false"] .launcherAvatar { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border: 3px solid white; border-radius: 50%; }
+.launcher[aria-expanded="false"] .launcherAvatar svg { width: 28px; height: 28px; }
 .panel { position: absolute; right: 0; bottom: calc(100% + 12px); display: flex; flex-direction: column; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100dvh - 280px)); min-height: 180px; border: 1px solid var(--line); border-radius: 16px; background: white; color: var(--ink); box-shadow: 0 12px 40px #0003; overflow: clip; }
 .panel[hidden] { display: none; }
 .header { display: flex; align-items: center; gap: 10px; flex: none; padding: 15px; background: var(--blue-dark); color: white; }
@@ -31,5 +36,8 @@
 @media (max-width: 600px) {
   .widget { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
   .launcher { min-height: 44px; padding: 10px 14px; font-size: 13px; border-radius: 12px; }
+  .launcher[aria-expanded="false"] { min-height: 56px; padding: 7px 14px 7px 10px; gap: 10px; font-size: 18px; }
+  .launcher[aria-expanded="false"] .launcherAvatar { width: 42px; height: 42px; }
+  .launcher[aria-expanded="false"] .launcherAvatar svg { width: 25px; height: 25px; }
   .panel { width: min(380px, calc(100vw - 24px)); height: min(520px, calc(100dvh - 260px)); }
 }

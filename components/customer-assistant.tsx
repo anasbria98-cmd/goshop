@@ -25,7 +25,7 @@ export function CustomerAssistant() {
   return <div className={styles.widget} dir={locale === "ar" ? "rtl" : "ltr"}>
     {loaded ? <AssistantChat open={open} onClose={close} /> : null}
     <button ref={launcher} className={styles.launcher} type="button" aria-label={label} aria-expanded={open} aria-controls={loaded ? "goelec-assistant-panel" : undefined} onClick={() => { setLoaded(true); setOpen((current) => !current); }}>
-      <Bot size={23} aria-hidden="true" /><span>{label}</span>
+      <span className={styles.launcherAvatar} aria-hidden="true"><Bot size={23} /></span><span>{label}</span>
     </button>
   </div>;
 }
