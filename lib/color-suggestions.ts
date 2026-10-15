@@ -13,6 +13,7 @@ const presets = [
   { name: "Bronze", hex: "#8c6239", aliases: [] },
   { name: "Bleu", hex: "#1e5c95", aliases: ["blue", "أزرق", "ازرق"] },
   { name: "Rouge", hex: "#c43c36", aliases: ["red", "أحمر", "احمر"] },
+  { name: "Marron", hex: "#8b4513", aliases: [] },
 ];
 
 export function normalizeColorName(value: string) {
