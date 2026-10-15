@@ -8,6 +8,7 @@ import { Footer } from "./footer";
 import { Header } from "./header";
 import { StoreProvider } from "./store-provider";
 import { WebMCP } from "./webmcp";
+import { CustomerAssistant } from "./customer-assistant";
 
 export function ApplicationShell({
   children,
@@ -31,6 +32,7 @@ export function ApplicationShell({
       <Header />
       <main id="main">{children}</main>
       <Footer settings={settings} />
+      <CustomerAssistant />
     </StoreProvider>}</StorefrontLanguage>
   );
 }
