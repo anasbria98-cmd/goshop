@@ -34,3 +34,14 @@ export type ColorVariantDraft = Omit<z.infer<typeof colorVariantSchema>, "price"
   reserved: number;
   dirty: boolean;
 };
+
+/** Expected admin errors are readable; raw database/configuration details stay on the server. */
+export function variantSaveError(error: unknown): string {
+  if (error instanceof z.ZodError) return "Vérifiez les couleurs, références, prix, stocks et photos avant d’enregistrer.";
+  const message = error instanceof Error ? error.message : "";
+  if (/duplicate key.*(?:product_variants_sku|products_sku)/i.test(message)) return "Cette référence existe déjà sur un produit ou une variante. Choisissez un SKU unique.";
+  if (/duplicate key.*barcode/i.test(message)) return "Ce code-barres existe déjà. Vérifiez le code-barres de chaque variante.";
+  if (/duplicate key.*slug/i.test(message)) return "Cette adresse produit existe déjà. Modifiez le champ « Adresse du produit ».";
+  if (/^(Le stock|Stock insuffisant|Cette variante|Les couleurs|L’image de cette couleur|Couleur, image|Produit introuvable|Accès non autorisé)/.test(message)) return message;
+  return "L’enregistrement n’a pas abouti. Vos modifications sont conservées dans le formulaire. Réessayez ou contactez l’administrateur.";
+}

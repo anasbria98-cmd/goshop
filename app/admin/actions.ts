@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { colorVariantListSchema } from "@/lib/variant-input";
+import { colorVariantListSchema, variantSaveError } from "@/lib/variant-input";
 import { isAppareillage } from "@/lib/product-variants";
 
 const slugify = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -134,6 +134,17 @@ export async function saveProduct(data: FormData) {
   }
   revalidatePath("/admin/products"); revalidatePath("/", "layout");
   redirect(`/admin/products/${productId}?saved=1`);
+}
+
+// Appareillage forms return expected validation/database conflicts without losing their drafts.
+export async function saveProductWithVariantFeedback(previous: { error: string | null; attempt: number }, data: FormData) {
+  try {
+    await saveProduct(data);
+    return { error: null, attempt: previous.attempt + 1 };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { error: variantSaveError(error), attempt: previous.attempt + 1 };
+  }
 }
 
 export async function setProductStatus(data: FormData) {

@@ -26,11 +26,18 @@ export function selectProductVariant(product: CatalogProduct, variant: CatalogVa
     compareAtPrice: variant.compareAtPrice, stock: variant.stock, imageUrl: variant.imageUrl };
 }
 
-export function initialProductVariant(product: CatalogProduct) {
+type VariantImageSource = Pick<CatalogProduct, "imageUrl" | "variants" | "allowBackorder">;
+
+export function initialProductVariant(product: VariantImageSource) {
   const available = (variant: CatalogVariant) => variant.stock > 0 || product.allowBackorder;
   return product.variants?.find((variant) => available(variant) && variant.imageUrl === product.imageUrl)
     ?? product.variants?.find(available)
     ?? product.variants?.[0];
+}
+
+/** A product created with color photos need not have a separate base gallery image. */
+export function productDisplayImage(product: VariantImageSource) {
+  return product.imageUrl ?? initialProductVariant(product)?.imageUrl ?? null;
 }
 
 export function resolveCartProduct(product: CatalogProduct, variantId?: string | null) {
