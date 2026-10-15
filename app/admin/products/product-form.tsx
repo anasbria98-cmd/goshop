@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, ImagePlus, LoaderCircle, PackageCheck, Search, SlidersHorizontal, Tag, Warehouse } from "lucide-react";
 import type { BrandRow, CategoryRow, ProductRow } from "@/lib/database.types";
-import { saveProduct } from "../actions";
+import { saveProduct, saveProductWithVariantFeedback } from "../actions";
 import { isAppareillage } from "@/lib/product-variants";
 import type { ColorVariantDraft } from "@/lib/variant-input";
 import { colorVariantListSchema } from "@/lib/variant-input";
@@ -39,8 +39,12 @@ function ProductSaveActions({ editing, published, setStatus }: { editing: boolea
 }
 
 export function ProductForm({ product = {}, brands, categories, defaultTaxRate = 20, colorVariants, colorChoices }: { product?: ProductFormValue; brands: BrandRow[]; categories: CategoryRow[]; defaultTaxRate?: number; colorVariants?: ColorVariantDraft[]; colorChoices?: { name: string; hex: string }[] }) {
+  const [variantSaveState, variantSaveAction] = useActionState(saveProductWithVariantFeedback, { error: null, attempt: 0 });
+  const [hiddenErrorAttempt, setHiddenErrorAttempt] = useState(0);
   const [selectedCategories, setSelectedCategories] = useState(product.categories ?? []);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [variantsValid, setVariantsValid] = useState(true);
+  const [sku, setSku] = useState(product.sku ?? "");
   const colorEnabled = isAppareillage(selectedCategories, categories);
   const [name, setName] = useState(product.name ?? "");
   const [slug, setSlug] = useState(product.slug ?? "");
@@ -53,9 +57,10 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
   const setStatus = (status: "draft" | "active") => { if (statusRef.current) statusRef.current.value = status; };
 
   return (
-    <form action={saveProduct} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={(event) => {
+    <form action={colorEnabled ? variantSaveAction : saveProduct} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={(event) => {
       const input = new FormData(event.currentTarget).get("color_variants");
-      if (uploadBusy || (input && !colorVariantListSchema.safeParse(JSON.parse(String(input))).success)) { event.preventDefault(); setShowValidationMessage(true); return; }
+      if (uploadBusy || (colorEnabled && !variantsValid) || (input && !colorVariantListSchema.safeParse(JSON.parse(String(input))).success)) { event.preventDefault(); setShowValidationMessage(true); event.currentTarget.querySelector("#variants")?.scrollIntoView({ block: "center" }); return; }
+      setHiddenErrorAttempt(variantSaveState.attempt);
       setShowValidationMessage(false);
     }}>
       {product.id ? <input type="hidden" name="id" value={product.id} /> : null}
@@ -112,7 +117,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
               {editing ? <a className="admin-secondary" href="#attributes">Ouvrir</a> : null}
             </div>
           </section>
-          {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} onBusy={setUploadBusy} /> : null}
+          {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} baseSku={sku} onBusy={setUploadBusy} onValidityChange={setVariantsValid} saveError={variantSaveState.attempt !== hiddenErrorAttempt ? variantSaveState.error : null} /> : null}
         </div>
 
         <aside className="product-editor-sidebar">
@@ -131,7 +136,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
 
           <section className="admin-panel product-side-card" aria-labelledby="product-organization-title">
             <div className="product-side-title"><Warehouse aria-hidden="true" size={17} /><h2 id="product-organization-title">Organisation</h2></div>
-            <label><span>SKU <span className="required-mark">*</span></span><input name="sku" defaultValue={product.sku} required placeholder="Référence interne unique" /></label>
+            <label><span>SKU <span className="required-mark">*</span></span><input name="sku" value={sku} onChange={(event) => setSku(event.target.value)} required placeholder="Référence interne unique" /></label>
             <label>Référence fabricant<input name="manufacturer_reference" defaultValue={product.manufacturer_reference ?? ""} /></label>
             <label>Code-barres<input name="barcode" defaultValue={product.barcode ?? ""} /></label>
             <div className="admin-toggle-list admin-toggle-list--compact">

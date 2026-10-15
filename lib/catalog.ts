@@ -4,7 +4,7 @@ import { hasSupabaseEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { homepageDepartments } from "@/lib/homepage-model";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
-import { isAppareillage } from "@/lib/product-variants";
+import { isAppareillage, productDisplayImage } from "@/lib/product-variants";
 
 type RawCategory = {
   id: string;
@@ -141,7 +141,7 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     brandSlug: row.brands?.slug ?? null,
     category,
     categoryIds,
-    imageUrl: images[0]?.url ?? null,
+    imageUrl: productDisplayImage({ imageUrl: images[0]?.url ?? null, variants, allowBackorder: row.allow_backorder }),
     images,
     price: Number(row.price),
     compareAtPrice: row.compare_at_price == null ? null : Number(row.compare_at_price),

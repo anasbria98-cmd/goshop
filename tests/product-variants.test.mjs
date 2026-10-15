@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isAppareillage, cartLineKey, selectProductVariant, initialProductVariant, resolveCartProduct } from '../lib/product-variants.ts';
-import { colorVariantListSchema } from '../lib/variant-input.ts';
+import { isAppareillage, cartLineKey, selectProductVariant, initialProductVariant, productDisplayImage, resolveCartProduct } from '../lib/product-variants.ts';
+import { colorVariantListSchema, variantSaveError } from '../lib/variant-input.ts';
 
 const white = { id:'00000000-0000-4000-8000-000000000001', name:'Blanc · Mat', colorName:'Blanc', colorHex:'#ffffff', finish:'Mat', sku:'SW-W', barcode:'1001', price:45, compareAtPrice:null, stock:2, imageUrl:'/white.png' };
 const black = { ...white, id:'00000000-0000-4000-8000-000000000002', colorName:'Noir', sku:'SW-B', stock:0, price:60, imageUrl:'/black.png' };
@@ -56,4 +56,21 @@ test('Color input accepts custom names and HEX, rejects incomplete images, inval
   assert.equal(colorVariantListSchema.safeParse([row,row]).success,false);
   assert.equal(colorVariantListSchema.safeParse([]).success,true);
   assert.equal(colorVariantListSchema.safeParse([{...row,stock:null,expected_stock:-2}]).success,true,'metadata edits preserve existing backorder inventory');
+});
+
+test('New products use a real available variant thumbnail only when the original gallery has no image', () => {
+  assert.equal(productDisplayImage(product),'/original.png','An approved original image must remain unchanged');
+  assert.equal(productDisplayImage({...product,imageUrl:null,variants:[black,white]}),'/white.png');
+  assert.equal(productDisplayImage({...product,imageUrl:null,variants:[black]}),'/black.png','An exhausted color can still illustrate an unavailable product');
+  assert.equal(productDisplayImage({imageUrl:null,variants:[],allowBackorder:false}),null,'Simple products must not gain an invented image');
+});
+
+test('Variant save feedback explains conflicts and stock errors without exposing raw infrastructure details', () => {
+  assert.match(variantSaveError(new Error('duplicate key value violates unique constraint "product_variants_sku_key"')),/SKU unique/);
+  assert.match(variantSaveError(new Error('duplicate key value violates unique constraint "product_variants_barcode_key"')),/code-barres existe/);
+  assert.match(variantSaveError(new Error('duplicate key value violates unique constraint "products_slug_key"')),/adresse produit existe/);
+  assert.equal(variantSaveError(new Error('Le stock a changé. Rechargez la fiche avant de l’ajuster.')),'Le stock a changé. Rechargez la fiche avant de l’ajuster.');
+  assert.doesNotMatch(variantSaveError(new Error('SUPABASE_SECRET_KEY is not configured.')),/SUPABASE|SECRET/);
+  const invalid=colorVariantListSchema.safeParse([{sku:''}]);
+  assert.match(variantSaveError(invalid.error),/Vérifiez les couleurs/);
 });
