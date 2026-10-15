@@ -1,9 +1,7 @@
-import { createAssistantHandler } from "./core.mjs";
-
-// Supabase Edge Runtime supplies Deno; no Node/Next server or browser secrets.
+// Retired compatibility endpoint. The storefront help is entirely local now.
+// No AI provider, credentials, catalogue queries or outbound requests.
 declare const Deno: {
-  env: { get(name: string): string | undefined };
-  serve(handler: (request: Request) => Promise<Response>): void;
+  serve(handler: () => Response): void;
 };
 
-Deno.serve(createAssistantHandler({ env: (name: string) => Deno.env.get(name) }));
+Deno.serve(() => Response.json({ error: "assistant_retired" }, { status: 410, headers: { "Cache-Control": "no-store" } }));
