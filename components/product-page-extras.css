@@ -1,0 +1,21 @@
+.detail-page .product-share { margin-block: 24px; }
+.detail-page .product-share h2 { font-size: 16px; margin-block: 0 12px; }
+.product-share-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-share-buttons button, .product-share-status button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--blue-dark); padding: 10px 12px; min-height: 44px; cursor: pointer; }
+.product-share-buttons button:hover { background: var(--light, #f5f6f8); }
+.product-share-status { margin-block-start: 10px; overflow-wrap: anywhere; }
+.product-reviews, .product-detail-recommendations { margin-block: 40px; border-top: 1px solid var(--line); padding-block-start: 24px; min-width: 0; }
+.product-review-list { display: grid; gap: 16px; }
+.product-review-list article { border: 1px solid var(--line); border-radius: 4px; padding: 16px; }
+.product-review-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.product-review-heading time { color: var(--muted); font-size: 13px; }
+.product-review-stars { color: var(--blue); }
+.product-review-list p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.product-review-form { display: grid; gap: 12px; max-width: 600px; margin-block-start: 24px; }
+.product-review-form label { display: grid; gap: 6px; }
+.product-review-form input, .product-review-form select, .product-review-form textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 4px; padding: 10px; font: inherit; color: inherit; background: white; }
+.product-review-form textarea { resize: vertical; }
+.product-review-form .button { justify-self: start; background: var(--blue); color: white; }
+.product-review-form button:disabled { opacity: .6; }
+.product-detail-recommendations .product-rail { width: 100%; }
+.product-share-buttons button:focus-visible, .product-review-form :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

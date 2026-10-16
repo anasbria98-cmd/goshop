@@ -8,6 +8,7 @@ import { type CatalogProduct, money } from "@/lib/catalog-model";
 import { Quantity } from "./product-card";
 import { useStore } from "./store-provider";
 import "./product-variants.css";
+import { ProductShare } from "./product-page-extras";
 import { initialProductVariant, selectProductVariant } from "@/lib/product-variants";
 export function ProductDetail({ product: p }: { product: CatalogProduct }) {
   const { t } = useStorefrontLanguage();
@@ -92,6 +93,7 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
               électriques
             </StoreText></span>
           </div>
+          <ProductShare name={p.name} />
           {p.shortDescription && <p>{p.shortDescription}</p>}
           {p.attributes.length > 0 && <dl className="product-attributes">
             {p.attributes.map((attribute) => <div key={attribute.slug}><dt><StoreText>{attribute.name}</StoreText></dt><dd>{attribute.value}{attribute.unit ? ` ${attribute.unit}` : ""}</dd></div>)}

@@ -183,6 +183,9 @@ export type ProductQuery = {
   onSale?: boolean;
   brand?: string;
   limit?: number;
+  ids?: string[];
+  categoryIds?: string[];
+  excludeId?: string;
 };
 
 export async function getProducts(query: ProductQuery = {}, knownCategories?: CatalogCategory[]): Promise<CatalogProduct[]> {
@@ -202,6 +205,14 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
     matchingBrandIds = (brands ?? []).map((brand) => brand.id);
     relatedProductIds = (assignments ?? []).map((assignment) => assignment.product_id);
   }
+  if (query.ids && !query.ids.length) return [];
+  let categoryProductIds: string[] | undefined;
+  if (query.categoryIds?.length) {
+    const { data, error } = await supabase.from("product_categories").select("product_id").in("category_id", query.categoryIds);
+    if (error) throw new Error("Impossible de charger les produits similaires.");
+    categoryProductIds = [...new Set((data ?? []).map((item) => item.product_id))];
+    if (!categoryProductIds.length) return [];
+  }
   let builder = supabase
     .from("products")
     .select(`
@@ -217,6 +228,9 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
     .eq("status", "active")
     .not("published_at", "is", null)
     .order("created_at", { ascending: false });
+  if (query.ids) builder = builder.in("id", query.ids);
+  if (categoryProductIds) builder = builder.in("id", categoryProductIds);
+  if (query.excludeId) builder = builder.neq("id", query.excludeId);
   if (query.featured) builder = builder.eq("featured", true);
   if (query.slug) builder = builder.eq("slug", query.slug).limit(1);
   if (query.bestSeller) builder = builder.eq("is_best_seller", true);
