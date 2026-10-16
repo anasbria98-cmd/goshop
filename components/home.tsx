@@ -8,7 +8,7 @@ import { HeroCarousel } from "./hero-carousel";
 import { ProductSection } from "./product-section";
 import { ProductCard } from "./product-card";
 import type { HomepageDepartment } from "@/lib/homepage-model";
-import { brandAssets } from "@/lib/brand-assets";
+import { BrandsSection } from "./brands-section";
 
 export function Benefits() {
   return <div className="benefits wrap">{[
@@ -69,12 +69,6 @@ function ExpertCampaign({ products }: { products: CatalogProduct[] }) {
 
 export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null }) {
   const all = [...featured, ...bestSellers, ...newProducts, ...sale].filter((product, index, list) => list.findIndex((item) => item.id === product.id) === index);
-  const homepageBrands: [string, string][] = brands.map(([slug, name]) =>
-    slug === "ja-solar" ? ["goled", "GOLED"] : slug === "wago" ? ["ingelec", "Ingelec"] : [slug, name],
-  );
-  if (homepageBrands.length > 0 && !homepageBrands.some(([slug]) => slug === "ingco")) {
-    homepageBrands.push(["ingco", "INGCO"]);
-  }
   return <>
     <Hero slides={slides} />
     <CategorySection departments={departments} />
@@ -85,12 +79,7 @@ export function Home({ slides, featured, bestSellers, newProducts, sale, departm
     <section className="connected-promo wrap"><div><span className="eyebrow"><StoreText>UNE MAISON PLUS INTELLIGENTE</StoreText></span><h2><StoreText>Le confort connecté, tout simplement.</StoreText></h2><p><StoreText>Commandez, programmez et simplifiez votre quotidien.</StoreText></p></div><Image className="connected-image" src="/products/socket.webp" width={100} height={100} alt="Prise pour la maison" /><Link className="button navy" href="/categorie/domotique"><StoreText>Découvrir la domotique</StoreText></Link></section>
     {newProducts.length > 0 && <ProductSection title="Nouveautés" products={newProducts} href="/recherche?nouveau=1" />}
     {departments.map(({ category, products, count }) => <ProductSection key={category.id} title={category.slug === "appareillage" ? "Appareillage" : category.name} eyebrow={`${count} PRODUIT${count > 1 ? "S" : ""} DANS CET UNIVERS`} products={products} href={`/categorie/${category.path}`} />)}
-    {homepageBrands.length > 0 && <section className="brands wrap"><div className="section-heading"><h2><StoreText>Les marques qui font la différence</StoreText></h2><Link href="/recherche"><StoreText>Toutes nos marques</StoreText></Link></div><div className="brand-list">{homepageBrands.map(([slug, name]) => {
-      const logo = brandAssets[slug];
-      return <Link href={`/recherche?marque=${encodeURIComponent(slug)}`} key={slug} className={`brand-logo brand-${slug}`}>
-        {logo ? <Image src={logo.src} width={logo.width} height={logo.height} alt={name} className="manufacturer-logo" unoptimized /> : <span className="brand-logo-fallback">{name}</span>}
-      </Link>;
-    })}</div></section>}
+    <BrandsSection brands={brands} />
     {featured.length > 0 && <ProductSection title="Notre sélection pour vos projets" products={featured} />}
     <section className="seo wrap"><div><span className="eyebrow"><StoreText>LE BON MATÉRIEL. LE BON PARTENAIRE.</StoreText></span><h2><StoreText>GO ELEC, votre spécialiste</StoreText><br /><StoreText>du matériel électrique au Maroc</StoreText></h2></div><div><p><StoreText>Un chantier à équiper, une pièce à rénover ou une installation à moderniser ? GO ELEC réunit les essentiels de l’électricité pour les professionnels et les particuliers.</StoreText></p><p><StoreText>Comparez les références, préparez votre sélection et trouvez le matériel adapté à votre projet.</StoreText></p><span><Check size={16} /><StoreText> Des produits sélectionnés pour vos installations</StoreText></span></div></section>
   </>;

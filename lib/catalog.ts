@@ -281,6 +281,17 @@ export async function getCategoryFilters(categoryId: string): Promise<CatalogFil
   });
 }
 
+export async function getStorefrontBrands(): Promise<[string, string][]> {
+  if (!hasSupabaseEnv()) return [];
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("products").select("brands(name,slug)")
+    .eq("status", "active").not("published_at", "is", null)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`Impossible de charger les marques: ${error.message}`);
+  const rows = (data ?? []) as unknown as { brands: { name: string; slug: string } | null }[];
+  return [...new Map(rows.flatMap(({ brands }) => brands?.name ? [[brands.slug || brands.name, brands.name] as [string, string]] : [])).entries()];
+}
+
 export async function getHomepageData() {
   const categories = await getCategories();
   const products = await getProducts({}, categories);
