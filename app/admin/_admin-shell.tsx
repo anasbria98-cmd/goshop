@@ -39,6 +39,7 @@ const mainLinks = [
   ["/admin/promotions", "Promotions", TicketPercent],
   ["/admin/reviews", "Avis", Star],
   ["/admin/media", "Médias", Images],
+  ["/admin/sliders", "Gestion des Sliders", Images],
   ["/admin/settings", "Paramètres", Settings],
 ] as const;
 
@@ -77,7 +78,7 @@ export function AdminShell({
           <span className="admin-nav-section admin-nav-section--first">Votre boutique</span>
           {mainLinks.map(([href, label, Icon], index) => (
             <div className="admin-nav-item" key={href}>
-            {index === 7 ? <span className="admin-nav-section">Développement</span> : index === 10 ? <span className="admin-nav-section">Configuration</span> : null}
+            {index === 7 ? <span className="admin-nav-section">Développement</span> : href === "/admin/settings" ? <span className="admin-nav-section">Configuration</span> : null}
             <Link href={href} onClick={() => setOpen(false)} className={isActive(href) ? "is-active" : undefined} aria-current={isActive(href) ? "page" : undefined}>
               <Icon aria-hidden="true" size={18} />
               <span>{label}</span>

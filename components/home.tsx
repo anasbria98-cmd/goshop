@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Truck, BadgePercent, PackageCheck, Headphones, Check, ArrowRight, Zap } from "lucide-react";
 import type { CatalogCategory, CatalogProduct } from "@/lib/catalog-model";
+import type { HeroSlide, SlideLocation } from "@/lib/home-slides";
 import { HeroCarousel } from "./hero-carousel";
 import { ProductSection } from "./product-section";
 import { ProductCard } from "./product-card";
@@ -21,21 +22,11 @@ export function Benefits() {
   })}</div>;
 }
 
-export function Hero({ categories }: { categories: CatalogCategory[] }) {
-  const slide = (slug: string, name: string, alt: string) => {
-    const category = categories.find((category) => category.slug === slug);
-    return { name, alt, src: `/promotions/${slug}.png`, href: category ? `/categorie/${category.path}` : `/recherche?q=${encodeURIComponent(name)}` };
-  };
+export function Hero({ slides }: { slides: Record<SlideLocation, HeroSlide[]> }) {
   return <>
     <section className="promo-hero wrap" aria-label="Nos collections d’appareillage">
-      <HeroCarousel label="Collections Omega et Galaxy" primary slides={[
-        slide("omega", "Omega", "Omega — Color your way : collections Prestige, Déco et Nature"),
-        slide("galaxy", "LAP Galaxy", "LAP Galaxy — Double prise 2P+T 16A certifiée NM"),
-      ]} />
-      <HeroCarousel label="Collections Karla et Millenium" slides={[
-        slide("karla", "Karla", "Karla — L’esprit Scandinave : Metallic, Color et Design"),
-        slide("millenium", "LAP Millenium", "LAP Millenium — Interrupteurs, poussoirs et prises décoratifs : qualité et choix de couleurs"),
-      ]} />
+      <HeroCarousel label="Collections Omega et Galaxy" primary slides={slides.primary} />
+      <HeroCarousel label="Collections Karla et Millenium" slides={slides.secondary} />
     </section>
     <Benefits />
   </>;
@@ -76,7 +67,7 @@ function ExpertCampaign({ products }: { products: CatalogProduct[] }) {
   </section>;
 }
 
-export function Home({ categories, featured, bestSellers, newProducts, sale, departments, brands }: { categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null }) {
+export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null }) {
   const all = [...featured, ...bestSellers, ...newProducts, ...sale].filter((product, index, list) => list.findIndex((item) => item.id === product.id) === index);
   const homepageBrands: [string, string][] = brands.map(([slug, name]) =>
     slug === "ja-solar" ? ["goled", "GOLED"] : slug === "wago" ? ["ingelec", "Ingelec"] : [slug, name],
@@ -85,7 +76,7 @@ export function Home({ categories, featured, bestSellers, newProducts, sale, dep
     homepageBrands.push(["ingco", "INGCO"]);
   }
   return <>
-    <Hero categories={categories} />
+    <Hero slides={slides} />
     <CategorySection departments={departments} />
     {bestSellers.length > 0 && <ProductSection title="Nos meilleures ventes" eyebrow="LES ESSENTIELS DE VOS CHANTIERS" products={bestSellers} />}
     <PhilipsCampaign products={all} />

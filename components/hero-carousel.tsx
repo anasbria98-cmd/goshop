@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type Slide = { name: string; alt: string; src: string; href: string };
+import type { HeroSlide as Slide } from "@/lib/home-slides";
 
 export function HeroCarousel({ slides, label, primary = false }: { slides: Slide[]; label: string; primary?: boolean }) {
   const { t } = useStorefrontLanguage();
@@ -35,10 +35,12 @@ export function HeroCarousel({ slides, label, primary = false }: { slides: Slide
   }, []);
 
   useEffect(() => {
-    if (interacting || reducedMotion || !visible) return;
+    if (slides.length < 2 || interacting || reducedMotion || !visible) return;
     const timer = window.setInterval(() => setActive((index) => (index + 1) % slides.length), 4500);
     return () => window.clearInterval(timer);
   }, [active, interacting, reducedMotion, visible, slides.length]);
+
+  if (!slides.length) return <div className={`promo-carousel${primary ? " promo-carousel-primary" : ""}`} />;
 
   return <div className={`promo-carousel${primary ? " promo-carousel-primary" : ""}`}
     role="region" aria-roledescription={t("carrousel")} aria-label={t(label)}
@@ -63,18 +65,20 @@ export function HeroCarousel({ slides, label, primary = false }: { slides: Slide
       }}
       onPointerCancel={() => { pointer.current = null; setInteracting(hover.current || focused.current); }}
       onClickCapture={(event) => { if (swiped.current) { event.preventDefault(); swiped.current = false; } }}>
-      {slides.map((slide, index) => <Link key={slide.src} href={slide.href}
-        className={`promo-carousel-slide${primary && slide.name === "LAP Galaxy" ? " promo-carousel-slide-galaxy" : ""}${index === active ? " is-active" : ""}`}
-        aria-label={`${t("Découvrir")} ${slide.name}`} aria-hidden={index !== active} tabIndex={index === active ? 0 : -1} draggable={false}>
-        <Image src={slide.src} alt={slide.alt} fill unoptimized={false}
+      {slides.map((slide, index) => {
+        const className = `promo-carousel-slide${primary && slide.src === "/promotions/galaxy.png" ? " promo-carousel-slide-galaxy" : ""}${index === active % slides.length ? " is-active" : ""}`;
+        const image = <Image src={slide.src} alt={slide.alt} fill unoptimized={false}
           sizes={primary ? "(max-width: 900px) 100vw, (max-width: 1440px) 72vw, 940px" : "(max-width: 390px) 100vw, 360px"}
-          preload={primary && index === 0} loading={primary && index === 0 ? undefined : "lazy"} draggable={false} />
-      </Link>)}
+          preload={primary && index === 0} loading={primary && index === 0 ? undefined : "lazy"} draggable={false} />;
+        return slide.href ? <Link key={slide.id ?? slide.src} href={slide.href} className={className}
+          aria-label={`${t("Découvrir")} ${slide.name}`} aria-hidden={index !== active % slides.length} tabIndex={index === active % slides.length ? 0 : -1} draggable={false}>{image}</Link>
+          : <div key={slide.id ?? slide.src} className={className} aria-hidden={index !== active % slides.length}>{image}</div>;
+      })}
     </div>
     <div className="promo-carousel-controls">
       <button type="button" aria-label={`${t(label)} : ${t("précédent")}`} onClick={() => move(-1)}><ChevronLeft size={19} /></button>
-      <div className="promo-carousel-dots">{slides.map((slide, index) => <button key={slide.src} type="button"
-        aria-label={`${t("Afficher")} ${slide.name}`} aria-current={index === active ? "true" : undefined}
+      <div className="promo-carousel-dots">{slides.map((slide, index) => <button key={slide.id ?? slide.src} type="button"
+        aria-label={`${t("Afficher")} ${slide.name}`} aria-current={index === active % slides.length ? "true" : undefined}
         onClick={() => setActive(index)}><span /></button>)}</div>
       <button type="button" aria-label={`${t(label)} : ${t("suivant")}`} onClick={() => move(1)}><ChevronRight size={19} /></button>
     </div>

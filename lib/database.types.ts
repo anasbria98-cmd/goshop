@@ -1,3 +1,4 @@
+import type { HomeSlideRow } from "./home-slides";
 export type Json =
   | string
   | number
@@ -177,6 +178,7 @@ type GenericRow = { id: string; [key: string]: unknown };
 export type Database = {
   public: {
     Tables: {
+      homepage_slides: Table<HomeSlideRow>;
       profiles: Table<ProfileRow>;
       categories: Table<CategoryRow>;
       brands: Table<BrandRow>;
@@ -219,6 +221,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      reorder_homepage_slides: { Args: { p_location: string; p_ids: string[] }; Returns: undefined };
       current_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
