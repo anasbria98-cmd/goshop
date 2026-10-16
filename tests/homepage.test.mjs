@@ -16,3 +16,18 @@ test('Homepage rails cap displayed cards while retaining the full category count
  assert.equal(group.products.length,6);assert.equal(group.count,12);
  assert.equal(new Set(group.products.map(p=>p.id)).size,6);
 });
+
+test('Philips fills four slots from the published catalogue beyond capped promotional lists', async () => {
+ const {philipsCampaignProducts}=await import('../lib/homepage-model.ts');
+ const p=(id)=>({id,brandSlug:'philips'});
+ const existing=[p('panel'),p('12w'),p('9w')];
+ const added=[p('gu10'),p('spot')];
+ const catalogue=[...added,...existing,{id:'other',brandSlug:'lap'}];
+ const selection=philipsCampaignProducts(catalogue,[...existing,existing[0],{id:'unpublished',brandSlug:'philips'}]);
+ assert.deepEqual(selection.map(p=>p.id),['panel','12w','9w','gu10']);
+ assert.equal(selection[0],existing[0]);
+ assert.equal(new Set(selection.map(p=>p.id)).size,4);
+ assert.deepEqual(philipsCampaignProducts([added[0]],[]),[added[0]]);
+ assert.deepEqual(philipsCampaignProducts([],existing),[]);
+ assert.equal(catalogue.length,6);
+});

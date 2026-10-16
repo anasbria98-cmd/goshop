@@ -67,13 +67,12 @@ function ExpertCampaign({ products }: { products: CatalogProduct[] }) {
   </section>;
 }
 
-export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null }) {
-  const all = [...featured, ...bestSellers, ...newProducts, ...sale].filter((product, index, list) => list.findIndex((item) => item.id === product.id) === index);
+export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands, philipsProducts }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null; philipsProducts: CatalogProduct[] }) {
   return <>
     <Hero slides={slides} />
     <CategorySection departments={departments} />
     {bestSellers.length > 0 && <ProductSection title="Nos meilleures ventes" eyebrow="LES ESSENTIELS DE VOS CHANTIERS" products={bestSellers} />}
-    <PhilipsCampaign products={all} />
+    <PhilipsCampaign products={philipsProducts} />
     <ExpertCampaign products={featured.slice(0, 4)} />
     {sale.length > 0 && <ProductSection title="Les bons plans du moment" eyebrow="BIEN S’ÉQUIPER, MOINS DÉPENSER" products={sale} href="/recherche?promo=1" id="promotions" />}
     <section className="connected-promo wrap"><div><span className="eyebrow"><StoreText>UNE MAISON PLUS INTELLIGENTE</StoreText></span><h2><StoreText>Le confort connecté, tout simplement.</StoreText></h2><p><StoreText>Commandez, programmez et simplifiez votre quotidien.</StoreText></p></div><Image className="connected-image" src="/products/socket.webp" width={100} height={100} alt="Prise pour la maison" /><Link className="button navy" href="/categorie/domotique"><StoreText>Découvrir la domotique</StoreText></Link></section>

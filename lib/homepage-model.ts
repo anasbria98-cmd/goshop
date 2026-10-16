@@ -13,3 +13,11 @@ export function homepageDepartments(categories: CatalogCategory[], products: Cat
     return selection.length ? [{ category, products: selection.slice(0, 6), count: selection.length }] : [];
   });
 }
+
+export function philipsCampaignProducts(products: CatalogProduct[], preferred: CatalogProduct[]): CatalogProduct[] {
+  const published = new Map(products.filter((product) => product.brandSlug === "philips").map((product) => [product.id, product]));
+  return [...new Map([...preferred, ...products].flatMap((product) => {
+    const visible = published.get(product.id);
+    return visible ? [[visible.id, visible] as const] : [];
+  })).values()].slice(0, 4);
+}

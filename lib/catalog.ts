@@ -2,7 +2,7 @@ import "server-only";
 
 import { hasSupabaseEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { homepageDepartments } from "@/lib/homepage-model";
+import { homepageDepartments, philipsCampaignProducts } from "@/lib/homepage-model";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
 import { isAppareillage, productDisplayImage } from "@/lib/product-variants";
 
@@ -299,8 +299,9 @@ export async function getHomepageData() {
   const bestSellers = products.filter((product) => product.isBestSeller).slice(0, 12);
   const newProducts = products.filter((product) => product.isNew).slice(0, 12);
   const sale = products.filter((product) => product.isOnSale).slice(0, 12);
+  const philipsProducts = philipsCampaignProducts(products, [...featured, ...bestSellers, ...newProducts, ...sale]);
   const departments = homepageDepartments(categories, products);
   const brands = [...new Map(products.filter((product) => product.brand).map((product) => [product.brandSlug || product.brand, product.brand])).entries()];
   const heroProduct = products.filter((product) => product.brandSlug === "schneider-electric" && product.category?.path.startsWith("materiel-electrique/")).sort((a, b) => a.price - b.price)[0] ?? null;
-  return { categories, featured, bestSellers, newProducts, sale, departments, brands, heroProduct };
+  return { categories, featured, bestSellers, newProducts, sale, departments, brands, heroProduct, philipsProducts };
 }
