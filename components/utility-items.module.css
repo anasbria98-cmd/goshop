@@ -67,3 +67,16 @@ a.item:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .item.item, .item.item > svg, .item.item > svg > path { animation: none; }
 }
+
+/* Reuse the approved icon motion in the homepage service row only. */
+.featureIcons { --travel: 4px; }
+.featureIcons > div > svg { animation: icon-float 4.8s ease-in-out infinite; }
+.featureIcons > div:nth-child(2) > svg { animation-delay: -1.2s; }
+.featureIcons > div:nth-child(3) > svg { animation-delay: -2.4s; }
+.featureIcons > div:nth-child(4) > svg { animation-delay: -3.6s; }
+@media (max-width: 700px) {
+  .featureIcons { --travel: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .featureIcons > div > svg { animation: none; }
+}

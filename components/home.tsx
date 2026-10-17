@@ -9,9 +9,10 @@ import { ProductSection } from "./product-section";
 import { ProductCard } from "./product-card";
 import type { HomepageDepartment } from "@/lib/homepage-model";
 import { BrandsSection } from "./brands-section";
+import utilityStyles from "./utility-items.module.css";
 
 export function Benefits() {
-  return <div className="benefits wrap">{[
+  return <div className={`benefits wrap ${utilityStyles.featureIcons}`}>{[
     [Truck, "Livraison partout au Maroc", "À domicile ou sur votre chantier"],
     [PackageCheck, "Les grandes marques", "Le choix de la qualité"],
     [BadgePercent, "Des prix justes", "Pour tous vos projets"],
