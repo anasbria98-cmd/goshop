@@ -9,7 +9,7 @@ import { Quantity } from "./product-card";
 import { cartLineKey } from "@/lib/product-variants";
 export function CartView() {
   const { t, locale } = useStorefrontLanguage();
-  const { cart, count, total, setQuantity } = useStore();
+  const { cart, count, total, setQuantity, clearCart } = useStore();
   const items = Object.values(cart);
   return (
     <div className="wrap cart-page">
@@ -93,6 +93,7 @@ export function CartView() {
             <Link className="button orange" href="/checkout"><StoreText>
               Préparer ma commande
             </StoreText></Link>
+            <button type="button" className="continue-shopping" onClick={clearCart}><Trash2 size={16} aria-hidden="true" /><StoreText>Vider le panier</StoreText></button>
             <p>
               <ShieldCheck size={16} /><StoreText> Vos prix et disponibilités seront
               vérifiés avant validation.

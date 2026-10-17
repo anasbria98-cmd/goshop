@@ -64,7 +64,7 @@ export const arabic: Record<string, string> = {
   "Puissance": "القدرة", "Température de couleur": "درجة حرارة اللون", "Culot": "قاعدة المصباح", "Intensité": "التيار", "Ampérage": "شدة التيار", "Pôles": "الأقطاب",
   "Courbe": "منحنى الفصل", "Section": "المقطع", "Nombre de conducteurs": "عدد الموصلات", "Type de câble": "نوع الكابل", "Longueur": "الطول", "Couleur": "اللون", "Tension": "الجهد",
   "Votre panier attend vos projets": "سلتك جاهزة لمشاريعك", "Découvrez nos équipements et ajoutez votre première sélection.": "اكتشف معداتنا وأضف اختياراتك الأولى.", "Découvrir les produits": "اكتشف المنتجات",
-  "Continuer mes achats": "متابعة التسوق", "Récapitulatif": "ملخص الطلب", "Sous-total TTC": "المجموع الفرعي شامل الضريبة", "Livraison": "التوصيل", "À confirmer": "بانتظار التأكيد",
+  "Continuer mes achats": "متابعة التسوق", "Vider le panier": "إفراغ السلة", "Récapitulatif": "ملخص الطلب", "Sous-total TTC": "المجموع الفرعي شامل الضريبة", "Livraison": "التوصيل", "À confirmer": "بانتظار التأكيد",
   "Total produits": "مجموع المنتجات", "Préparer ma commande": "إعداد طلبي", "Vos prix et disponibilités seront vérifiés avant validation.": "سيتم التحقق من الأسعار والتوفر قبل تأكيد الطلب.",
   "Votre panier a été mis à jour": "تم تحديث سلتك", "Votre panier est vide": "سلتك فارغة", "Coordonnées et livraison": "بيانات الاتصال والتوصيل", "Prénom": "الاسم الشخصي", "Nom": "الاسم العائلي",
   "Email": "البريد الإلكتروني", "E-mail": "البريد الإلكتروني", "Téléphone": "الهاتف", "Adresse": "العنوان", "Complément": "تفاصيل إضافية", "Ville": "المدينة", "Région": "المنطقة",

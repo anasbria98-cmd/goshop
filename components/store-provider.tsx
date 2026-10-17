@@ -5,12 +5,13 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { StoreText } from "./storefront-language";
 import type { CatalogProduct } from "@/lib/catalog-model";
 import { cartLineKey } from "@/lib/product-variants";
-type CartLine = { product: CatalogProduct; quantity: number };
+import { CART_STORAGE_KEY, createCartWriteQueue, mayRestoreRemoteCart, persistCartSnapshot, type CartLine, type CartPersistence, type CartSnapshot } from "@/lib/cart-persistence";
 type Store = {
   cart: Record<string, CartLine>;
   favorites: string[];
@@ -30,13 +31,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [remoteReady, setRemoteReady] = useState(false);
   const [favoriteRemoteReady, setFavoriteRemoteReady] = useState(false);
   const [notice, setNotice] = useState("");
+  const cartRef = useRef<CartSnapshot>({});
+  const favoritesRef = useRef<string[]>([]);
+  const readyRef = useRef(false);
+  const revisionRef = useRef(0);
+  const persistenceRef = useRef<CartPersistence>({cartCleared:false,cartDirty:false});
+  const writeQueueRef = useRef<ReturnType<typeof createCartWriteQueue> | null>(null);
+  const changeCart = useCallback((next: CartSnapshot) => {
+    revisionRef.current += 1;
+    cartRef.current = next;
+    persistenceRef.current = {cartCleared:Object.keys(next).length === 0,cartDirty:true};
+    // Synchronous storage survives a refresh/close before React effects or PUT.
+    try { persistCartSnapshot(localStorage,next,persistenceRef.current,readyRef.current ? favoritesRef.current : undefined); } catch {}
+    setCart(next);
+  }, []);
   useEffect(() => {
     const restoredCart: Record<string, CartLine> = {};
     let restoredFavorites: string[] = [];
+    let restoredPersistence: CartPersistence = {cartCleared:false,cartDirty:false};
     try {
-      const raw = JSON.parse(localStorage.getItem("goshop-store") || "{}");
+      const raw = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "{}");
       const saved = raw.version === 2 ? raw : {};
-      for (const [id, line] of Object.entries(saved.cart ?? {})) {
+      restoredPersistence = {cartCleared:saved.cartCleared === true,cartDirty:saved.cartDirty === true};
+      for (const [id, line] of Object.entries(restoredPersistence.cartCleared ? {} : saved.cart ?? {})) {
         const candidate = line as Partial<CartLine>;
         const product = candidate.product;
         const n = candidate.quantity;
@@ -49,25 +66,61 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       restoredFavorites = Array.isArray(saved.favorites) ? saved.favorites.filter((id: unknown) => typeof id === "string") : [];
     } catch {}
     const timer = window.setTimeout(() => {
-      setCart(restoredCart);
+      // A child (e.g. order confirmation) may clear before hydration completes.
+      if (revisionRef.current === 0) {
+        cartRef.current = restoredCart;
+        persistenceRef.current = restoredPersistence;
+        setCart(restoredCart);
+      }
+      favoritesRef.current = restoredFavorites;
       setFavorites(restoredFavorites);
+      readyRef.current = true;
       setReady(true);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
+    const receiveClear = (event: StorageEvent) => {
+      if (event.key !== CART_STORAGE_KEY || !event.newValue) return;
+      try {
+        const saved = JSON.parse(event.newValue);
+        if (saved.version !== 2 || saved.cartCleared !== true || Object.keys(saved.cart ?? {}).length || persistenceRef.current.cartCleared) return;
+        revisionRef.current += 1;
+        const empty = {};
+        cartRef.current = empty;
+        persistenceRef.current = {cartCleared:true,cartDirty:true};
+        setCart(empty);
+      } catch {}
+    };
+    window.addEventListener("storage",receiveClear);
+    return () => window.removeEventListener("storage",receiveClear);
+  }, []);
+  useEffect(() => {
     if (!ready) return;
     const controller = new AbortController();
-    fetch("/api/cart", { signal: controller.signal })
+    const startedRevision = revisionRef.current;
+    fetch("/api/cart", { signal: controller.signal, cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((payload: { lines?: CartLine[]; unavailableLineKeys?: string[] }) => {
-        if (payload.lines?.length) setCart(Object.fromEntries(payload.lines.map((line) => [cartLineKey(line.product), line])));
-        else if (payload.unavailableLineKeys?.length) setCart((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !payload.unavailableLineKeys!.includes(key))));
+        if (controller.signal.aborted || persistenceRef.current.cartCleared || startedRevision !== revisionRef.current) return;
+        if (!mayRestoreRemoteCart(persistenceRef.current,startedRevision,revisionRef.current)) {
+          // Preserve the existing disabled/deleted-variant cleanup without
+          // allowing a server snapshot to replace unsynced local selections.
+          if (payload.unavailableLineKeys?.length) {
+            const next = Object.fromEntries(Object.entries(cartRef.current).filter(([key]) => !payload.unavailableLineKeys!.includes(key)));
+            if (Object.keys(next).length !== Object.keys(cartRef.current).length) changeCart(next);
+          }
+          return;
+        }
+        const next = payload.lines?.length ? Object.fromEntries(payload.lines.map((line) => [cartLineKey(line.product), line]))
+          : payload.unavailableLineKeys?.length ? Object.fromEntries(Object.entries(cartRef.current).filter(([key]) => !payload.unavailableLineKeys!.includes(key))) : cartRef.current;
+        cartRef.current = next;
+        setCart(next);
       })
       .catch(() => {})
-      .finally(() => setRemoteReady(true));
+      .finally(() => { if (!controller.signal.aborted) setRemoteReady(true); });
     return () => controller.abort();
-  }, [ready]);
+  }, [ready, changeCart]);
   useEffect(() => {
     if (!ready) return;
     fetch("/api/favorites")
@@ -77,20 +130,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, [ready]);
   useEffect(() => {
-    if (ready)
-      try {
-        localStorage.setItem(
-          "goshop-store",
-          JSON.stringify({ version: 2, cart, favorites }),
-        );
-      } catch {}
+    favoritesRef.current = favorites;
+    if (ready) try { persistCartSnapshot(localStorage,cartRef.current,persistenceRef.current,favorites); } catch {}
   }, [cart, favorites, ready]);
   useEffect(() => {
     if (!remoteReady) return;
-    const timer = setTimeout(() => {
-      void fetch("/api/cart", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ lines: Object.values(cart).map(({ product, quantity }) => ({ product_id: product.id, variant_id: product.selectedVariant?.id ?? null, quantity })) }) });
-    }, 350);
-    return () => clearTimeout(timer);
+    if (!writeQueueRef.current) writeQueueRef.current = createCartWriteQueue(async (snapshot) => {
+      const response = await fetch("/api/cart", { method: "PUT", keepalive: true, headers: { "content-type": "application/json" }, body: JSON.stringify({lines:Object.values(snapshot).map(({product,quantity})=>({product_id:product.id,variant_id:product.selectedVariant?.id ?? null,quantity}))}) });
+      return response.ok;
+    });
+    let active = true;
+    const revision = revisionRef.current;
+    const sync = () => {
+      void writeQueueRef.current!(cart, () => active && revision === revisionRef.current && cart === cartRef.current, () => {
+        persistenceRef.current = {...persistenceRef.current,cartDirty:false};
+        try { persistCartSnapshot(localStorage,cartRef.current,persistenceRef.current,favoritesRef.current); } catch {}
+      });
+    };
+    // Clears are not debounced. An explicit empty marker survives even a failed
+    // PUT and wins over stale server data on the next hydration.
+    const timer = setTimeout(sync,persistenceRef.current.cartCleared ? 0 : 350);
+    window.addEventListener("online",sync);
+    return () => { active = false; clearTimeout(timer); window.removeEventListener("online",sync); };
   }, [cart, remoteReady]);
   useEffect(() => {
     if (!favoriteRemoteReady) return;
@@ -104,32 +165,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [notice]);
   const setQuantity = useCallback((id: string, n: number) => {
-    setCart((c) => {
-      const line = c[id];
-      if (!line) return c;
-      const next = { ...c };
-      const max = line.product.allowBackorder ? 999 : line.product.stock;
-      const quantity = Math.max(0, Math.min(max, Math.floor(n)));
-      if (quantity) next[id] = { ...line, quantity };
-      else delete next[id];
-      return next;
-    });
-  }, []);
+    const line = cartRef.current[id];
+    if (!line) return;
+    const next = { ...cartRef.current };
+    const max = line.product.allowBackorder ? 999 : line.product.stock;
+    const quantity = Math.max(0, Math.min(max, Math.floor(n)));
+    if (quantity) next[id] = { ...line, quantity };
+    else delete next[id];
+    changeCart(next);
+  }, [changeCart]);
   const add = useCallback((product: CatalogProduct, n: number) => {
     if (product.hasColorVariants && !product.selectedVariant) return;
     if (!product.stock && !product.allowBackorder) return;
-    setCart((c) => {
-      const max = product.allowBackorder ? 999 : product.stock;
-      return {
-        ...c,
-        [cartLineKey(product)]: {
-          product,
-          quantity: Math.min(max, (c[cartLineKey(product)]?.quantity || 0) + Math.max(1, Math.floor(n))),
-        },
-      };
+    const max = product.allowBackorder ? 999 : product.stock;
+    changeCart({
+      ...cartRef.current,
+      [cartLineKey(product)]: {
+        product,
+        quantity: Math.min(max, (cartRef.current[cartLineKey(product)]?.quantity || 0) + Math.max(1, Math.floor(n))),
+      },
     });
     setNotice("Votre panier a été mis à jour");
-  }, []);
+  }, [changeCart]);
   const toggleFavorite = useCallback(
     (id: string) =>
       setFavorites((f) =>
@@ -137,7 +194,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ),
     [],
   );
-  const clearCart = useCallback(() => setCart({}), []);
+  const clearCart = useCallback(() => changeCart({}), [changeCart]);
   return (
     <Context.Provider
       value={{
