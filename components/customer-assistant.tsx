@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { Bot } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useStorefrontLanguage } from "./storefront-language";
 import styles from "./customer-assistant.module.css";
@@ -26,7 +25,7 @@ export function CustomerAssistant() {
   return <div className={styles.widget} dir={locale === "ar" ? "rtl" : "ltr"}>
     {loaded ? <AssistantChat open={open} onClose={close} /> : null}
     <button ref={launcher} className={styles.launcher} type="button" aria-label={label} aria-expanded={open} aria-controls={loaded ? "goelec-assistant-panel" : undefined} onClick={() => { setLoaded(true); setOpen((current) => !current); }}>
-      <span className={styles.launcherAvatar} aria-hidden="true">{open ? <Bot size={23} /> : <Image src="/branding/goelec-assistant-avatar.webp" alt="" width={256} height={256} />}</span><span>{label}</span>
+      <span className={styles.launcherAvatar} aria-hidden="true"><Image src="/branding/goelec-assistant-avatar.webp" alt="" width={256} height={256} /></span><span>{label}</span>
     </button>
   </div>;
 }

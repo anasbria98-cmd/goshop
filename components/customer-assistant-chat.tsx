@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bot, Send, X } from "lucide-react";
+import Image from "next/image";
+import { Send, X } from "lucide-react";
 import { helpQuestions, type HelpLink } from "@/data/assistant-faq";
 import { useStorefrontLanguage } from "./storefront-language";
 import { usePathname } from "next/navigation";
@@ -64,7 +65,7 @@ export default function AssistantChat({ open, onClose }: { open: boolean; onClos
   const title = ar ? "مساعدة GO ELEC" : "Assistance GO ELEC";
   return <section id="goelec-assistant-panel" className={styles.panel} hidden={!open} role="dialog" aria-modal="false" aria-labelledby="goelec-assistant-title" onKeyDown={(event) => { if (event.key === "Escape") { event.stopPropagation(); onClose(); } }}>
     <header className={styles.header}>
-      <span className={styles.avatar}><Bot size={25} aria-hidden="true" /></span>
+      <span className={styles.avatar} aria-hidden="true"><Image src="/branding/goelec-assistant-avatar.webp" alt="" width={256} height={256} /></span>
       <div><h2 id="goelec-assistant-title">{title}</h2><p>{ar ? "كيف يمكننا مساعدتك؟" : "Comment pouvons-nous vous aider ?"}</p></div>
       <button type="button" className={styles.close} aria-label={ar ? "تصغير المساعدة" : "Réduire l’assistance"} onClick={onClose}><X size={21} aria-hidden="true" /></button>
     </header>
