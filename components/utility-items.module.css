@@ -7,7 +7,6 @@
   letter-spacing: .01em;
   white-space: nowrap;
   --travel: 4px;
-  animation: service-float 4.8s ease-in-out infinite;
 }
 .item > svg {
   box-sizing: content-box;
@@ -16,6 +15,7 @@
   border-radius: 6px;
   background: rgb(255 255 255 / 7%);
   color: inherit;
+  animation: icon-float 4.8s ease-in-out infinite;
 }
 a.item:focus-visible {
   outline: 2px solid currentColor;
@@ -25,23 +25,21 @@ a.item:focus-visible {
 @media (max-width: 700px) {
   .item.item { gap: 6px; letter-spacing: 0; --travel: 2px; }
 }
-/* Offset the whole icon-and-label groups, without moving their layout boxes. */
-.item:has(.payment) { animation-delay: -1.2s; }
-.item:has(.support) { animation-delay: -2.4s; }
-.item:has(.returns) { animation-delay: -3.6s; }
-@keyframes service-float {
+/* Only the decorative SVGs move; labels and link hit areas remain fixed. */
+.item > .payment, .payment > path { animation-delay: -1.2s; }
+.item > .support { animation-delay: -2.4s; }
+.item > .returns, .returns > path { animation-delay: -3.6s; }
+@keyframes icon-float {
   0%, 100% { transform: translate(0, 0); }
   25% { transform: translate(calc(-1 * var(--travel)), -2px); }
   50% { transform: translate(0, 2px); }
   75% { transform: translate(var(--travel), -1px); }
 }
 /* Reference rhythm: a short movement, a quiet hold, then a soft reset. */
-.truck { animation: delivery 3s ease-in-out infinite; }
 .payment > path:last-child {
   stroke-dasharray: 16;
   animation: payment-check 3s ease-in-out infinite;
 }
-.support { transform-origin: center; animation: support-tilt 3s ease-in-out infinite; }
 .returns :global(.utility-return-arc) {
   stroke-dasharray: 1;
   animation: return-arc 3s ease-in-out infinite;
@@ -53,19 +51,10 @@ a.item:focus-visible {
   offset-anchor: 0px 0px;
   animation: return-tip 3s ease-in-out infinite;
 }
-@keyframes delivery {
-  0%, 12%, 55%, 100% { transform: translateX(0); }
-  26% { transform: translateX(2px); }
-  40% { transform: translateX(-1px); }
-}
 @keyframes payment-check {
   0%, 12%, 50%, 100% { stroke-dashoffset: 0; }
   24% { stroke-dashoffset: 16; }
   38% { stroke-dashoffset: 0; }
-}
-@keyframes support-tilt {
-  0%, 12%, 50%, 100% { transform: rotate(0); }
-  25%, 34% { transform: rotate(10deg); }
 }
 @keyframes return-arc {
   0%, 50%, 96%, 100% { stroke-dashoffset: 0; }
