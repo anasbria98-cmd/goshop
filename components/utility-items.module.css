@@ -68,14 +68,30 @@ a.item:focus-visible {
   .item.item, .item.item > svg, .item.item > svg > path { animation: none; }
 }
 
-/* Reuse the approved icon motion in the homepage service row only. */
-.featureIcons { --travel: 4px; }
-.featureIcons > div > svg { animation: icon-float 4.8s ease-in-out infinite; }
-.featureIcons > div:nth-child(2) > svg { animation-delay: -1.2s; }
-.featureIcons > div:nth-child(3) > svg { animation-delay: -2.4s; }
-.featureIcons > div:nth-child(4) > svg { animation-delay: -3.6s; }
+/* Service-row motion measured from the supplied video; no label transforms. */
+.featureIcons { --delivery-travel: 3px; }
+.featureIcons > div > svg { transform-origin: center; }
+.featureIcons > div:nth-child(1) > svg { animation: feature-delivery 2s ease-in-out infinite; }
+.featureIcons > div:nth-child(2) > svg { animation: feature-parcel 1.5s ease-in-out infinite; }
+.featureIcons > div:nth-child(3) > svg { animation: feature-tilt 1.5s ease-in-out infinite; transform-origin: 25% 75%; }
+.featureIcons > div:nth-child(4) > svg { animation: feature-tilt 1.5s ease-in-out infinite; transform-origin: 25% 75%; }
+@keyframes feature-delivery {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(var(--delivery-travel)); }
+  60%, 85% { transform: translateX(calc(-1 * var(--delivery-travel))); }
+}
+@keyframes feature-parcel {
+  0%, 17%, 60%, 100% { transform: scale(1) skewY(0); }
+  30% { transform: scale(1.03, .94) skewY(3deg); }
+  43% { transform: scale(.94, 1.04) skewY(-3deg); }
+}
+@keyframes feature-tilt {
+  0%, 17%, 63%, 100% { transform: rotate(0); }
+  34%, 45% { transform: rotate(10deg); }
+  55% { transform: rotate(-3deg); }
+}
 @media (max-width: 700px) {
-  .featureIcons { --travel: 2px; }
+  .featureIcons { --delivery-travel: 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .featureIcons > div > svg { animation: none; }
