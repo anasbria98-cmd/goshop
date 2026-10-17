@@ -24,6 +24,7 @@ import { navigationCategories, type NavigationNode } from "@/data/navigation";
 import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 import { NavigationFeedback } from "./navigation-feedback";
+import { MobileCategoryMenu } from "./mobile-category-menu";
 
 function SubmenuLinks({ items, onNavigate, mobile = false }: {
   items: NavigationNode[];
@@ -307,61 +308,7 @@ export function Header() {
             <X />
           </button>
         </div>
-        <div className="mobile-category-list">
-          {navigationCategories.map((c) =>
-            c.columns.length > 0 ? (
-              <details key={c.slug}>
-                <summary>
-                  <StoreText>{c.name}</StoreText>
-                  <ChevronDown size={16} />
-                </summary>
-                <Link href={c.href} onClick={() => setMobile(false)}><StoreText>
-                  Tout voir
-                </StoreText></Link>
-                <div className="mobile-nodes">
-                  {c.columns.flat().map((menuItem) =>
-                    menuItem.children?.length ? (
-                      <details className="mobile-parent" key={menuItem.href}>
-                        <summary>
-                          <StoreText>{menuItem.name}</StoreText>
-                          <ChevronDown size={15} />
-                        </summary>
-                        <Link
-                          className="mobile-parent-all"
-                          href={menuItem.href}
-                          onClick={() => setMobile(false)}
-                        ><StoreText>
-                          Voir tout
-                        </StoreText></Link>
-                        <div className="mobile-children">
-                          <SubmenuLinks items={menuItem.children} onNavigate={() => setMobile(false)} mobile />
-                        </div>
-                      </details>
-                    ) : (
-                      <Link
-                        className="mobile-node-direct"
-                        href={menuItem.href}
-                        key={menuItem.href}
-                        onClick={() => setMobile(false)}
-                      >
-                        <StoreText>{menuItem.name}</StoreText>
-                      </Link>
-                    ),
-                  )}
-                </div>
-              </details>
-            ) : (
-              <Link
-                className="mobile-category-direct"
-                href={c.href}
-                key={c.slug}
-                onClick={() => setMobile(false)}
-              >
-                <StoreText>{c.name}</StoreText>
-              </Link>
-            ),
-          )}
-        </div>
+        {mobile && <MobileCategoryMenu onNavigate={() => setMobile(false)} />}
         <Link href="/compte" prefetch={true} className="navigation-link" onClick={() => setMobile(false)}><StoreText>
           Mon compte
           </StoreText><NavigationFeedback />

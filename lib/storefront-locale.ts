@@ -2,6 +2,7 @@
 export type StorefrontLocale = "fr" | "ar";
 export const LOCALE_COOKIE = "goshop-language";
 export const arabic: Record<string, string> = {
+  "Développer": "توسيع", "Réduire": "طي", "Chargement des catégories…": "جار تحميل الفئات…", "Impossible de charger les catégories.": "تعذر تحميل الفئات.", "Aucune catégorie disponible.": "لا توجد فئات متاحة.",
   "Mes informations": "معلوماتي", "En attente": "قيد الانتظار", "Confirmée": "مؤكدة", "En préparation": "قيد التجهيز", "Expédiée": "تم الشحن", "Livrée": "تم التوصيل", "Annulée": "ملغاة", "Remboursée": "تم استرداد المبلغ",
   "Changer le mot de passe": "تغيير كلمة المرور", "Mot de passe actuel": "كلمة المرور الحالية", "Nouveau mot de passe": "كلمة المرور الجديدة", "Confirmer le nouveau mot de passe": "تأكيد كلمة المرور الجديدة", "Mettre à jour le mot de passe": "تحديث كلمة المرور",
   "Utilisez au moins 12 caractères pour le nouveau mot de passe.": "استخدم 12 حرفاً على الأقل لكلمة المرور الجديدة.", "Mot de passe mis à jour avec succès.": "تم تحديث كلمة المرور بنجاح.",
