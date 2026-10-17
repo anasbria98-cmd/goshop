@@ -6,6 +6,8 @@
   font-weight: 500;
   letter-spacing: .01em;
   white-space: nowrap;
+  --travel: 4px;
+  animation: service-float 4.8s ease-in-out infinite;
 }
 .item > svg {
   box-sizing: content-box;
@@ -14,7 +16,6 @@
   border-radius: 6px;
   background: rgb(255 255 255 / 7%);
   color: inherit;
-
 }
 a.item:focus-visible {
   outline: 2px solid currentColor;
@@ -22,7 +23,17 @@ a.item:focus-visible {
   border-radius: 4px;
 }
 @media (max-width: 700px) {
-  .item.item { gap: 6px; letter-spacing: 0; }
+  .item.item { gap: 6px; letter-spacing: 0; --travel: 2px; }
+}
+/* Offset the whole icon-and-label groups, without moving their layout boxes. */
+.item:has(.payment) { animation-delay: -1.2s; }
+.item:has(.support) { animation-delay: -2.4s; }
+.item:has(.returns) { animation-delay: -3.6s; }
+@keyframes service-float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(calc(-1 * var(--travel)), -2px); }
+  50% { transform: translate(0, 2px); }
+  75% { transform: translate(var(--travel), -1px); }
 }
 /* Reference rhythm: a short movement, a quiet hold, then a soft reset. */
 .truck { animation: delivery 3s ease-in-out infinite; }
@@ -65,5 +76,5 @@ a.item:focus-visible {
   82% { offset-distance: 28%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .item.item > svg, .item.item > svg > path { animation: none; }
+  .item.item, .item.item > svg, .item.item > svg > path { animation: none; }
 }
