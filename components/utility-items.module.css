@@ -14,38 +14,56 @@
   border-radius: 6px;
   background: rgb(255 255 255 / 7%);
   color: inherit;
-  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
-}
-a.item::after {
-  content: '';
-  position: absolute;
-  inset-inline: 29px 0;
-  bottom: 1px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0;
-  transform: scaleX(.6);
-  transform-origin: center;
-  transition: opacity 180ms ease, transform 180ms ease;
+
 }
 a.item:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
   border-radius: 4px;
 }
-a.item:focus-visible::after { opacity: .7; transform: scaleX(1); }
-@media (hover: hover) and (pointer: fine) {
-  .item:hover > svg {
-    transform: translateY(-1px);
-    background: rgb(255 255 255 / 14%);
-    box-shadow: 0 2px 6px rgb(255 255 255 / 8%);
-  }
-  a.item:hover::after { opacity: .7; transform: scaleX(1); }
-}
 @media (max-width: 700px) {
   .item.item { gap: 6px; letter-spacing: 0; }
 }
+/* Reference rhythm: a short movement, a quiet hold, then a soft reset. */
+.truck { animation: delivery 3s ease-in-out infinite; }
+.payment > path:last-child {
+  stroke-dasharray: 16;
+  animation: payment-check 3s ease-in-out infinite;
+}
+.support { transform-origin: center; animation: support-tilt 3s ease-in-out infinite; }
+.returns :global(.utility-return-arc) {
+  stroke-dasharray: 1;
+  animation: return-arc 3s ease-in-out infinite;
+}
+.returns :global(.utility-return-tip) {
+  offset-path: path('M4 12 A8 8 0 1 0 12 4 H4');
+  offset-distance: 100%;
+  offset-rotate: auto;
+  offset-anchor: 0px 0px;
+  animation: return-tip 3s ease-in-out infinite;
+}
+@keyframes delivery {
+  0%, 12%, 55%, 100% { transform: translateX(0); }
+  26% { transform: translateX(2px); }
+  40% { transform: translateX(-1px); }
+}
+@keyframes payment-check {
+  0%, 12%, 50%, 100% { stroke-dashoffset: 0; }
+  24% { stroke-dashoffset: 16; }
+  38% { stroke-dashoffset: 0; }
+}
+@keyframes support-tilt {
+  0%, 12%, 50%, 100% { transform: rotate(0); }
+  25%, 34% { transform: rotate(10deg); }
+}
+@keyframes return-arc {
+  0%, 50%, 96%, 100% { stroke-dashoffset: 0; }
+  82% { stroke-dashoffset: .72; }
+}
+@keyframes return-tip {
+  0%, 50%, 96%, 100% { offset-distance: 100%; }
+  82% { offset-distance: 28%; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .item > svg, a.item::after { transition: none; }
-  .item:hover > svg { transform: none; }
+  .item.item > svg, .item.item > svg > path { animation: none; }
 }
