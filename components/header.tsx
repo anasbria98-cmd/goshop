@@ -1,6 +1,7 @@
 "use client";
 import { StoreText, LanguageSwitcher, useStorefrontLanguage } from "@/components/storefront-language";
 import Link from "next/link";
+import utilityStyles from "./utility-items.module.css";
 import { useState, useRef, useEffect } from "react";
 import {
   Search,
@@ -86,18 +87,18 @@ export function Header() {
     <>
       <div className="topbar">
         <div className="wrap topbar-inner">
-          <span>
-            <Truck size={14} /><StoreText> Livraison partout au Maroc
+          <span className={utilityStyles.item}>
+            <Truck size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Livraison partout au Maroc
           </StoreText></span>
           <div>
-            <span>
-              <ShieldCheck size={14} /><StoreText> Paiement sécurisé
+            <span className={utilityStyles.item}>
+              <ShieldCheck size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Paiement sécurisé
             </StoreText></span>
-            <Link href="/informations/service-client">
-              <Headphones size={14} /><StoreText> Service client
+            <Link href="/informations/service-client" className={utilityStyles.item}>
+              <Headphones size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Service client
             </StoreText></Link>
-            <Link href="/informations/retours">
-              <RotateCcw size={14} /><StoreText> Retours
+            <Link href="/informations/retours" className={utilityStyles.item}>
+              <RotateCcw size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Retours
             </StoreText></Link>
             <LanguageSwitcher />
             <span className="google-rating" dir="ltr" aria-label="Google : 4,3/5">
