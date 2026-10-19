@@ -44,3 +44,14 @@ test('Opening a category opens only that node; collapsing closes its descendants
   assert.deepEqual([...toggleMobileCategory(withSibling,exterior)],['lighting','interior']);
   assert.deepEqual([...toggleMobileCategory(nested,lighting)],[]);
 });
+
+test('Shared category source preserves Intérieur ordering changes and nested links without a separate desktop order',()=>{
+  const names = ['Ampoule','Suspension','Lustre','Lampadaire','Lampe de table','Réglette'];
+  const children = names.map((name,index)=>({id:`item-${index}`,name,path:`eclairage/interieur/item-${index}`,parentId:'interior'}));
+  const source = [categories[0],categories[1],...children];
+  const interior = tree=>tree.find(node=>node.href==='/categorie/eclairage').children.find(node=>node.href==='/categorie/eclairage/interieur');
+  assert.deepEqual(interior(mobileCategoryTree(source)).children.map(node=>node.name),names);
+  const reordered = [categories[0],categories[1],children[0],children[2],children[1],...children.slice(3)];
+  assert.deepEqual(interior(mobileCategoryTree(reordered)).children.map(node=>node.name),['Ampoule','Lustre','Suspension','Lampadaire','Lampe de table','Réglette']);
+  assert.equal(interior(mobileCategoryTree(source)).children[1].href,'/categorie/eclairage/interieur/item-1');
+});

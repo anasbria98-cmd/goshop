@@ -127,19 +127,8 @@ export const navigationCategories: NavigationCategory[] = [
     showInMainBar: true,
     columns: [
       [
-        parent("eclairage/interieur", "Intérieur", [
-          ["Ampoule", "ampoule"],
-          ["Réglette", "reglette"],
-          ["Douille", "douille"],
-          ["Cadre spot", "cadre-spot"],
-          ["Panel", "panel"],
-          ["Ruban LED", "ruban-led"],
-          ["Hublot et plafonnier", "hublot-plafonnier"],
-          ["Applique", "applique"],
-          ["Magnétique", "magnetique"],
-          ["Éclairage sur rail", "eclairage-sur-rail"],
-          ["Profil LED", "profil-led"],
-        ]),
+        // Children come from the same live category tree as the mobile menu.
+        parent("eclairage/interieur", "Intérieur", []),
       ],
       [
         parent("eclairage/exterieur", "Extérieur", [

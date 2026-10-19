@@ -25,6 +25,7 @@ import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 import { NavigationFeedback } from "./navigation-feedback";
 import { MobileCategoryMenu } from "./mobile-category-menu";
+import type { MobileCategoryNode } from "@/lib/mobile-category-menu";
 
 function SubmenuLinks({ items, onNavigate, mobile = false }: {
   items: NavigationNode[];
@@ -43,6 +44,33 @@ function SubmenuLinks({ items, onNavigate, mobile = false }: {
       <StoreText>{item.name}</StoreText>
     </Link>
   ));
+}
+
+/** Read the exact mobile hierarchy; keep the existing desktop submenu markup. */
+function InteriorSubmenu({ onNavigate }: { onNavigate: () => void }) {
+  const [items, setItems] = useState<MobileCategoryNode[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/mobile-categories', { signal: controller.signal, cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) throw new Error('Categories unavailable');
+        return response.json() as Promise<MobileCategoryNode[]>;
+      })
+      .then(tree => {
+        const interior = tree.find(node => node.href === '/categorie/eclairage')
+          ?.children.find(node => node.href === '/categorie/eclairage/interieur');
+        if (!controller.signal.aborted) setItems(interior?.children ?? []);
+      })
+      .catch(() => { if (!controller.signal.aborted) setFailed(true); });
+    return () => controller.abort();
+  }, [attempt]);
+  return <div className="mega-children">
+    {failed ? <div role="alert"><StoreText>Impossible de charger les catégories.</StoreText> <button type="button" onClick={() => { setFailed(false); setAttempt(value => value + 1); }}><StoreText>Réessayer</StoreText></button></div>
+      : items === null ? <span role="status"><StoreText>Chargement des catégories…</StoreText></span>
+      : <SubmenuLinks items={items} onNavigate={onNavigate} />}
+  </div>;
 }
 
 export function Header() {
@@ -247,7 +275,12 @@ export function Header() {
                     {activeCategory?.columns.map((column, columnIndex) => (
                       <div className="mega-column" key={columnIndex}>
                         {column.map((menuItem) =>
-                          menuItem.children?.length ? (
+                          menuItem.href === "/categorie/eclairage/interieur" ? (
+                            <div className="mega-node mega-parent" key={menuItem.href}>
+                              <Link className="mega-parent-link" href={menuItem.href} onClick={() => setActive(null)}><StoreText>{menuItem.name}</StoreText></Link>
+                              <InteriorSubmenu onNavigate={() => setActive(null)} />
+                            </div>
+                          ) : menuItem.children?.length ? (
                             <div className="mega-node mega-parent" key={menuItem.href}>
                               <Link
                                 className="mega-parent-link"
