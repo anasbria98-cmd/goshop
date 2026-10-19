@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { sendOrderConfirmation } from "@/lib/send-order-confirmation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -13,5 +14,6 @@ export async function placeOrder(formData: FormData) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.rpc("create_order_from_cart", { p_user_id: user?.id ?? null, p_email: values.email, p_phone: values.phone, p_items: values.items, p_shipping_address: address, p_billing_address: address, p_customer_note: values.customer_note || null });
   if (error) throw new Error(error.message);
+  await sendOrderConfirmation(data.id);
   redirect(`/commande-confirmee?numero=${encodeURIComponent(data.order_number)}`);
 }
