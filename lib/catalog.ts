@@ -301,7 +301,7 @@ export async function getHomepageData() {
   const sale = products.filter((product) => product.isOnSale).slice(0, 12);
   const philipsProducts = philipsCampaignProducts(products, [...featured, ...bestSellers, ...newProducts, ...sale]);
   const departments = homepageDepartments(categories, products);
-  const brands = [...new Map(products.filter((product) => product.brand).map((product) => [product.brandSlug || product.brand, product.brand])).entries()];
+  const brands = await getStorefrontBrands();
   const heroProduct = products.filter((product) => product.brandSlug === "schneider-electric" && product.category?.path.startsWith("materiel-electrique/")).sort((a, b) => a.price - b.price)[0] ?? null;
   return { categories, featured, bestSellers, newProducts, sale, departments, brands, heroProduct, philipsProducts };
 }
