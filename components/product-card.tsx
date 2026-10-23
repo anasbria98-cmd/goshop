@@ -7,6 +7,7 @@ import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 import { type CatalogProduct, money } from "@/lib/catalog-model";
 import { useStore } from "./store-provider";
+import colorStyles from "./product-card-colors.module.css";
 export function Quantity({
   value,
   onChange,
@@ -92,6 +93,11 @@ export function ProductCard({ product: p }: { product: CatalogProduct }) {
         </span>
         <small>({p.reviewCount})</small>
       </div>
+      {Boolean(p.variants?.length) && <div className={colorStyles.swatches} role="list" aria-label={t("Couleur")}>
+        {p.variants?.map(variant => <span key={variant.id} role="listitem" className={colorStyles.swatch} title={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} aria-label={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`}>
+          <span aria-hidden="true" style={{backgroundColor:variant.colorHex}} />
+        </span>)}
+      </div>}
       <p className="reference"><StoreText>
         Réf. GO ELEC : </StoreText><bdi>{p.sku}</bdi>
         <br /><StoreText>
