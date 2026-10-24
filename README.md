@@ -39,7 +39,7 @@ In Supabase Auth URL Configuration, set the production Site URL and add `https:/
 - `lib/catalog.ts`: database-backed storefront catalogue adapter.
 - `app/admin`: protected operational dashboard and management screens.
 - `app/api/cart` and `app/api/favorites`: persistent cart and favorites synchronization.
-- `data/navigation.ts`: presentation grouping for the approved GO ELEC mega menu. Catalogue records and product data live in Supabase.
+- `lib/category-navigation.ts`: shared database-driven desktop, mobile and all-categories navigation. Admin category settings control visibility, hierarchy and ordering.
 
 Product prices and inventory are always recalculated by the database during checkout. Client totals are display-only. Checkout creates pending orders and reserves stock; it never invents a successful payment.
 

@@ -55,6 +55,11 @@ export type CategoryRow = {
   sort_order: number;
   is_active: boolean;
   show_in_navigation: boolean;
+  show_in_top_navigation: boolean;
+  show_in_all_categories: boolean;
+  show_in_mobile_menu: boolean;
+  navigation_label: string | null;
+  navigation_column: number;
   seo_title: string | null;
   seo_description: string | null;
   created_at: string;

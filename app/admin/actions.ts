@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { colorVariantListSchema, variantSaveError } from "@/lib/variant-input";
+import { categoryDescendants } from "@/lib/category-navigation";
 import { productColorsSchema } from "@/lib/product-colors";
 import { isAppareillage } from "@/lib/product-variants";
 
@@ -25,23 +26,40 @@ async function staffClient() {
 export async function saveCategory(data: FormData) {
   const supabase = await staffClient();
   const id = optional(data.get("id"));
-  const name = z.string().min(2).max(120).parse(data.get("name"));
-  const payload = {
-    name,
-    slug: slugify(optional(data.get("slug")) || name),
-    description: optional(data.get("description")),
-    parent_id: optional(data.get("parent_id")),
-    image_url: optional(data.get("image_url")),
-    icon: optional(data.get("icon")),
-    sort_order: number(data, "sort_order"),
-    is_active: checked(data, "is_active"),
-    show_in_navigation: checked(data, "show_in_navigation"),
-    seo_title: optional(data.get("seo_title")),
-    seo_description: optional(data.get("seo_description")),
-  };
-  const result = id ? await supabase.from("categories").update(payload).eq("id", id) : await supabase.from("categories").insert(payload);
-  if (result.error) throw new Error(result.error.message);
+  let errorMessage:string|null=null;
+  try {
+    const name = z.string().trim().min(2).max(120).parse(data.get("name"));
+    const parentId = z.string().uuid().nullable().parse(optional(data.get("parent_id")));
+    const {data:categories,error:readError}=await supabase.from("categories").select("id,parent_id");
+    if(readError) throw new Error("Impossible de vérifier la catégorie parente.");
+    if(parentId && (!(categories??[]).some(row=>row.id===parentId) || (id && categoryDescendants(categories??[],id).has(parentId)))) throw new Error("Choisissez une catégorie parente valide, hors de ses propres sous-catégories.");
+    const payload = {
+      name,
+      slug: z.string().min(1).parse(slugify(optional(data.get("slug")) || name)),
+      description: optional(data.get("description")),
+      parent_id: parentId,
+      image_url: optional(data.get("image_url")),
+      icon: optional(data.get("icon")),
+      sort_order: z.number().int().parse(number(data, "sort_order")),
+      is_active: checked(data, "is_active"),
+      show_in_navigation: checked(data, "show_in_navigation"),
+      show_in_top_navigation: checked(data,"show_in_top_navigation"),
+      show_in_all_categories: checked(data,"show_in_all_categories"),
+      show_in_mobile_menu: checked(data,"show_in_mobile_menu"),
+      navigation_label: optional(data.get("navigation_label")),
+      navigation_column: z.number().int().min(1).max(3).parse(number(data,"navigation_column",1)),
+      seo_title: optional(data.get("seo_title")),
+      seo_description: optional(data.get("seo_description")),
+    };
+    const result = id ? await supabase.from("categories").update(payload).eq("id", id) : await supabase.from("categories").insert(payload);
+    if (result.error) throw new Error(result.error.code==='23505' ? "Ce slug existe déjà sous cette catégorie parente." : "Impossible d’enregistrer la catégorie. Vérifiez les champs et la hiérarchie.");
+  } catch(error) {
+    unstable_rethrow(error);
+    errorMessage=error instanceof z.ZodError ? "Vérifiez le nom, le slug et les valeurs numériques." : error instanceof Error ? error.message : "Impossible d’enregistrer la catégorie.";
+  }
+  if(errorMessage) redirect(`/admin/categories?${id?`edit=${encodeURIComponent(id)}&`:''}error=${encodeURIComponent(errorMessage)}`);
   revalidatePath("/admin/categories"); revalidatePath("/", "layout");
+  redirect("/admin/categories?saved=1");
 }
 
 export async function deleteCategory(data: FormData) {

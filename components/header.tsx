@@ -16,26 +16,25 @@ import {
   ShieldCheck,
   Headphones,
   ChevronRight,
-  Zap,
   Star,
+  Zap,
 } from "lucide-react";
 import { money } from "@/lib/catalog-model";
-import { navigationCategories, type NavigationNode } from "@/data/navigation";
+import { categoryMenuColumns, type CategoryNavigation, type CategoryMenuNode } from "@/lib/category-navigation";
 import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 import { NavigationFeedback } from "./navigation-feedback";
 import { MobileCategoryMenu } from "./mobile-category-menu";
-import type { MobileCategoryNode } from "@/lib/mobile-category-menu";
 
 function SubmenuLinks({ items, onNavigate, mobile = false }: {
-  items: NavigationNode[];
+  items: CategoryMenuNode[];
   onNavigate: () => void;
   mobile?: boolean;
 }) {
   return items.map((item) => item.children?.length ? (
     <div key={item.href}>
       <Link href={item.href} onClick={onNavigate}><StoreText>{item.name}</StoreText></Link>
-      <div className={`${mobile ? "mobile-children" : "mega-children"}${item.href === "/categorie/eclairage/exterieur/applique-jardin" ? " garden-applique-children" : ""}`}>
+      <div className={`${mobile ? "mobile-children" : "mega-children"} garden-applique-children`}>
         <SubmenuLinks items={item.children} onNavigate={onNavigate} mobile={mobile} />
       </div>
     </div>
@@ -46,42 +45,18 @@ function SubmenuLinks({ items, onNavigate, mobile = false }: {
   ));
 }
 
-/** Read the exact mobile hierarchy; keep the existing desktop submenu markup. */
-function InteriorSubmenu({ onNavigate }: { onNavigate: () => void }) {
-  const [items, setItems] = useState<MobileCategoryNode[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/mobile-categories', { signal: controller.signal, cache: 'no-store' })
-      .then(async response => {
-        if (!response.ok) throw new Error('Categories unavailable');
-        return response.json() as Promise<MobileCategoryNode[]>;
-      })
-      .then(tree => {
-        const interior = tree.find(node => node.href === '/categorie/eclairage')
-          ?.children.find(node => node.href === '/categorie/eclairage/interieur');
-        if (!controller.signal.aborted) setItems(interior?.children ?? []);
-      })
-      .catch(() => { if (!controller.signal.aborted) setFailed(true); });
-    return () => controller.abort();
-  }, [attempt]);
-  return <div className="mega-children">
-    {failed ? <div role="alert"><StoreText>Impossible de charger les catégories.</StoreText> <button type="button" onClick={() => { setFailed(false); setAttempt(value => value + 1); }}><StoreText>Réessayer</StoreText></button></div>
-      : items === null ? <span role="status"><StoreText>Chargement des catégories…</StoreText></span>
-      : <SubmenuLinks items={items} onNavigate={onNavigate} />}
-  </div>;
-}
-
-export function Header() {
+export function Header({navigation}:{navigation:CategoryNavigation}) {
   const { t } = useStorefrontLanguage();
   const { count, total, favorites } = useStore();
   const [active, setActive] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
+  const [menuScope,setMenuScope] = useState<"top"|"all">("all");
   const nav = useRef<HTMLElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLDialogElement>(null);
-  const activeCategory = navigationCategories.find((c) => c.slug === active);
+  const navigationCategories = navigation.all;
+  const activeCategory = (menuScope==="top" ? navigation.top : navigationCategories).find(c=>c.id===active);
+  const columns = categoryMenuColumns(activeCategory?.children??[]);
   useEffect(() => {
     function close(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -201,38 +176,33 @@ export function Header() {
             <button
               className={`all-categories ${active === "all" ? "active" : ""}`}
               aria-expanded={active === "all"}
-              onClick={() => setActive(active === "all" ? null : "all")}
-              onMouseEnter={() => setActive("all")}
+              onClick={() => {setMenuScope("all");setActive(active === "all" ? null : "all");}}
+              onMouseEnter={() => {setMenuScope("all");setActive("all");}}
             >
               <Menu size={18} /><StoreText> Toutes les catégories
               </StoreText><ChevronDown size={14} />
             </button>
-            {navigationCategories
-              .filter((c) => c.showInMainBar)
-              .map((c) => (
+            {navigation.top.map((c) => c.children.length ? (
                 <button
-                  key={c.slug}
-                  aria-expanded={active === c.slug}
-                  onClick={() => setActive(active === c.slug ? null : c.slug)}
-                  onMouseEnter={() => setActive(c.slug)}
-                  className={active === c.slug ? "active" : ""}
+                  key={c.id}
+                  aria-expanded={active === c.id}
+                  onClick={() => {setMenuScope("top");setActive(active === c.id ? null : c.id);}}
+                  onMouseEnter={() => {setMenuScope("top");setActive(c.id);}}
+                  className={active === c.id ? "active" : ""}
                 >
-                  <StoreText>{c.shortName ?? c.name}</StoreText>
+                  <StoreText>{c.label}</StoreText>
                 </button>
-              ))}
-            <Link href="/categorie/destockage" className="nav-promo">
-              <Zap size={15} /><StoreText> Destockage
-            </StoreText></Link>
+              ) : <Link key={c.id} href={c.href} className={c.icon==='zap' ? 'nav-promo' : undefined} onMouseEnter={()=>setActive(null)} onClick={()=>setActive(null)}>{c.icon==='zap' && <Zap size={15} aria-hidden="true"/>}<StoreText>{c.label}</StoreText></Link>)}
           </div>
           {active && (
             <div className="mega-menu wrap">
               <div className="mega-sidebar">
                 {navigationCategories.map((c) => (
                   <button
-                    key={c.slug}
-                    className={active === c.slug ? "active" : ""}
-                    onClick={() => setActive(c.slug)}
-                    onMouseEnter={() => setActive(c.slug)}
+                    key={c.id}
+                    className={active === c.id ? "active" : ""}
+                    onClick={() => {setMenuScope("all");setActive(c.id);}}
+                    onMouseEnter={() => {setMenuScope("all");setActive(c.id);}}
                   >
                     <StoreText>{c.name}</StoreText>
                     <ChevronRight size={15} />
@@ -257,7 +227,7 @@ export function Header() {
                   <div className="mega-links mega-links-all">
                     {navigationCategories.map((c) => (
                       <Link
-                        key={c.slug}
+                        key={c.id}
                         href={c.href}
                         onClick={() => setActive(null)}
                       >
@@ -269,18 +239,13 @@ export function Header() {
                   <div
                     className={`mega-columns mega-columns-${Math.max(
                       1,
-                      Math.min(3, activeCategory?.columns.length ?? 1),
+                      Math.min(3, columns.length),
                     )}`}
                   >
-                    {activeCategory?.columns.map((column, columnIndex) => (
+                    {columns.map((column, columnIndex) => (
                       <div className="mega-column" key={columnIndex}>
                         {column.map((menuItem) =>
-                          menuItem.href === "/categorie/eclairage/interieur" ? (
-                            <div className="mega-node mega-parent" key={menuItem.href}>
-                              <Link className="mega-parent-link" href={menuItem.href} onClick={() => setActive(null)}><StoreText>{menuItem.name}</StoreText></Link>
-                              <InteriorSubmenu onNavigate={() => setActive(null)} />
-                            </div>
-                          ) : menuItem.children?.length ? (
+                          menuItem.children?.length ? (
                             <div className="mega-node mega-parent" key={menuItem.href}>
                               <Link
                                 className="mega-parent-link"
@@ -309,7 +274,7 @@ export function Header() {
                   </div>
                 )}
                 <Link
-                  href={active === "all" ? "/recherche" : activeCategory!.href}
+                  href={active === "all" ? "/recherche" : activeCategory?.href ?? "/recherche"}
                   className="text-link"
                   onClick={() => setActive(null)}
                 ><StoreText>
@@ -341,7 +306,7 @@ export function Header() {
             <X />
           </button>
         </div>
-        {mobile && <MobileCategoryMenu onNavigate={() => setMobile(false)} />}
+        {mobile && <MobileCategoryMenu nodes={navigation.mobile} onNavigate={() => setMobile(false)} />}
         <Link href="/compte" prefetch={true} className="navigation-link" onClick={() => setMobile(false)}><StoreText>
           Mon compte
           </StoreText><NavigationFeedback />

@@ -1,3 +1,4 @@
+import { getCategoryNavigation } from "@/lib/category-navigation-server";
 import { cookies } from "next/headers";
 import { LOCALE_COOKIE } from "@/lib/storefront-locale";
 import type { Metadata } from "next";
@@ -21,12 +22,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await getPublicStoreSettings();
+  const [settings,navigation] = await Promise.all([getPublicStoreSettings(),getCategoryNavigation()]);
   const locale = (await cookies()).get(LOCALE_COOKIE)?.value === "ar" ? "ar" : "fr";
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body>
-        <ApplicationShell settings={settings} locale={locale}>{children}</ApplicationShell>
+        <ApplicationShell settings={settings} locale={locale} navigation={navigation}>{children}</ApplicationShell>
       </body>
     </html>
   );

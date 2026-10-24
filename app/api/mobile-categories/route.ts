@@ -1,10 +1,9 @@
-import { getCategories } from '@/lib/catalog';
-import { mobileCategoryTree } from '@/lib/mobile-category-menu';
+import { getCategoryNavigation } from '@/lib/category-navigation-server';
 
 export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
-    return Response.json(mobileCategoryTree(await getCategories()),{headers:{'Cache-Control':'no-store'}});
+    return Response.json((await getCategoryNavigation()).mobile,{headers:{'Cache-Control':'no-store'}});
   } catch {
     return Response.json({error:'Impossible de charger les catégories.'},{status:503});
   }

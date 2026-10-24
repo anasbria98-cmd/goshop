@@ -8,16 +8,19 @@ import { Footer } from "./footer";
 import { Header } from "./header";
 import { StoreProvider } from "./store-provider";
 import { WebMCP } from "./webmcp";
+import type { CategoryNavigation } from "@/lib/category-navigation";
 import { CustomerAssistant } from "./customer-assistant";
 
 export function ApplicationShell({
   children,
   settings,
   locale,
+  navigation,
 }: {
   children: React.ReactNode;
   settings: PublicStoreSettings;
   locale: StorefrontLocale;
+  navigation: CategoryNavigation;
 }) {
   const pathname = usePathname();
 
@@ -29,7 +32,7 @@ export function ApplicationShell({
       <a className="skip-link" href="#main">
         <StoreText>Aller au contenu</StoreText>
       </a>
-      <Header />
+      <Header navigation={navigation} />
       <main id="main">{children}</main>
       <Footer settings={settings} />
       <CustomerAssistant />
