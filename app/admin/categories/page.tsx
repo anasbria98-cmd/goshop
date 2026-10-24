@@ -53,7 +53,7 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
         </section>
         <section className="admin-panel admin-editor-panel">
           <PanelHeader title={current ? "Modifier la catégorie" : "Nouvelle catégorie"} description={current ? current.path : "Ajoutez un niveau à l’arborescence"} />
-          <form action={saveCategory} className="admin-form">
+          <form key={current?.id ?? "new"} action={saveCategory} className="admin-form">
             {current ? <input type="hidden" name="id" value={current.id} /> : null}
             <label>Nom <span className="required-mark">*</span><input name="name" defaultValue={current?.name} required /></label>
             <label>Slug<input name="slug" defaultValue={current?.slug} placeholder="Généré depuis le nom" /></label>
