@@ -32,6 +32,7 @@ export type CatalogVariant = {
 };
 
 export type CatalogProduct = {
+  colors?: {name:string;hex:string}[];
   id: string;
   slug: string;
   name: string;

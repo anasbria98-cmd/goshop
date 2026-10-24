@@ -1,4 +1,5 @@
 import "server-only";
+import { visibleProductColors } from "@/lib/product-colors";
 
 import { hasSupabaseEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -17,6 +18,7 @@ type RawCategory = {
 };
 
 type RawProduct = {
+  display_colors?: unknown;
   id: string;
   name: string;
   slug: string;
@@ -141,6 +143,7 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     brandSlug: row.brands?.slug ?? null,
     category,
     categoryIds,
+    colors: visibleProductColors(row.display_colors, variants),
     imageUrl: productDisplayImage({ imageUrl: images[0]?.url ?? null, variants, allowBackorder: row.allow_backorder }),
     images,
     price: Number(row.price),

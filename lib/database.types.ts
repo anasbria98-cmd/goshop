@@ -77,6 +77,7 @@ export type BrandRow = {
 };
 
 export type ProductRow = {
+  display_colors?: Json;
   id: string;
   name: string;
   slug: string;

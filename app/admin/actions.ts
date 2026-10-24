@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { colorVariantListSchema, variantSaveError } from "@/lib/variant-input";
+import { productColorsSchema } from "@/lib/product-colors";
 import { isAppareillage } from "@/lib/product-variants";
 
 const slugify = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -71,6 +72,7 @@ export async function deleteBrand(data: FormData) {
 
 export async function saveProduct(data: FormData) {
   const supabase = await staffClient();
+  const displayColors = data.has("display_colors") ? productColorsSchema.parse(JSON.parse(String(data.get("display_colors")))) : undefined;
   const colorVariants = colorVariantListSchema.parse(JSON.parse(String(data.get("color_variants") || "[]")));
   const categoryIds = data.getAll("category_id").map(String).filter(Boolean);
   const primary = optional(data.get("primary_category_id")) || categoryIds[0];
@@ -79,6 +81,7 @@ export async function saveProduct(data: FormData) {
   const price = z.number().nonnegative().parse(number(data, "price"));
   const compare = optional(data.get("compare_at_price"));
   const payload = {
+    ...(displayColors ? {display_colors:displayColors} : {}),
     name,
     slug: slugify(optional(data.get("slug")) || name),
     sku: z.string().min(1).max(80).parse(data.get("sku")),

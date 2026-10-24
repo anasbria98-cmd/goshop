@@ -42,6 +42,17 @@ test('Appareillage migration, staff security, cart/order snapshots and variant i
     const beforeStocks = await q('select * from inventory order by id');
     const policies = await q('select schemaname,tablename,policyname,qual,with_check from pg_policies order by schemaname,tablename,policyname');
     await db.exec(await readFile(new URL('../supabase/migrations/202610140001_appareillage_color_variants.sql',import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202610240001_product_display_colors.sql',import.meta.url),'utf8'));
+    await t.test('Display colors persist independently on existing products without changing price, stock or variants', async()=>{
+      const colors={enabled:true,colors:[{name:'Cuivre personnalisé',hex:'#bc7341'}]};
+      await q('update public.products set display_colors=$1::jsonb where id=$2',[JSON.stringify(colors),simple.id]);
+      let [saved]=await q('select display_colors,price from public.products where id=$1',[simple.id]);
+      assert.deepEqual(saved.display_colors,colors);assert.equal(Number(saved.price),15);
+      await q('update public.products set display_colors=$1::jsonb where id=$2',[JSON.stringify({...colors,enabled:false}),simple.id]);
+      [saved]=await q('select display_colors from public.products where id=$1',[simple.id]);
+      assert.equal(saved.display_colors.enabled,false);
+      await q('update public.products set display_colors=null where id=$1',[simple.id]);
+    });
     await q("select set_config('request.jwt.claim.sub',$1,false)",[user]);
     await db.exec("set role authenticated");
     const variant = (sku,color,stock=3) => ({name:color,color_name:color,color_hex:'#ffffff',finish:'Mat',image_path:'variants/white.png',sku,barcode:'',price:45,is_active:true,stock,expected_stock:null});
@@ -72,10 +83,17 @@ test('Appareillage migration, staff security, cart/order snapshots and variant i
       await save(existing.id,[{...variant('LEGACY','Gris'),id:legacy.id,stock:null,is_active:false,price:21}]);
     });
     await t.test('new products save colors atomically, while non-Appareillage, wrong IDs and missing images fail', async () => {
-      const payload = {name:'Nouveau',slug:'new',sku:'NEW',price:30,tax_rate:20,status:'active',published_at:new Date().toISOString(),stock_tracking:true,allow_backorder:false,featured:false,is_new:false,is_best_seller:false,is_on_sale:false};
+      const payload = {display_colors:{enabled:true,colors:[{name:'Cuivre',hex:'#bc7341'}]},name:'Nouveau',slug:'new',sku:'NEW',price:30,tax_rate:20,status:'active',published_at:new Date().toISOString(),stock_tracking:true,allow_backorder:false,featured:false,is_new:false,is_best_seller:false,is_on_sale:false};
       const saveNew = (slug,rows) => q('select public.save_product_with_color_variants(null,$1::jsonb,$2::uuid[],$3,0,5,$4::jsonb) id',[JSON.stringify({...payload,slug,sku:slug}),[child.id],child.id,JSON.stringify(rows)]);
       const [saved] = await saveNew('new-product',[variant('NEW-W','Blanc'),variant('NEW-C','Champagne')]);
       assert.equal((await q('select count(*)::int n from product_variants where product_id=$1',[saved.id]))[0].n,2);
+      assert.deepEqual((await q('select display_colors from products where id=$1',[saved.id]))[0].display_colors,payload.display_colors);
+      const {display_colors,...legacyPayload}=payload;
+      await q('select public.save_product_with_color_variants($1,$2::jsonb,$3::uuid[],$4,0,5,$5::jsonb)',[saved.id,JSON.stringify({...legacyPayload,slug:'new-product',sku:'new-product'}),[child.id],child.id,'[]']);
+      assert.deepEqual((await q('select display_colors from products where id=$1',[saved.id]))[0].display_colors,display_colors);
+      const disabledColors={...display_colors,enabled:false};
+      await q('select public.save_product_with_color_variants($1,$2::jsonb,$3::uuid[],$4,0,5,$5::jsonb)',[saved.id,JSON.stringify({...payload,slug:'new-product',sku:'new-product',display_colors:disabledColors}),[child.id],child.id,'[]']);
+      assert.deepEqual((await q('select display_colors from products where id=$1',[saved.id]))[0].display_colors,disabledColors);
       await assert.rejects(saveNew('rollback-product',[variant('NEW-W','Blanc')]),/unique constraint/);
       assert.equal((await q("select count(*)::int n from products where slug='rollback-product'"))[0].n,0);
       await assert.rejects(save(simple.id,[variant('OTHER','Blanc')]),/Appareillage/);

@@ -44,6 +44,7 @@ export function Quantity({
 }
 export function ProductCard({ product: p }: { product: CatalogProduct }) {
   const router = useRouter();
+  const colors = p.colors ?? p.variants?.map(v=>({name:v.colorName,hex:v.colorHex}));
   const { t } = useStorefrontLanguage();
   const [qty, setQty] = useState(1);
   const { add, favorites, toggleFavorite } = useStore();
@@ -93,9 +94,9 @@ export function ProductCard({ product: p }: { product: CatalogProduct }) {
         </span>
         <small>({p.reviewCount})</small>
       </div>
-      {Boolean(p.variants?.length) && <div className={colorStyles.swatches} role="list" aria-label={t("Couleur")}>
-        {p.variants?.map(variant => <span key={variant.id} role="listitem" className={colorStyles.swatch} title={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} aria-label={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`}>
-          <span aria-hidden="true" style={{backgroundColor:variant.colorHex}} />
+      {Boolean(colors?.length) && <div className={colorStyles.swatches} role="list" aria-label={t("Couleur")}>
+        {colors?.map((color,index) => <span key={index} role="listitem" className={colorStyles.swatch} title={color.name} aria-label={color.name}>
+          <span aria-hidden="true" style={{backgroundColor:color.hex}} />
         </span>)}
       </div>}
       <p className="reference"><StoreText>

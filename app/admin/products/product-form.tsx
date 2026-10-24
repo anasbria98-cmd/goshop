@@ -9,6 +9,7 @@ import { saveProduct, saveProductWithVariantFeedback } from "../actions";
 import { isAppareillage } from "@/lib/product-variants";
 import type { ColorVariantDraft } from "@/lib/variant-input";
 import { colorVariantListSchema } from "@/lib/variant-input";
+import { ProductColors } from "./_product-colors";
 import { ColorVariants } from "./_color-variants";
 import { CategorySelector } from "./_category-selector";
 
@@ -117,6 +118,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
               {editing ? <a className="admin-secondary" href="#attributes">Ouvrir</a> : null}
             </div>
           </section>
+          <ProductColors initial={product.display_colors} legacyColors={colorVariants?.filter(v=>v.is_active && v.color_name && v.image_path && /^#[0-9a-fA-F]{6}$/.test(v.color_hex)).map(v=>({name:v.color_name,hex:v.color_hex}))} />
           {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} baseSku={sku} onBusy={setUploadBusy} onValidityChange={setVariantsValid} saveError={variantSaveState.attempt !== hiddenErrorAttempt ? variantSaveState.error : null} /> : null}
         </div>
 
