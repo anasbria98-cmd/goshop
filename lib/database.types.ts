@@ -227,6 +227,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      delete_product_safely: { Args: {p_product_id:string;p_name:string;p_sku:string;p_confirmed:boolean}; Returns:string };
       reorder_homepage_slides: { Args: { p_location: string; p_ids: string[] }; Returns: undefined };
       current_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };

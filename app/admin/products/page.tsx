@@ -1,3 +1,5 @@
+import { getCurrentProfile } from "@/lib/auth";
+import { DeleteProduct } from "./_delete-product";
 import Image from "next/image";
 import Link from "next/link";
 import { CircleCheck, FilePenLine, Package, PackageX } from "lucide-react";
@@ -21,10 +23,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const page = Math.max(1, Number(params.page) || 1);
   const size = 20;
   const supabase = await createSupabaseServerClient();
-  const [{ data: productData }, { data: brands }, { data: categories }] = await Promise.all([
+  const [{ data: productData }, { data: brands }, { data: categories }, profile] = await Promise.all([
     supabase.from("products").select("id,name,sku,status,price,brand_id,main_image_url,updated_at,inventory(quantity,reserved_quantity),product_categories(category_id,is_primary,categories(name))").limit(1000),
     supabase.from("brands").select("id,name").eq("is_active", true).order("name"),
     supabase.from("categories").select("id,name").eq("is_active", true).order("name"),
+    getCurrentProfile(),
   ]);
   const allRows = productData ?? [];
   const catalogSummary = [
@@ -86,7 +89,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     <td data-label="Prix"><strong>{money(Number(product.price))}</strong></td>
                     <td data-label="Stock"><Status>{available <= 0 ? "Rupture" : available <= 5 ? "Faible" : "Disponible"}</Status><small>{available} disponible(s)</small></td>
                     <td data-label="Statut"><Status>{product.status}</Status></td>
-                    <td data-label="Actions"><details className="admin-action-menu"><summary>Actions</summary><div><Link href={`/admin/products/${product.id}`}>Modifier</Link><form action={duplicateProduct}><input type="hidden" name="id" value={product.id} /><button>Dupliquer</button></form><form action={setProductStatus}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value={product.status === "active" ? "draft" : "active"} /><button>{product.status === "active" ? "Dépublier" : "Publier"}</button></form><form action={setProductStatus}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value="archived" /><button>Archiver</button></form></div></details></td>
+                    <td data-label="Actions"><details className="admin-action-menu"><summary>Actions</summary><div><Link href={`/admin/products/${product.id}`}>Modifier</Link><form action={duplicateProduct}><input type="hidden" name="id" value={product.id} /><button>Dupliquer</button></form><form action={setProductStatus}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value={product.status === "active" ? "draft" : "active"} /><button>{product.status === "active" ? "Dépublier" : "Publier"}</button></form><form action={setProductStatus}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value="archived" /><button>Archiver</button></form>{profile && ["admin","super_admin"].includes(profile.role) && <DeleteProduct product={{id:product.id,name:product.name,sku:product.sku}}/>}</div></details></td>
                   </tr>
                 );
               })}</tbody>

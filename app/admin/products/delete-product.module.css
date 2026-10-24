@@ -1,0 +1,13 @@
+.trigger { color:#b42318 !important; display:flex; align-items:center; gap:6px; }
+.dialog { width:min(520px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); margin:auto; padding:24px; border:1px solid #dfe3e8; border-radius:12px; background:white; color:#27313e; box-shadow:0 20px 60px #0003; overflow:auto; }
+.dialog::backdrop { background:#10182880; }
+.dialog h2 { margin:0 0 16px; font-size:20px; color:var(--navy,#203a70); }
+.dialog p { margin:12px 0; line-height:1.5; overflow-wrap:anywhere; }
+.confirm { display:flex; align-items:flex-start; gap:10px; margin:20px 0; line-height:1.5; }
+.confirm input { flex:0 0 auto; margin-top:5px; }
+.actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; }
+.danger { background:#b42318; color:white; border:0; border-radius:6px; padding:10px 14px; font:inherit; cursor:pointer; }
+.danger:disabled { opacity:.5; cursor:not-allowed; }
+.dialog button:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+.error { color:#b42318; }
+.status { display:block; margin-top:8px; }
