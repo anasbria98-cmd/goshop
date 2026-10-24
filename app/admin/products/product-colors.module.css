@@ -4,3 +4,8 @@
 .row input[type=color] { height:42px; padding:4px; cursor:pointer; }
 .row button { min-height:42px; }
 @media(max-width:600px) { .row { grid-template-columns:minmax(0,1fr) 64px; } }
+.presets { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.preset { display:inline-flex; align-items:center; gap:6px; padding:5px 8px; border:1px solid var(--border, #dfe3e8); border-radius:6px; background:transparent; color:inherit; font:inherit; font-size:12px; cursor:pointer; }
+.preset[aria-pressed=true] { border-color:currentColor; }
+.preset:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
+.swatch { width:22px; height:22px; flex:0 0 22px; border:2px solid white; border-radius:50%; box-shadow:0 0 0 1px #d1d5db; }
