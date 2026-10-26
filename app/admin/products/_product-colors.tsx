@@ -6,8 +6,11 @@ import styles from './product-colors.module.css';
 
 const presets:ProductColor[]=[
   {name:'Blanc',hex:'#ffffff'},
+  {name:'Noir',hex:'#000000'},
   {name:'Beige',hex:'#e5d8b0'},
   {name:'Marron',hex:'#925e36'},
+  {name:'Cappuccino',hex:'#a58a73'},
+  {name:'Marfil',hex:'#fffff0'},
   {name:'Bordeaux',hex:'#9b0046'},
   {name:'Rouge',hex:'#e60000'},
   {name:'Orange',hex:'#ff6b00'},
@@ -46,6 +49,6 @@ export function ProductColors({initial,legacyColors=[]}:{initial?:unknown;legacy
       <label>HEX<input aria-label={`HEX de la couleur ${index+1}`} value={row.hex} required={enabled} pattern="#[0-9a-fA-F]{6}" disabled={!enabled} onChange={e=>update(row.key,{hex:e.target.value})}/></label>
       <button type="button" className="admin-danger-link" aria-label={`Supprimer la couleur ${index+1}`} onClick={()=>setRows(current=>current.filter(color=>color.key!==row.key))}><Trash2 size={17} aria-hidden="true"/> Supprimer</button>
     </div>)}
-    <button className="admin-secondary" type="button" onClick={()=>{setEnabled(true);setRows(current=>[...current,{key:nextKey,name:'',hex:'#ffffff'}]);setNextKey(key=>key+1);}}><Plus size={16} aria-hidden="true"/> Ajouter une couleur</button>
+    <button className="admin-secondary" type="button" onClick={()=>{setEnabled(true);setRows(current=>[...current,{key:nextKey,name:'',hex:'#ffffff'}]);setNextKey(key=>key+1);}}><Plus size={16} aria-hidden="true"/> Ajouter une couleur personnalisée</button>
   </section>;
 }
