@@ -97,12 +97,12 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
             <span className={utilityStyles.item}>
               <ShieldCheck className={utilityStyles.payment} size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Paiement sécurisé
             </StoreText></span>
-            <Link href="/informations/service-client" className={utilityStyles.item}>
+            <span className={utilityStyles.item}>
               <Headphones className={utilityStyles.support} size={15} strokeWidth={1.75} aria-hidden="true" /><StoreText> Service client
-            </StoreText></Link>
-            <Link href="/informations/retours" className={utilityStyles.item}>
+            </StoreText></span>
+            <span className={utilityStyles.item}>
               <UtilityReturnIcon className={utilityStyles.returns} /><StoreText> Retours
-            </StoreText></Link>
+            </StoreText></span>
             <LanguageSwitcher />
             <span className="google-rating" dir="ltr" aria-label="Google : 4,5 sur 5, 16 avis Google">
               <span>4,5/5</span>
