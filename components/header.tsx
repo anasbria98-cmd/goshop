@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Headphones,
   ChevronRight,
-  Star,
   Zap,
 } from "lucide-react";
 import { money } from "@/lib/catalog-model";
@@ -105,9 +104,13 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
               <UtilityReturnIcon className={utilityStyles.returns} /><StoreText> Retours
             </StoreText></Link>
             <LanguageSwitcher />
-            <span className="google-rating" dir="ltr" aria-label="Google : 4,3/5">
-              <Star size={15} fill="currentColor" aria-hidden="true" />
-              <span>4,3/5</span>
+            <span className="google-rating" dir="ltr" aria-label="Google : 4,5 sur 5, 16 avis Google">
+              <span>4,5/5</span>
+              <svg className="google-rating-stars" width="60" height="12" viewBox="0 0 60 12" aria-hidden="true">
+                <defs><linearGradient id="goelec-rating-half"><stop offset="50%" stopColor="#fbbc04"/><stop offset="50%" stopColor="#dadce0"/></linearGradient></defs>
+                {[0,1,2,3,4].map(index=><path key={index} transform={`translate(${index*12} 0)`} fill={index===4?'url(#goelec-rating-half)':'#fbbc04'} d="m6 0 1.85 3.76L12 4.36 9 7.29l.71 4.13L6 9.47l-3.71 1.95L3 7.29 0 4.36l4.15-.6Z"/>)}
+              </svg>
+              <span className="google-rating-reviews">16 avis Google</span>
             </span>
           </div>
         </div>
