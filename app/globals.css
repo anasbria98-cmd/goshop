@@ -3437,7 +3437,8 @@ img {
 .promo-carousel-dots [aria-current="true"] span { background: var(--blue); }
 @media (max-width: 900px) {
   .promo-hero { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 16px; }
-  .promo-carousel-primary .promo-carousel-artwork { height: auto; aspect-ratio: 16 / 9; }
+  .promo-carousel-primary .promo-carousel-artwork { height: auto; aspect-ratio: 2.5; }
+  .promo-carousel-primary .promo-carousel-slide img { object-fit: contain; }
   .promo-carousel-slide-galaxy::before, .promo-carousel-slide-galaxy::after { display: none; }
   .promo-carousel:not(.promo-carousel-primary) { width: min(100%, 360px); justify-self: center; }
 }
