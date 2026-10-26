@@ -3493,8 +3493,9 @@ html[dir="rtl"] .footer-about p > svg { margin-right: 0; margin-left: 8px; }
 
 html[dir="rtl"] .price-line { justify-content: flex-end; }
 
-@media (max-width: 389px) {
-  .topbar-inner { flex-wrap: nowrap; }
+@media (max-width: 700px) {
+  .topbar { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  .topbar-inner { flex-wrap: nowrap; width: calc(100% - max(12px, env(safe-area-inset-left, 0px)) - max(12px, env(safe-area-inset-right, 0px))); }
   .topbar .topbar-inner > span { min-width: 0; white-space: normal; line-height: 14px; }
   .topbar-inner > div { flex-shrink: 0; }
 }
