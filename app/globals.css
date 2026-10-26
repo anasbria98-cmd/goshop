@@ -121,7 +121,7 @@ img {
 }
 @media (max-width: 700px) {
   .topbar .topbar-inner .google-rating { display: grid; padding-inline-start: 7px; grid-template-columns: auto 30px; gap: 0 3px; font-size: 10px; line-height: 12px; }
-  .google-rating-stars { width: 30px; height: 6px; }
+  .google-rating-stars { width: 30px; height: 12px; }
   .google-rating-reviews { grid-column: 1 / -1; font-size: 9px; }
 }
 @media (max-width: 900px) {
