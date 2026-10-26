@@ -3493,6 +3493,12 @@ html[dir="rtl"] .footer-about p > svg { margin-right: 0; margin-left: 8px; }
 
 html[dir="rtl"] .price-line { justify-content: flex-end; }
 
+@media (max-width: 389px) {
+  .topbar-inner { flex-wrap: nowrap; }
+  .topbar .topbar-inner > span { min-width: 0; white-space: normal; line-height: 14px; }
+  .topbar-inner > div { flex-shrink: 0; }
+}
+
 /* Keep only the garden applique's two nested links close to their parent. */
 .mega-children.garden-applique-children,
 .mobile-children.garden-applique-children {
