@@ -1490,11 +1490,12 @@ img {
     display: none;
   }
   .benefits {
-    padding: 18px 0;
+    padding: 28px 0;
     grid-template-columns: repeat(2, 1fr);
-    gap: 19px 7px;
+    gap: 24px 7px;
   }
   .benefit {
+    min-height: 44px;
     justify-content: flex-start;
     border: 0;
     gap: 9px;
