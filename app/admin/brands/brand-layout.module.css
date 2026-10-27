@@ -1,0 +1,33 @@
+.panel { margin-bottom: 24px; }
+.body { padding: 20px; min-width: 0; }
+.hint, .available p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0 0 16px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.feedback { font-size: 13px; min-height: 20px; margin: 14px 0; }
+.error { color: #b42318; font-size: 14px; }
+.grid { width: 100%; }
+.slot { position: relative; flex-direction: column; gap: 8px; min-height: 170px; letter-spacing: normal; padding: 12px; font-weight: 500; }
+.slotLabel { font-size: 11px; color: var(--muted); }
+.artwork { width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; }
+.empty { color: var(--muted); font-size: 12px; border: 1px dashed var(--line); border-radius: 6px; padding: 8px; }
+.brandName { font-size: 11px; text-align: center; overflow-wrap: anywhere; }
+.slotActions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.slotActions button, .place, .picker button { display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: white; color: var(--navy); font-size: 11px; cursor: pointer; }
+.slotActions button { min-height: 32px; }
+.slotActions .handle { touch-action: none; cursor: grab; }
+.slotActions .handle:active { cursor: grabbing; }
+.selected, .target { outline: 2px solid var(--blue); outline-offset: -3px; background: #f5f7fb; }
+.place { font-weight: 700; }
+.available { margin-top: 22px; }
+.available h3 { font-size: 15px; margin: 0 0 8px; }
+.picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.picker button { font-size: 13px; min-height: 36px; padding: 8px 12px; }
+.picker .chosen { background: var(--navy); color: white; border-color: var(--navy); }
+.body button:disabled { cursor: default; opacity: .55; }
+.body button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (max-width: 700px) {
+  .body { padding: 12px; }
+  .slot { padding: 8px 4px; min-height: 185px; }
+  .toolbar button { width: 100%; justify-content: center; }
+  .slotActions { gap: 4px; }
+  .slotActions button { font-size: 10px; padding: 4px; }
+}

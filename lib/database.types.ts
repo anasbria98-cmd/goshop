@@ -190,6 +190,7 @@ export type Database = {
       profiles: Table<ProfileRow>;
       categories: Table<CategoryRow>;
       brands: Table<BrandRow>;
+      featured_brand_layout: Table<{ id: boolean; slot_count: number }>;
       products: Table<ProductRow>;
       product_categories: Table<{ product_id: string; category_id: string; is_primary: boolean }>;
       product_images: Table<GenericRow>;
@@ -229,6 +230,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      save_featured_brand_layout: { Args: { p_expected: (string | null)[]; p_slots: (string | null)[] }; Returns: undefined };
       delete_product_safely: { Args: {p_product_id:string;p_name:string;p_sku:string;p_confirmed:boolean}; Returns:string };
       reorder_homepage_slides: { Args: { p_location: string; p_ids: string[] }; Returns: undefined };
       current_role: { Args: Record<string, never>; Returns: AppRole };

@@ -1,3 +1,4 @@
+import { BrandLayoutManager } from "./brand-layout-manager";
 import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, Pencil, Trash2 } from "lucide-react";
@@ -8,10 +9,12 @@ import { deleteBrand, saveBrand } from "../actions";
 export default async function BrandsPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string }> }) {
   const { edit, error } = await searchParams;
   const supabase = await createSupabaseServerClient();
-  const [{ data }, { data: products }] = await Promise.all([
+  const [{ data, error: brandError }, { data: products }, layout] = await Promise.all([
     supabase.from("brands").select("*").order("sort_order").order("name"),
     supabase.from("products").select("brand_id"),
+    supabase.from("featured_brand_layout").select("slot_count").eq("id", true).single(),
   ]);
+  if (brandError || layout.error) throw new Error("Impossible de charger la disposition des marques.");
   const rows = data ?? [];
   const current = rows.find((item) => item.id === edit);
   const productCounts = new Map<string, number>();
@@ -20,6 +23,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
   return (
     <>
       <AdminHeader title="Marques" description="Gérez les fabricants affichés dans le catalogue." />
+      <BrandLayoutManager key={JSON.stringify([rows.filter((b) => b.show_in_featured_brands).sort((a,b) => (a.display_order ?? 0) - (b.display_order ?? 0)).map((b) => [b.id,b.display_order,b.is_active]),layout.data.slot_count])} brands={rows} slotCount={layout.data.slot_count} />
       <div className="admin-split">
         <section className="admin-panel admin-panel--flush">
           <PanelHeader title="Répertoire des marques" count={rows.length} />
@@ -36,10 +40,6 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
             <label>Site web<input name="website_url" type="url" defaultValue={current?.website_url ?? ""} placeholder="https://" /></label>
             <label>Description<textarea name="description" rows={4} defaultValue={current?.description ?? ""} /></label>
             <div className="admin-form-grid"><label>Ordre<input name="sort_order" type="number" defaultValue={current?.sort_order ?? 0} /></label><label className="admin-checkbox"><input name="is_active" type="checkbox" defaultChecked={current?.is_active ?? true} /> Marque active</label></div>
-            <div className="admin-form-divider"><span>Les marques qui font la différence</span></div>
-            <label className="admin-checkbox"><input name="show_in_featured_brands" type="checkbox" defaultChecked={current?.show_in_featured_brands ?? false} /> Afficher dans la section marques</label>
-            <label>Position exacte<input name="display_order" type="number" min="1" max="1000" step="1" defaultValue={current?.display_order ?? ""} placeholder="Non attribuée" /></label>
-            <p>Position 1 = première case, puis de gauche à droite. Les cases libres restent vides. Pour déplacer une marque, modifiez sa position ; une case occupée ne peut pas être remplacée. Une marque inactive reste masquée.</p>
             <div className="admin-form-divider"><span>Référencement</span></div>
             <label>Titre SEO<input name="seo_title" defaultValue={current?.seo_title ?? ""} /></label>
             <label>Description SEO<textarea name="seo_description" rows={3} defaultValue={current?.seo_description ?? ""} /></label>

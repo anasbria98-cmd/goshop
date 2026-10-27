@@ -1,5 +1,5 @@
 import "server-only";
-import type { FeaturedBrand } from "./featured-brands";
+import type { FeaturedBrandLayout } from "./featured-brands";
 import { visibleProductColors } from "@/lib/product-colors";
 
 import { hasSupabaseEnv } from "@/lib/env";
@@ -285,15 +285,17 @@ export async function getCategoryFilters(categoryId: string): Promise<CatalogFil
   });
 }
 
-export async function getStorefrontBrands(): Promise<FeaturedBrand[]> {
-  if (!hasSupabaseEnv()) return [];
+export async function getStorefrontBrands(): Promise<FeaturedBrandLayout> {
+  if (!hasSupabaseEnv()) return { brands: [], slotCount: 0 };
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("brands")
-    .select("id,name,slug,logo_url,display_order")
-    .eq("is_active", true).eq("show_in_featured_brands", true)
-    .not("display_order", "is", null).order("display_order");
-  if (error) throw new Error(`Impossible de charger les marques: ${error.message}`);
-  return data ?? [];
+  const [brands, layout] = await Promise.all([
+    supabase.from("brands").select("id,name,slug,logo_url,display_order")
+      .eq("is_active", true).eq("show_in_featured_brands", true)
+      .not("display_order", "is", null).order("display_order"),
+    supabase.from("featured_brand_layout").select("slot_count").eq("id", true).single(),
+  ]);
+  if (brands.error || layout.error) throw new Error("Impossible de charger la disposition des marques.");
+  return { brands: brands.data ?? [], slotCount: layout.data.slot_count };
 }
 
 export async function getHomepageData() {
