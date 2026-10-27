@@ -1,3 +1,4 @@
+import type { FeaturedBrand } from "@/lib/featured-brands";
 import { StoreText } from "@/components/storefront-language";
 import Link from "next/link";
 import Image from "next/image";
@@ -68,7 +69,7 @@ function ExpertCampaign({ products }: { products: CatalogProduct[] }) {
   </section>;
 }
 
-export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands, philipsProducts }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: [string, string][]; heroProduct: CatalogProduct | null; philipsProducts: CatalogProduct[] }) {
+export function Home({ slides, featured, bestSellers, newProducts, sale, departments, brands, philipsProducts }: { slides: Record<SlideLocation, HeroSlide[]>; categories: CatalogCategory[]; featured: CatalogProduct[]; bestSellers: CatalogProduct[]; newProducts: CatalogProduct[]; sale: CatalogProduct[]; departments: HomepageDepartment[]; brands: FeaturedBrand[]; heroProduct: CatalogProduct | null; philipsProducts: CatalogProduct[] }) {
   return <>
     <Hero slides={slides} />
     <CategorySection departments={departments} />

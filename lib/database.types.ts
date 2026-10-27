@@ -67,6 +67,8 @@ export type CategoryRow = {
 };
 
 export type BrandRow = {
+  show_in_featured_brands: boolean;
+  display_order: number | null;
   id: string;
   name: string;
   slug: string;

@@ -1,4 +1,5 @@
 import "server-only";
+import type { FeaturedBrand } from "./featured-brands";
 import { visibleProductColors } from "@/lib/product-colors";
 
 import { hasSupabaseEnv } from "@/lib/env";
@@ -284,15 +285,15 @@ export async function getCategoryFilters(categoryId: string): Promise<CatalogFil
   });
 }
 
-export async function getStorefrontBrands(): Promise<[string, string][]> {
+export async function getStorefrontBrands(): Promise<FeaturedBrand[]> {
   if (!hasSupabaseEnv()) return [];
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("products").select("brands(name,slug)")
-    .eq("status", "active").not("published_at", "is", null)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("brands")
+    .select("id,name,slug,logo_url,display_order")
+    .eq("is_active", true).eq("show_in_featured_brands", true)
+    .not("display_order", "is", null).order("display_order");
   if (error) throw new Error(`Impossible de charger les marques: ${error.message}`);
-  const rows = (data ?? []) as unknown as { brands: { name: string; slug: string } | null }[];
-  return [...new Map(rows.flatMap(({ brands }) => brands?.name ? [[brands.slug || brands.name, brands.name] as [string, string]] : [])).entries()];
+  return data ?? [];
 }
 
 export async function getHomepageData() {

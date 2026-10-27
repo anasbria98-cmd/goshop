@@ -74,8 +74,16 @@ export async function saveBrand(data: FormData) {
   const supabase = await staffClient();
   const id = optional(data.get("id"));
   const name = z.string().min(2).max(120).parse(data.get("name"));
-  const payload = { name, slug: slugify(optional(data.get("slug")) || name), logo_url: optional(data.get("logo_url")), description: optional(data.get("description")), website_url: optional(data.get("website_url")), is_active: checked(data, "is_active"), sort_order: number(data, "sort_order"), seo_title: optional(data.get("seo_title")), seo_description: optional(data.get("seo_description")) };
+  const showFeatured = checked(data, "show_in_featured_brands");
+  const rawPosition = optional(data.get("display_order"));
+  const position = rawPosition === null ? null : Number(rawPosition);
+  const fail = (message: string): never => redirect(`/admin/brands?${new URLSearchParams({ ...(id ? { edit: id } : {}), error: message })}`);
+  if ((position !== null && (!Number.isInteger(position) || position < 1 || position > 1000)) || (showFeatured && position === null)) {
+    fail("Choisissez une position entière entre 1 et 1000 pour afficher cette marque.");
+  }
+  const payload = { show_in_featured_brands: showFeatured, display_order: position, name, slug: slugify(optional(data.get("slug")) || name), logo_url: optional(data.get("logo_url")), description: optional(data.get("description")), website_url: optional(data.get("website_url")), is_active: checked(data, "is_active"), sort_order: number(data, "sort_order"), seo_title: optional(data.get("seo_title")), seo_description: optional(data.get("seo_description")) };
   const result = id ? await supabase.from("brands").update(payload).eq("id", id) : await supabase.from("brands").insert(payload);
+  if (result.error?.code === "23505" && result.error.message.includes("brands_featured_position")) fail("Cette position est déjà occupée. Choisissez une case libre ou déplacez d’abord l’autre marque.");
   if (result.error) throw new Error(result.error.message);
   revalidatePath("/admin/brands"); revalidatePath("/", "layout");
 }
