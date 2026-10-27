@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { GripVertical, Plus, X } from "lucide-react";
 import { BrandLogo } from "@/components/featured-brand-logo";
 import { featuredBrandSlots } from "@/lib/featured-brands";
@@ -18,6 +18,8 @@ export function BrandLayoutManager({ brands, slotCount }: { brands: BrandRow[]; 
   const [slots, setSlots] = useState<BrandSlot[]>(initial);
   const [selection, setSelection] = useState<Selection>(null);
   const [target, setTarget] = useState<number | null>(null);
+  const pickerId = useId();
+  const [addingBrand, setAddingBrand] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -51,6 +53,7 @@ export function BrandLayoutManager({ brands, slotCount }: { brands: BrandRow[]; 
     <div className={styles.body}>
       <p className={styles.hint}>Les cases occupées échangent leurs logos. Aucune autre case ne bouge. Retirer un logo conserve sa case vide et ne supprime jamais la marque.</p>
       <div className={styles.toolbar}>
+        <button type="button" className="admin-secondary" disabled={busy || !available.length} aria-expanded={addingBrand} aria-controls={pickerId} onClick={() => setAddingBrand((open) => !open)}><Plus size={16} /> Ajouter une marque</button>
         <button type="button" className="admin-secondary" disabled={busy || slots.length >= 1000} onClick={() => change([...slots, null])}><Plus size={16} /> Ajouter une case vide</button>
         {slots.length > 0 && slots.at(-1) === null ? <button type="button" className="admin-secondary" disabled={busy} onClick={() => change(slots.slice(0, -1))}>Retirer la dernière case vide</button> : null}
         <button type="button" className="admin-primary" disabled={!dirty || busy} onClick={() => void save()}>{busy ? "Enregistrement…" : "Enregistrer la disposition"}</button>
@@ -103,15 +106,15 @@ export function BrandLayoutManager({ brands, slotCount }: { brands: BrandRow[]; 
         })}
       </div>
       {!slots.length ? <p>Aucune case. Ajoutez une case vide pour commencer.</p> : null}
-      <div className={styles.available}>
+      <div id={pickerId} className={styles.available} hidden={!addingBrand}>
         <h3>Marques disponibles</h3>
         <p>Sélectionnez une marque, puis une case vide. Les nouvelles marques restent ici jusqu’à leur ajout explicite.</p>
         <div className={styles.picker}>
-          {available.map((brand) => <button key={brand.id} type="button" disabled={busy} className={selection && "brandId" in selection && selection.brandId === brand.id ? styles.chosen : ""} aria-pressed={Boolean(selection && "brandId" in selection && selection.brandId === brand.id)} onClick={() => { setSelection({ brandId: brand.id }); setMessage(""); setError(""); }}>{brand.name}</button>)}
+          {available.map((brand) => <button key={brand.id} type="button" disabled={busy} className={selection && "brandId" in selection && selection.brandId === brand.id ? styles.chosen : ""} aria-pressed={Boolean(selection && "brandId" in selection && selection.brandId === brand.id)} onClick={() => { setSelection({ brandId: brand.id }); setAddingBrand(false); setMessage(""); setError(""); }}>{brand.name}</button>)}
           {!available.length ? <span>Aucune autre marque active disponible.</span> : null}
         </div>
-        {selection ? <button type="button" className="admin-secondary" disabled={busy} onClick={() => { setSelection(null); setTarget(null); }}>Annuler la sélection</button> : null}
       </div>
+      {selection ? <button type="button" className="admin-secondary" disabled={busy} onClick={() => { setSelection(null); setTarget(null); }}>Annuler la sélection</button> : null}
     </div>
   </section>;
 }
