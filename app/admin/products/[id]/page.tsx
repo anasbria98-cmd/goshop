@@ -3,19 +3,20 @@ import { isAppareillage } from "@/lib/product-variants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-import { AdminHeader, EmptyState, PanelHeader, Status, SubmitButton } from "../../_components";
+import { AdminHeader, EmptyState, PanelHeader, SubmitButton } from "../../_components";
 import { ProductForm } from "../product-form";
 import { ProductImageUpload } from "../_image-upload";
 import { ProductImageGallery } from "../_image-gallery";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { deleteVariant, saveProductAttribute, saveVariant } from "../../actions";
-import { money } from "@/lib/catalog-model";
+import { saveProductAttribute } from "../../actions";
+import { GeneralVariants } from "../_general-variants";
+import type { GeneralVariantRow } from "@/lib/general-variant-input";
 
 type ImageRow = { id: string; storage_path: string; alt_text: string | null; sort_order: number; is_primary: boolean };
 type AttributeRow = { id: string; name: string; type: "text" | "number" | "boolean" | "select"; unit: string | null };
 type OptionRow = { id: string; attribute_id: string; label: string; value: string };
 type ValueRow = { attribute_id: string; option_id?: string | null; text_value?: string | null; number_value?: number | null; boolean_value?: boolean | null };
-type VariantRow = { id: string; name: string; sku: string; price: number | null; is_active: boolean };
+type VariantRow = GeneralVariantRow;
 type CategoryAttribute = { category_id: string; attribute_id: string };
 
 export default async function EditProductPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
@@ -44,6 +45,7 @@ export default async function EditProductPage({ params, searchParams }: { params
   const images = (results[5].data ?? []) as ImageRow[];
   const allAttributes = (results[6].data ?? []) as unknown as AttributeRow[];
   const values = (results[7].data ?? []) as unknown as ValueRow[];
+  if (results[8].error) throw new Error("Impossible de charger les variantes. Rechargez la fiche avant de réessayer.");
   const variants = (results[8].data ?? []) as unknown as VariantRow[];
   const categoryAttributes = (results[9].data ?? []) as unknown as CategoryAttribute[];
   const options = (results[10].data ?? []) as unknown as OptionRow[];
@@ -93,23 +95,7 @@ export default async function EditProductPage({ params, searchParams }: { params
         ) : <EmptyState title="Aucune caractéristique applicable">Associez des attributs aux catégories du produit pour les renseigner ici.</EmptyState>}
       </section>
 
-      {!colorEnabled ? <section className="admin-panel admin-product-manager">
-        <PanelHeader title="Variantes" description="Déclinaisons avec SKU et prix propres." count={variants.length} />
-        {variants.length ? <div className="admin-table-wrap"><table><thead><tr><th>Nom</th><th>SKU</th><th>Prix</th><th>Statut</th><th>Action</th></tr></thead><tbody>{variants.map((variant) => <tr key={variant.id}><td data-label="Nom"><strong>{variant.name}</strong></td><td data-label="SKU"><code>{variant.sku}</code></td><td data-label="Prix">{money(Number(variant.price ?? product.price))}</td><td data-label="Statut"><Status>{variant.is_active ? "Active" : "Inactive"}</Status></td><td data-label="Action"><form action={deleteVariant}><input type="hidden" name="id" value={variant.id} /><input type="hidden" name="product_id" value={id} /><button className="admin-danger-link">Supprimer</button></form></td></tr>)}</tbody></table></div> : <EmptyState title="Aucune variante">Le produit utilise actuellement son SKU principal.</EmptyState>}
-        <form action={saveVariant} className="admin-form-grid admin-variant-form">
-          <input type="hidden" name="product_id" value={id} />
-          <label>Nom <span className="required-mark">*</span><input name="name" required /></label>
-          <label>SKU <span className="required-mark">*</span><input name="sku" required /></label>
-          <label>Code-barres<input name="barcode" /></label>
-          <label>Prix (DH)<input name="price" type="number" min="0" step="0.01" /></label>
-          <label>Prix barré (DH)<input name="compare_at_price" type="number" min="0" step="0.01" /></label>
-          <label>Coût (DH)<input name="cost_price" type="number" min="0" step="0.01" /></label>
-          <label>Stock initial<input name="stock" type="number" min="0" defaultValue="0" /></label>
-          <label>Seuil faible<input name="low_stock_threshold" type="number" min="0" defaultValue="5" /></label>
-          <label className="admin-checkbox"><input name="is_active" type="checkbox" defaultChecked /> Variante active</label>
-          <SubmitButton>Ajouter la variante</SubmitButton>
-        </form>
-      </section> : null}
+      {!colorEnabled ? <GeneralVariants productId={id} rows={variants} basePrice={Number(product.price)} /> : null}
     </>
   );
 }

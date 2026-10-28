@@ -127,12 +127,14 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
   const categoryIds = row.product_categories.flatMap((item) => item.categories?.id ? [item.categories.id] : []);
   const colors = isAppareillage(categoryIds, categories) ? (row.product_variants ?? []).filter((variant) => variant.color_name && variant.color_hex && variant.image_path) : [];
   const hasColorVariants = isAppareillage(categoryIds, categories) && (row.color_variants_enabled || colors.length > 0);
-  const variants = colors.filter((variant) => variant.is_active).map((variant) => {
+  const general = (row.product_variants ?? []).filter(variant => variant.is_active && !variant.color_name && !variant.color_hex && !variant.image_path);
+  const hasGeneralVariants = !hasColorVariants && general.length > 0;
+  const variants = (hasColorVariants ? colors : general).filter((variant) => variant.is_active).map((variant) => {
     const inventory = row.inventory.find((item) => item.variant_id === variant.id);
     return { id: variant.id, name: variant.name, sku: variant.sku, barcode: variant.barcode,
-      colorName: variant.color_name!, colorHex: variant.color_hex!, finish: variant.finish ?? null,
+      colorName: variant.color_name ?? "", colorHex: variant.color_hex ?? "", finish: variant.finish ?? null,
       price: Number(variant.price ?? row.price), compareAtPrice: variant.compare_at_price == null ? null : Number(variant.compare_at_price),
-      imageUrl: storageUrl(variant.image_path!, baseUrl),
+      imageUrl: variant.image_path ? storageUrl(variant.image_path, baseUrl) : images[0]?.url ?? "",
       stock: Math.max(0, (inventory?.quantity ?? 0) - (inventory?.reserved_quantity ?? 0)) };
   });
   return {
@@ -144,7 +146,7 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     brandSlug: row.brands?.slug ?? null,
     category,
     categoryIds,
-    colors: visibleProductColors(row.display_colors, variants),
+    colors: visibleProductColors(row.display_colors, hasColorVariants ? variants : []),
     imageUrl: productDisplayImage({ imageUrl: images[0]?.url ?? null, variants, allowBackorder: row.allow_backorder }),
     images,
     price: Number(row.price),
@@ -152,8 +154,8 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     rating: row.reviews.length ? ratingTotal / row.reviews.length : 0,
     reviewCount: row.reviews.length,
     manufacturerReference: row.manufacturer_reference,
-    stock: hasColorVariants ? variants.reduce((sum, variant) => sum + variant.stock, 0) : stock,
-    ...(hasColorVariants ? { hasColorVariants: true, variants } : {}),
+    stock: hasColorVariants || hasGeneralVariants ? variants.reduce((sum, variant) => sum + variant.stock, 0) : stock,
+    ...(hasColorVariants ? { hasColorVariants: true, variants } : hasGeneralVariants ? {hasGeneralVariants:true, variants} : {}),
     allowBackorder: row.allow_backorder,
     isNew: row.is_new,
     isBestSeller: row.is_best_seller,

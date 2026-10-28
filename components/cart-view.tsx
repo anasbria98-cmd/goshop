@@ -50,7 +50,7 @@ export function CartView() {
                   <Link href={`/produit/${p.slug}`}>
                     <h2><bdi>{p.name}</bdi></h2>
                   </Link>
-                  {p.selectedVariant ? <p className="reference">{p.selectedVariant.colorName}{p.selectedVariant.finish ? ` · ${p.selectedVariant.finish}` : ""}</p> : null}
+                  {p.selectedVariant ? <p className="reference">{p.selectedVariant.colorName || p.selectedVariant.name}{p.selectedVariant.finish ? ` · ${p.selectedVariant.finish}` : ""}</p> : null}
                   <p className="reference"><StoreText>
                     Réf. </StoreText><bdi>{p.sku}</bdi> · {money(p.price)}<StoreText> / unité
                   </StoreText></p>

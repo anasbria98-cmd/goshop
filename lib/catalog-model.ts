@@ -58,6 +58,7 @@ export type CatalogProduct = {
   description: string | null;
   attributes: CatalogAttribute[];
   hasColorVariants?: boolean;
+  hasGeneralVariants?: boolean;
   variants?: CatalogVariant[];
   selectedVariant?: CatalogVariant;
 };

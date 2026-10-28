@@ -5,12 +5,13 @@ import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, ImagePlus, LoaderCircle, PackageCheck, Search, SlidersHorizontal, Tag, Warehouse } from "lucide-react";
 import type { BrandRow, CategoryRow, ProductRow } from "@/lib/database.types";
-import { saveProduct, saveProductWithVariantFeedback } from "../actions";
+import { saveProductWithVariantFeedback } from "../actions";
 import { isAppareillage } from "@/lib/product-variants";
 import type { ColorVariantDraft } from "@/lib/variant-input";
 import { colorVariantListSchema } from "@/lib/variant-input";
 import { ProductColors } from "./_product-colors";
 import { ColorVariants } from "./_color-variants";
+import { GeneralVariants } from "./_general-variants";
 import { CategorySelector } from "./_category-selector";
 
 type ProductFormValue = Partial<ProductRow> & {
@@ -58,13 +59,14 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
   const setStatus = (status: "draft" | "active") => { if (statusRef.current) statusRef.current.value = status; };
 
   return (
-    <form action={colorEnabled ? variantSaveAction : saveProduct} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={(event) => {
+    <form action={variantSaveAction} className="admin-form product-editor product-editor-guided" onInvalid={() => setShowValidationMessage(true)} onSubmit={(event) => {
       const input = new FormData(event.currentTarget).get("color_variants");
       if (uploadBusy || (colorEnabled && !variantsValid) || (input && !colorVariantListSchema.safeParse(JSON.parse(String(input))).success)) { event.preventDefault(); setShowValidationMessage(true); event.currentTarget.querySelector("#variants")?.scrollIntoView({ block: "center" }); return; }
       setHiddenErrorAttempt(variantSaveState.attempt);
       setShowValidationMessage(false);
     }}>
       {product.id ? <input type="hidden" name="id" value={product.id} /> : null}
+      {!colorEnabled && variantSaveState.error && variantSaveState.attempt !== hiddenErrorAttempt ? <p role="alert" className="admin-validation-message">{variantSaveState.error}</p> : null}
       <input ref={statusRef} type="hidden" name="status" defaultValue={product.status ?? "draft"} />
       <input type="hidden" name="main_image_url" value={product.main_image_url ?? ""} />
 
@@ -118,6 +120,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
               {editing ? <a className="admin-secondary" href="#attributes">Ouvrir</a> : null}
             </div>
           </section>
+          {!editing && !colorEnabled ? <GeneralVariants /> : null}
           <ProductColors initial={product.display_colors} legacyColors={colorVariants?.filter(v=>v.is_active && v.color_name && v.image_path && /^#[0-9a-fA-F]{6}$/.test(v.color_hex)).map(v=>({name:v.color_name,hex:v.color_hex}))} />
           {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} baseSku={sku} onBusy={setUploadBusy} onValidityChange={setVariantsValid} saveError={variantSaveState.attempt !== hiddenErrorAttempt ? variantSaveState.error : null} /> : null}
         </div>

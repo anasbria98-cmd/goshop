@@ -41,7 +41,7 @@ export function productDisplayImage(product: VariantImageSource) {
 }
 
 export function resolveCartProduct(product: CatalogProduct, variantId?: string | null) {
-  if (!variantId) return product.hasColorVariants ? null : product;
+  if (!variantId) return (product.hasColorVariants || product.hasGeneralVariants) ? null : product;
   const variant = product.variants?.find((item) => item.id === variantId);
   return variant ? selectProductVariant(product, variant) : null;
 }

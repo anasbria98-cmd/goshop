@@ -44,7 +44,7 @@ export function Quantity({
 }
 export function ProductCard({ product: p }: { product: CatalogProduct }) {
   const router = useRouter();
-  const colors = p.colors ?? p.variants?.map(v=>({name:v.colorName,hex:v.colorHex}));
+  const colors = p.colors ?? p.variants?.filter(v=>v.colorName && v.colorHex).map(v=>({name:v.colorName,hex:v.colorHex}));
   const { t } = useStorefrontLanguage();
   const [qty, setQty] = useState(1);
   const { add, favorites, toggleFavorite } = useStore();
@@ -116,12 +116,12 @@ export function ProductCard({ product: p }: { product: CatalogProduct }) {
         <Quantity value={qty} onChange={setQty} max={p.allowBackorder ? 999 : p.stock} label={p.sku} />
         <button
           className="add-button"
-          disabled={(p.hasColorVariants && !p.variants?.length) || (!p.stock && !p.allowBackorder)}
-          onClick={() => p.hasColorVariants ? router.push(`/produit/${p.slug}`) : add(p, qty)}
+          disabled={((p.hasColorVariants || p.hasGeneralVariants) && !p.variants?.length) || (!p.stock && !p.allowBackorder)}
+          onClick={() => (p.hasColorVariants || p.hasGeneralVariants) ? router.push(`/produit/${p.slug}`) : add(p, qty)}
           aria-label={`${t("Ajouter au panier")} — ${p.name}`}
         >
           <ShoppingCart size={16} />
-          <span><StoreText>{p.hasColorVariants ? "Choisir" : "Ajouter"}</StoreText></span>
+          <span><StoreText>{(p.hasColorVariants || p.hasGeneralVariants) ? "Choisir" : "Ajouter"}</StoreText></span>
         </button>
       </div>
     </article>

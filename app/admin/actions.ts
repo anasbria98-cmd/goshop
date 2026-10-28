@@ -5,6 +5,7 @@ import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { generalVariantListSchema, generalVariantError } from "@/lib/general-variant-input";
 import { colorVariantListSchema, variantSaveError } from "@/lib/variant-input";
 import { categoryDescendants } from "@/lib/category-navigation";
 import { productColorsSchema } from "@/lib/product-colors";
@@ -92,6 +93,7 @@ export async function deleteBrand(data: FormData) {
 export async function saveProduct(data: FormData) {
   const supabase = await staffClient();
   const displayColors = data.has("display_colors") ? productColorsSchema.parse(JSON.parse(String(data.get("display_colors")))) : undefined;
+  const generalVariants = generalVariantListSchema.parse(JSON.parse(String(data.get("general_variants") || "[]")));
   const colorVariants = colorVariantListSchema.parse(JSON.parse(String(data.get("color_variants") || "[]")));
   const categoryIds = data.getAll("category_id").map(String).filter(Boolean);
   const primary = optional(data.get("primary_category_id")) || categoryIds[0];
@@ -119,6 +121,12 @@ export async function saveProduct(data: FormData) {
     stock_tracking: checked(data, "stock_tracking"), allow_backorder: checked(data, "allow_backorder"), featured: checked(data, "featured"), is_new: checked(data, "is_new"), is_best_seller: checked(data, "is_best_seller"), is_on_sale: checked(data, "is_on_sale"),
     seo_title: optional(data.get("seo_title")), seo_description: optional(data.get("seo_description")),
   };
+  if (!id && generalVariants.length) {
+    const {data:savedId,error}=await supabase.rpc("create_product_with_general_variants",{p_product:payload,p_category_ids:categoryIds,p_primary_category_id:primary??null,p_stock:number(data,"stock"),p_low_stock_threshold:number(data,"low_stock_threshold",5),p_variants:generalVariants});
+    if(error) throw new Error(generalVariantError(error));
+    revalidatePath("/admin/products");revalidatePath("/", "layout");
+    redirect(`/admin/products/${savedId}?saved=1`);
+  }
   if (colorVariants.length) {
     const { data: categories, error: categoryError } = await supabase.from("categories").select("id,slug,parent_id");
     if (categoryError) throw new Error(categoryError.message);
@@ -165,7 +173,7 @@ export async function saveProductWithVariantFeedback(previous: { error: string |
     return { error: null, attempt: previous.attempt + 1 };
   } catch (error) {
     unstable_rethrow(error);
-    return { error: variantSaveError(error), attempt: previous.attempt + 1 };
+    return { error: data.has("general_variants") ? generalVariantError(error) : variantSaveError(error), attempt: previous.attempt + 1 };
   }
 }
 
@@ -336,15 +344,5 @@ export async function saveProductAttribute(data: FormData) {
   if (value || optionId) { const { data: attribute } = await supabase.from("attributes").select("type").eq("id", attributeId).single(); const typedValue = attribute?.type === "select" ? { option_id: optionId } : attribute?.type === "number" ? { number_value: Number(value) } : attribute?.type === "boolean" ? { boolean_value: value === "true" } : { text_value: value }; const { error } = await supabase.from("product_attribute_values").insert({ product_id: productId, attribute_id: attributeId, ...typedValue }); if (error) throw new Error(error.message); }
   revalidatePath(`/admin/products/${productId}`); revalidatePath("/", "layout");
 }
-
-export async function saveVariant(data: FormData) {
-  const supabase = await staffClient(); const id = optional(data.get("id")); const productId = z.string().uuid().parse(data.get("product_id"));
-  const payload = { product_id: productId, name: z.string().min(1).parse(data.get("name")), sku: z.string().min(1).parse(data.get("sku")), barcode: optional(data.get("barcode")), price: optional(data.get("price")) ? number(data, "price") : null, compare_at_price: optional(data.get("compare_at_price")) ? number(data, "compare_at_price") : null, cost_price: optional(data.get("cost_price")) ? number(data, "cost_price") : null, is_active: checked(data, "is_active") };
-  if (id) { const { error } = await supabase.from("product_variants").update(payload).eq("id", id); if (error) throw new Error(error.message); }
-  else { const { data: variant, error } = await supabase.from("product_variants").insert(payload).select("id").single(); if (error) throw new Error(error.message); const { error: inventoryError } = await supabase.from("inventory").insert({ product_id: productId, variant_id: variant.id, quantity: number(data, "stock"), reserved_quantity: 0, low_stock_threshold: number(data, "low_stock_threshold", 5) }); if (inventoryError) throw new Error(inventoryError.message); }
-  revalidatePath(`/admin/products/${productId}`);
-}
-
-export async function deleteVariant(data: FormData) { const supabase = await staffClient(); const id = z.string().uuid().parse(data.get("id")); const productId = z.string().uuid().parse(data.get("product_id")); const { error } = await supabase.from("product_variants").delete().eq("id", id); if (error) throw new Error(error.message); revalidatePath(`/admin/products/${productId}`); }
 
 export async function setProductImageOrder(data: FormData) { const supabase = await staffClient(); const productId = z.string().uuid().parse(data.get("product_id")); const imageId = z.string().uuid().parse(data.get("image_id")); const { error } = await supabase.from("product_images").update({ sort_order: number(data, "sort_order") }).eq("id", imageId).eq("product_id", productId); if (error) throw new Error(error.message); revalidatePath(`/admin/products/${productId}`); }

@@ -230,6 +230,9 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      add_product_general_variants: {Args:{p_product_id:string;p_variants:Json};Returns:undefined};
+      create_product_with_general_variants: {Args:{p_product:Json;p_category_ids:string[];p_primary_category_id:string|null;p_stock:number;p_low_stock_threshold:number;p_variants:Json};Returns:string};
+      delete_product_variant_safely: {Args:{p_product_id:string;p_variant_id:string};Returns:undefined};
       save_featured_brand_layout: { Args: { p_expected: (string | null)[]; p_slots: (string | null)[] }; Returns: undefined };
       delete_product_safely: { Args: {p_product_id:string;p_name:string;p_sku:string;p_confirmed:boolean}; Returns:string };
       reorder_homepage_slides: { Args: { p_location: string; p_ids: string[] }; Returns: undefined };

@@ -57,7 +57,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const candidate = line as Partial<CartLine>;
         const product = candidate.product;
         const n = candidate.quantity;
-        if (product && cartLineKey(product) === id && (!product.hasColorVariants || product.selectedVariant) && Number.isInteger(n) && Number(n) > 0)
+        if (product && cartLineKey(product) === id && (!(product.hasColorVariants || product.hasGeneralVariants) || product.selectedVariant) && Number.isInteger(n) && Number(n) > 0)
           restoredCart[id] = {
             product,
             quantity: Math.min(Number(n), product.stock || (product.allowBackorder ? 999 : 0)),
@@ -175,7 +175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     changeCart(next);
   }, [changeCart]);
   const add = useCallback((product: CatalogProduct, n: number) => {
-    if (product.hasColorVariants && !product.selectedVariant) return;
+    if ((product.hasColorVariants || product.hasGeneralVariants) && !product.selectedVariant) return;
     if (!product.stock && !product.allowBackorder) return;
     const max = product.allowBackorder ? 999 : product.stock;
     changeCart({

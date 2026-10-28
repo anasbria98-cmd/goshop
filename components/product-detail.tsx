@@ -17,7 +17,7 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
   const [selectedVariant, setSelectedVariant] = useState(initialVariant);
   const [selectedImage, setSelectedImage] = useState(initialVariant?.imageUrl ?? p.imageUrl);
   const selected = selectedVariant ? selectProductVariant(p, selectedVariant) : p;
-  const unavailable = Boolean(p.hasColorVariants && !selectedVariant) || (!selected.stock && !p.allowBackorder);
+  const unavailable = Boolean((p.hasColorVariants || p.hasGeneralVariants) && !selectedVariant) || (!selected.stock && !p.allowBackorder);
   const { add, favorites, toggleFavorite } = useStore();
   const cat = p.category;
   return (
@@ -34,7 +34,7 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
             src={selectedImage}
             width={550}
             height={500}
-            alt={`${p.name}${selectedVariant ? ` — ${selectedVariant.colorName}` : ""}`}
+            alt={`${p.name}${selectedVariant ? ` — ${selectedVariant.colorName || selectedVariant.name}` : ""}`}
             priority
             key={p.hasColorVariants ? selectedImage : undefined}
             className={p.hasColorVariants ? "variant-product-image" : undefined}
@@ -53,7 +53,15 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
               <span aria-hidden="true" style={{ backgroundColor: variant.colorHex }} /><span>{variant.colorName}{variant.finish ? ` · ${variant.finish}` : ""}</span>
             </button>)}</div>
           </fieldset> : null}
-          <div className={`stock ${(p.hasColorVariants ? unavailable : !p.stock) ? "unavailable" : ""}`} aria-live={p.hasColorVariants ? "polite" : undefined}>
+          {p.hasGeneralVariants ? <fieldset className="product-color-selection">
+            <legend><StoreText>Variante</StoreText>{selectedVariant ? ` : ${selectedVariant.name}` : ""}</legend>
+            <div className="product-color-swatches">{p.variants?.map(variant => <button type="button" key={variant.id}
+              aria-pressed={selectedVariant?.id === variant.id}
+              onClick={() => { setSelectedVariant(variant); setSelectedImage(variant.imageUrl || p.imageUrl); setQty(1); }}>
+              {variant.name}
+            </button>)}</div>
+          </fieldset> : null}
+          <div className={`stock ${((p.hasColorVariants || p.hasGeneralVariants) ? unavailable : !p.stock) ? "unavailable" : ""}`} aria-live={p.hasColorVariants || p.hasGeneralVariants ? "polite" : undefined}>
             <StoreText>{unavailable ? "Indisponible" : "En stock"}</StoreText>
           </div>
           <div className="price-line">
