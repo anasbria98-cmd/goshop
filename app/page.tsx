@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description: seoDescription,
   openGraph: { title: seoTitle, description: seoDescription },
   twitter: { title: seoTitle, description: seoDescription },
+  verification: { google: "TU5zh8WIPU3FED_RxpbjERgQuXfgVotP8Hd2l62nDDU" },
 };
 
 export const dynamic = "force-dynamic";
