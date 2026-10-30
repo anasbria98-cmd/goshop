@@ -3,7 +3,7 @@ import { getHomepageData } from "@/lib/catalog";
 import { getHomeSlides } from "@/lib/home-slides-server";
 import type { Metadata } from "next";
 
-const seoTitle = "GOELEC | Matériel électrique informatique et systèmes de sécurité";
+const seoTitle = "GO ELEC | Matériel électrique informatique et systèmes de sécurité";
 const seoDescription = "Votre sélection de matériel électrique informatique, systèmes de sécurité et outillage au Maroc. Découvrez les grandes marques et préparez vos projets avec GO ELEC.";
 
 export const metadata: Metadata = {

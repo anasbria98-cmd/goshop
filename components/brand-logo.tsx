@@ -20,7 +20,7 @@ export function BrandLogo({
         src={footer ? "/branding/goelec-footer-light.svg" : "/branding/goelec_electrical_security_logo.png"}
         width={1824}
         height={447}
-        alt="GOELEC — Vente Matériel Electrique Informatique et Système de Sécurité"
+        alt="GO ELEC — Vente Matériel Electrique Informatique et Système de Sécurité"
         className="brand-full-logo"
         unoptimized
       />
@@ -29,7 +29,7 @@ export function BrandLogo({
           src="/branding/isometric_electrical_repair_cube_logo.png"
           width={410}
           height={450}
-          alt="GOELEC"
+          alt="GO ELEC"
           className="brand-compact-logo"
           unoptimized
         />
