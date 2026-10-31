@@ -1,0 +1,95 @@
+.section {
+  margin-block: 24px 56px;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--pale);
+}
+
+.photo {
+  position: relative;
+  min-height: 340px;
+}
+
+.photo img {
+  object-fit: cover;
+  object-position: center top;
+}
+
+.information {
+  min-width: 0;
+  padding: 36px 40px;
+  align-self: center;
+}
+
+.name {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.information h2 {
+  margin: 10px 0 24px;
+  color: var(--blue-dark);
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.2;
+}
+
+.details {
+  display: grid;
+  gap: 14px;
+  font-style: normal;
+}
+
+.details p,
+.details a {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+}
+
+.details svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--blue);
+}
+
+.cta {
+  margin-top: 26px;
+  gap: 10px;
+  background: var(--blue);
+  color: white;
+}
+
+.cta:hover {
+  background: var(--blue-dark);
+}
+
+@media (max-width: 767px) {
+  .section {
+    margin-block: 20px 36px;
+  }
+
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .photo {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .information {
+    padding: 24px;
+  }
+
+  .information h2 {
+    margin-bottom: 20px;
+  }
+}
