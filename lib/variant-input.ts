@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { variantImagePathSchema } from "./variant-image-path.mjs";
 
 export const colorVariantSchema = z.object({
   id: z.string().uuid().optional(),
@@ -6,7 +7,7 @@ export const colorVariantSchema = z.object({
   color_name: z.string().trim().min(1).max(80),
   color_hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   finish: z.string().trim().max(80),
-  image_path: z.string().regex(/^variants\/[a-zA-Z0-9_/-]+\.(png|jpe?g|webp)$/),
+  image_path: variantImagePathSchema,
   sku: z.string().trim().min(1).max(80),
   barcode: z.string().trim().max(80),
   price: z.number().finite().nonnegative().nullable(),

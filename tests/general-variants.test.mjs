@@ -18,3 +18,9 @@ test('general variant selection uses actual SKU/price/stock and separate cart ke
  assert.equal(resolveCartProduct(p),null);assert.equal(resolveCartProduct(p,'missing'),null);
  const chosen=selectProductVariant(p,v);assert.equal(chosen.sku,'H20');assert.equal(chosen.price,42.5);assert.equal(chosen.stock,8);assert.equal(cartLineKey(chosen),'p:v');assert.equal(p.sku,'BASE');
 });
+
+test('general variant image is optional and accepts gallery or uploaded paths only',()=>{
+ assert.equal(generalVariantSchema.parse(row).image_path,'');
+ for(const image_path of ['', 'variants/black.png','products/local/white.jpg','uploads/photo.webp'])assert.equal(generalVariantSchema.parse({...row,image_path}).image_path,image_path);
+ for(const image_path of ['../../private.png','https://example.com/image.png'])assert.equal(generalVariantSchema.safeParse({...row,image_path}).success,false);
+});

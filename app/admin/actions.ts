@@ -9,7 +9,6 @@ import { generalVariantListSchema, generalVariantError } from "@/lib/general-var
 import { colorVariantListSchema, variantSaveError } from "@/lib/variant-input";
 import { categoryDescendants } from "@/lib/category-navigation";
 import { productColorsSchema } from "@/lib/product-colors";
-import { isAppareillage } from "@/lib/product-variants";
 
 const slugify = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const optional = (value: FormDataEntryValue | null) => {
@@ -121,6 +120,7 @@ export async function saveProduct(data: FormData) {
     stock_tracking: checked(data, "stock_tracking"), allow_backorder: checked(data, "allow_backorder"), featured: checked(data, "featured"), is_new: checked(data, "is_new"), is_best_seller: checked(data, "is_best_seller"), is_on_sale: checked(data, "is_on_sale"),
     seo_title: optional(data.get("seo_title")), seo_description: optional(data.get("seo_description")),
   };
+  if (!id && generalVariants.length && colorVariants.length) throw new Error("Choisissez un seul type de variantes à la création, puis ajoutez les autres après l’enregistrement.");
   if (!id && generalVariants.length) {
     const {data:savedId,error}=await supabase.rpc("create_product_with_general_variants",{p_product:payload,p_category_ids:categoryIds,p_primary_category_id:primary??null,p_stock:number(data,"stock"),p_low_stock_threshold:number(data,"low_stock_threshold",5),p_variants:generalVariants});
     if(error) throw new Error(generalVariantError(error));
@@ -128,9 +128,6 @@ export async function saveProduct(data: FormData) {
     redirect(`/admin/products/${savedId}?saved=1`);
   }
   if (colorVariants.length) {
-    const { data: categories, error: categoryError } = await supabase.from("categories").select("id,slug,parent_id");
-    if (categoryError) throw new Error(categoryError.message);
-    if (!isAppareillage(categoryIds, categories ?? [])) throw new Error("Les couleurs sont réservées aux produits Appareillage.");
     const { data: savedId, error } = await supabase.rpc("save_product_with_color_variants", {
       p_product_id: id, p_product: payload, p_category_ids: categoryIds, p_primary_category_id: primary,
       p_stock: number(data, "stock"), p_low_stock_threshold: number(data, "low_stock_threshold", 5), p_variants: colorVariants,
@@ -330,9 +327,14 @@ export async function setPrimaryProductImage(data: FormData) {
 export async function deleteProductImage(data: FormData) {
   const supabase = await staffClient(); const productId = z.string().uuid().parse(data.get("product_id")); const imageId = z.string().uuid().parse(data.get("image_id"));
   const { data: image } = await supabase.from("product_images").select("storage_path,is_primary").eq("id", imageId).eq("product_id", productId).single(); if (!image) return;
-  await supabase.storage.from("product-images").remove([String(image.storage_path)]);
+  const { data: variantReferences, error: referenceError } = await supabase.from("product_variants").select("id").eq("image_path", String(image.storage_path)).limit(1);
+  if (referenceError) throw new Error("Impossible de vérifier les images des variantes. Réessayez.");
+  // Removing a gallery entry must never remove a file still assigned to a variant.
+  if (!variantReferences?.length) {
+    await supabase.storage.from("product-images").remove([String(image.storage_path)]);
+    await supabase.from("media_assets").delete().eq("storage_path", String(image.storage_path));
+  }
   await supabase.from("product_images").delete().eq("id", imageId);
-  await supabase.from("media_assets").delete().eq("storage_path", String(image.storage_path));
   if (image.is_primary) { const { data: next } = await supabase.from("product_images").select("id,storage_path").eq("product_id", productId).order("sort_order").limit(1).maybeSingle(); if (next) { await supabase.from("product_images").update({ is_primary: true }).eq("id", String(next.id)); await supabase.from("products").update({ main_image_url: String(next.storage_path) }).eq("id", productId); } else await supabase.from("products").update({ main_image_url: null }).eq("id", productId); }
   revalidatePath(`/admin/products/${productId}`); revalidatePath("/", "layout");
 }

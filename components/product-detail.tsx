@@ -48,9 +48,9 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
             Réf. GO ELEC : </StoreText><bdi>{selected.sku}</bdi><StoreText> · Réf. fabricant : </StoreText><bdi>{p.manufacturerReference || "—"}</bdi>
           </p>
           {p.hasColorVariants ? <fieldset className="product-color-selection">
-            <legend><StoreText>Couleur</StoreText>{selectedVariant ? ` : ${selectedVariant.colorName}${selectedVariant.finish ? ` · ${selectedVariant.finish}` : ""}` : ""}</legend>
-            <div className="product-color-swatches">{p.variants?.map((variant) => <button type="button" key={variant.id} aria-pressed={selectedVariant?.id === variant.id} aria-label={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} title={`${variant.colorName}${variant.finish ? ` · ${variant.finish}` : ""}`} onClick={() => { setSelectedVariant(variant); setSelectedImage(variant.imageUrl); setQty(1); }}>
-              <span aria-hidden="true" style={{ backgroundColor: variant.colorHex }} /><span>{variant.colorName}{variant.finish ? ` · ${variant.finish}` : ""}</span>
+            <legend><StoreText>Couleur</StoreText>{selectedVariant ? ` : ${selectedVariant.colorName || selectedVariant.name}${selectedVariant.finish ? ` · ${selectedVariant.finish}` : ""}` : ""}</legend>
+            <div className="product-color-swatches">{p.variants?.map((variant) => <button type="button" key={variant.id} aria-pressed={selectedVariant?.id === variant.id} aria-label={`${variant.colorName || variant.name}${variant.finish ? ` · ${variant.finish}` : ""}`} title={`${variant.colorName || variant.name}${variant.finish ? ` · ${variant.finish}` : ""}`} onClick={() => { setSelectedVariant(variant); setSelectedImage(variant.imageUrl || p.imageUrl); setQty(1); }}>
+              <span aria-hidden="true" style={{ backgroundColor: variant.colorHex }} /><span>{variant.colorName || variant.name}{variant.finish ? ` · ${variant.finish}` : ""}</span>
             </button>)}</div>
           </fieldset> : null}
           {p.hasGeneralVariants ? <fieldset className="product-color-selection">

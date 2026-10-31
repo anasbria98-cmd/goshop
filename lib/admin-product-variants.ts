@@ -20,7 +20,7 @@ export async function getAdminColorVariants(productId?: string) {
   ]);
   if (error || stockError) throw new Error((error ?? stockError)!.message);
   const choices = [...new Map((variants ?? []).filter((v) => v.color_name && v.color_hex).map((v) => [String(v.color_name), { name: String(v.color_name), hex: String(v.color_hex) }])).values()];
-  const rows: ColorVariantDraft[] = (variants ?? []).filter((v) => v.product_id === productId).map((v) => {
+  const rows: ColorVariantDraft[] = (variants ?? []).filter((v) => v.product_id === productId && v.color_name && v.color_hex).map((v) => {
     const stock = inventory?.find((i) => i.variant_id === v.id);
     return { id: String(v.id), name: String(v.name), sku: String(v.sku), barcode: String(v.barcode ?? ""),
       price: v.price == null ? "" : String(v.price), compare_at_price: v.compare_at_price == null ? "" : String(v.compare_at_price), color_name: String(v.color_name ?? ""), color_hex: String(v.color_hex ?? "#ffffff"),

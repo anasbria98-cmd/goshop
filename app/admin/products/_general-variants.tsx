@@ -2,18 +2,21 @@
 
 import { useActionState, useState } from "react";
 import { EmptyState, PanelHeader, Status } from "../_components";
-import { addGeneralVariant, removeGeneralVariant } from "./variant-actions";
+import { addGeneralVariant, removeGeneralVariant, saveGeneralVariantImage } from "./variant-actions";
 import { generalVariantSchema, generalVariantError, type GeneralVariantInput, type GeneralVariantRow } from "@/lib/general-variant-input";
+import { VariantImage } from "./_variant-image";
+import type { VariantGalleryImage } from "@/lib/variant-image";
 import { money } from "@/lib/catalog-model";
 
-const empty = { name: "", sku: "", barcode: "", price: "", compare_at_price: "", cost_price: "", stock: "0", low_stock_threshold: "5", is_active: true };
+const empty = { image_path: "", name: "", sku: "", barcode: "", price: "", compare_at_price: "", cost_price: "", stock: "0", low_stock_threshold: "5", is_active: true };
 const fields = [
   ["name", "Nom"], ["sku", "SKU"], ["barcode", "Code-barres"],
   ["price", "Prix (DH)"], ["compare_at_price", "Prix barré (DH)"], ["cost_price", "Coût (DH)"],
   ["stock", "Stock initial"], ["low_stock_threshold", "Seuil faible"],
 ] as const;
 
-export function GeneralVariants({ productId, rows = [], basePrice = 0 }: { productId?: string; rows?: GeneralVariantRow[]; basePrice?: number }) {
+export function GeneralVariants({ productId, rows = [], basePrice = 0, galleryImages = [], onBusy }: { productId?: string; rows?: GeneralVariantRow[]; basePrice?: number; galleryImages?: VariantGalleryImage[]; onBusy?: (busy: boolean) => void }) {
+  const [imageBusy, setImageBusy] = useState(false);
   const [draft, setDraft] = useState(empty);
   const [staged, setStaged] = useState<GeneralVariantInput[]>([]);
   const [localMessage, setLocalMessage] = useState<{ error?: string; success?: string }>({});
@@ -51,9 +54,11 @@ export function GeneralVariants({ productId, rows = [], basePrice = 0 }: { produ
           onChange={event => setDraft(previous => ({ ...previous, [key]: event.target.value }))} />
       </label>;
     })}
+    <VariantImage value={draft.image_path} gallery={galleryImages} onChange={image_path => setDraft(p => ({...p,image_path}))} onBusy={busy => {setImageBusy(busy);onBusy?.(busy);}} />
+    {productId ? <input type="hidden" name="image_path" value={draft.image_path} /> : null}
     <label className="admin-checkbox"><input name={productId ? "is_active" : undefined} type="checkbox" checked={draft.is_active}
       onChange={event => setDraft(previous => ({ ...previous, is_active: event.target.checked }))} /> Variante active</label>
-    <button className="admin-primary" type={productId ? "submit" : "button"} disabled={pending || deleting} onClick={productId ? undefined : stageVariant}>
+    <button className="admin-primary" type={productId ? "submit" : "button"} disabled={pending || deleting || imageBusy} onClick={productId ? undefined : stageVariant}>
       {pending ? "Enregistrement…" : "Ajouter la variante"}
     </button>
   </>;
@@ -63,10 +68,11 @@ export function GeneralVariants({ productId, rows = [], basePrice = 0 }: { produ
     {feedback.error ? <p className="admin-validation-message" role="alert">{feedback.error}</p> : null}
     {feedback.success ? <p className="admin-feedback admin-feedback--success" role="status">{feedback.success}</p> : null}
     {allRows.length ? <div className="admin-table-wrap"><table>
-      <thead><tr><th>Nom</th><th>SKU</th><th>Prix</th><th>Statut</th><th>Action</th></tr></thead>
+      <thead><tr><th>Nom</th><th>SKU</th><th>Prix</th><th>Statut</th><th>Image</th><th>Action</th></tr></thead>
       <tbody>{allRows.map(row => <tr key={row.id}>
         <td data-label="Nom"><strong>{row.name}</strong></td><td data-label="SKU"><code>{row.sku}</code></td>
         <td data-label="Prix">{money(row.price ?? basePrice)}</td><td data-label="Statut"><Status>{row.is_active ? "Active" : "Inactive"}</Status></td>
+        <td data-label="Image">{productId ? <SavedVariantImage productId={productId} row={row} gallery={galleryImages} /> : <VariantImage value={row.image_path || ""} gallery={galleryImages} onChange={image_path => setStaged(p => p.map((v, i) => String(i) === row.id ? {...v,image_path} : v))} />}</td>
         <td data-label="Action">{productId ? <form action={deleteAction} onSubmit={() => setActiveFeedback("delete")}>
           <input type="hidden" name="product_id" value={productId} /><input type="hidden" name="id" value={row.id} />
           <button className="admin-danger-link" disabled={deleting || pending}>Supprimer</button>
@@ -79,4 +85,16 @@ export function GeneralVariants({ productId, rows = [], basePrice = 0 }: { produ
     {productId ? <form action={action} className="admin-form-grid admin-variant-form" onSubmit={() => setActiveFeedback("add")}>{controls}</form>
       : <div className="admin-form-grid admin-variant-form">{controls}</div>}
   </section>;
+}
+
+function SavedVariantImage({productId,row,gallery}:{productId:string;row:GeneralVariantRow;gallery:VariantGalleryImage[]}) {
+  const [path,setPath]=useState(row.image_path || "");
+  const [busy,setBusy]=useState(false);
+  const [state,action,pending]=useActionState(saveGeneralVariantImage,{error:null,success:null});
+  return <form action={action}>
+    <input type="hidden" name="product_id" value={productId} /><input type="hidden" name="id" value={row.id} /><input type="hidden" name="image_path" value={path} />
+    <VariantImage value={path} onChange={setPath} gallery={gallery} onBusy={setBusy} label={`Image de ${row.name}`} />
+    <button className="admin-secondary" disabled={busy || pending}>Enregistrer l’image</button>
+    {state.error ? <p role="alert">{state.error}</p> : null}{state.success ? <p role="status">{state.success}</p> : null}
+  </form>;
 }

@@ -40,14 +40,13 @@ function ProductSaveActions({ editing, published, setStatus }: { editing: boolea
   );
 }
 
-export function ProductForm({ product = {}, brands, categories, defaultTaxRate = 20, colorVariants, colorChoices }: { product?: ProductFormValue; brands: BrandRow[]; categories: CategoryRow[]; defaultTaxRate?: number; colorVariants?: ColorVariantDraft[]; colorChoices?: { name: string; hex: string }[] }) {
+export function ProductForm({ product = {}, brands, categories, defaultTaxRate = 20, colorVariants, colorChoices, galleryImages = [] }: { product?: ProductFormValue; brands: BrandRow[]; categories: CategoryRow[]; defaultTaxRate?: number; colorVariants?: ColorVariantDraft[]; colorChoices?: { name: string; hex: string }[]; galleryImages?: import("@/lib/variant-image").VariantGalleryImage[] }) {
   const [variantSaveState, variantSaveAction] = useActionState(saveProductWithVariantFeedback, { error: null, attempt: 0 });
   const [hiddenErrorAttempt, setHiddenErrorAttempt] = useState(0);
-  const [selectedCategories, setSelectedCategories] = useState(product.categories ?? []);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [variantsValid, setVariantsValid] = useState(true);
   const [sku, setSku] = useState(product.sku ?? "");
-  const colorEnabled = isAppareillage(selectedCategories, categories);
+  const [colorEnabled, setColorEnabled] = useState(Boolean(colorVariants?.length) || isAppareillage(product.categories ?? [], categories));
   const [name, setName] = useState(product.name ?? "");
   const [slug, setSlug] = useState(product.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(product.slug));
@@ -120,9 +119,10 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
               {editing ? <a className="admin-secondary" href="#attributes">Ouvrir</a> : null}
             </div>
           </section>
-          {!editing && !colorEnabled ? <GeneralVariants /> : null}
-          <ProductColors initial={product.display_colors} legacyColors={colorVariants?.filter(v=>v.is_active && v.color_name && v.image_path && /^#[0-9a-fA-F]{6}$/.test(v.color_hex)).map(v=>({name:v.color_name,hex:v.color_hex}))} />
-          {colorEnabled ? <ColorVariants key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} baseSku={sku} onBusy={setUploadBusy} onValidityChange={setVariantsValid} saveError={variantSaveState.attempt !== hiddenErrorAttempt ? variantSaveState.error : null} /> : null}
+          {!editing && !colorEnabled ? <GeneralVariants onBusy={setUploadBusy} /> : null}
+          <ProductColors initial={product.display_colors} legacyColors={colorVariants?.filter(v=>v.is_active && v.color_name && /^#[0-9a-fA-F]{6}$/.test(v.color_hex)).map(v=>({name:v.color_name,hex:v.color_hex}))} />
+          <label className="admin-checkbox"><input type="checkbox" checked={colorEnabled} disabled={Boolean(colorVariants?.length)} onChange={event => setColorEnabled(event.target.checked)} /> Configurer des variantes de couleur (toutes catégories)</label>
+          {colorEnabled ? <ColorVariants galleryImages={galleryImages} key={JSON.stringify(colorVariants ?? [])} initialRows={colorVariants} choices={colorChoices} baseSku={sku} onBusy={setUploadBusy} onValidityChange={setVariantsValid} saveError={variantSaveState.attempt !== hiddenErrorAttempt ? variantSaveState.error : null} /> : null}
         </div>
 
         <aside className="product-editor-sidebar">
@@ -136,7 +136,7 @@ export function ProductForm({ product = {}, brands, categories, defaultTaxRate =
           <section className="admin-panel product-side-card" aria-labelledby="product-categories-title">
             <div className="product-side-title"><Tag aria-hidden="true" size={17} /><h2 id="product-categories-title">Catégorie et marque</h2></div>
             <label>Marque<select name="brand_id" defaultValue={product.brand_id ?? ""}><option value="">Sans marque</option>{brands.map((brand) => <option value={brand.id} key={brand.id}>{brand.name}</option>)}</select></label>
-            <CategorySelector categories={categories} initialSelected={product.categories} initialPrimary={product.primaryCategory} onSelectionChange={setSelectedCategories} />
+            <CategorySelector categories={categories} initialSelected={product.categories} initialPrimary={product.primaryCategory} />
           </section>
 
           <section className="admin-panel product-side-card" aria-labelledby="product-organization-title">

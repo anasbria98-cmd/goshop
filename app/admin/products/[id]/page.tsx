@@ -1,5 +1,4 @@
 import { getAdminColorVariants } from "@/lib/admin-product-variants";
-import { isAppareillage } from "@/lib/product-variants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -52,7 +51,6 @@ export default async function EditProductPage({ params, searchParams }: { params
   const categoryIds = assignments.map((item) => item.category_id);
   const relevantIds = new Set(categoryAttributes.filter((item) => categoryIds.includes(item.category_id)).map((item) => item.attribute_id));
   const attributes = relevantIds.size ? allAttributes.filter((attribute) => relevantIds.has(attribute.id)) : [];
-  const colorEnabled = isAppareillage(categoryIds, categories);
   const colorData = await getAdminColorVariants(id);
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
@@ -62,7 +60,7 @@ export default async function EditProductPage({ params, searchParams }: { params
         <Link className="admin-secondary" href="/admin/products">Retour au catalogue</Link>
       </AdminHeader>
       {saved ? <div className="admin-feedback admin-feedback--success" role="status"><CheckCircle2 size={18} /> Les modifications ont été enregistrées.</div> : null}
-      <ProductForm product={{ ...product, categories: categoryIds, primaryCategory: assignments.find((item) => item.is_primary)?.category_id, stock: stock?.quantity, lowStockThreshold: stock?.low_stock_threshold }} brands={brands} categories={categories} colorVariants={colorData.rows} colorChoices={colorData.choices} />
+      <ProductForm product={{ ...product, categories: categoryIds, primaryCategory: assignments.find((item) => item.is_primary)?.category_id, stock: stock?.quantity, lowStockThreshold: stock?.low_stock_threshold }} brands={brands} categories={categories} colorVariants={colorData.rows} colorChoices={colorData.choices} galleryImages={images} />
 
       <section className="admin-panel admin-product-manager" id="images">
         <PanelHeader title="Galerie d’images" description="Importez, ordonnez et choisissez l’image principale." count={images.length} />
@@ -95,7 +93,7 @@ export default async function EditProductPage({ params, searchParams }: { params
         ) : <EmptyState title="Aucune caractéristique applicable">Associez des attributs aux catégories du produit pour les renseigner ici.</EmptyState>}
       </section>
 
-      {!colorEnabled ? <GeneralVariants productId={id} rows={variants} basePrice={Number(product.price)} /> : null}
+      <GeneralVariants productId={id} galleryImages={images} rows={variants.filter(v => !colorData.rows.some(c => c.id === v.id))} basePrice={Number(product.price)} />
     </>
   );
 }

@@ -230,6 +230,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      set_product_variant_image: {Args:{p_product_id:string;p_variant_id:string;p_image_path:string};Returns:undefined};
       add_product_general_variants: {Args:{p_product_id:string;p_variants:Json};Returns:undefined};
       create_product_with_general_variants: {Args:{p_product:Json;p_category_ids:string[];p_primary_category_id:string|null;p_stock:number;p_low_stock_threshold:number;p_variants:Json};Returns:string};
       delete_product_variant_safely: {Args:{p_product_id:string;p_variant_id:string};Returns:undefined};

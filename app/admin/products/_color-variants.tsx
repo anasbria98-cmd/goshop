@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { variantImageUrl, type VariantGalleryImage } from "@/lib/variant-image";
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, Plus, Search, Sparkles, Upload } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -28,13 +29,14 @@ function ColorChip({ color, onClick, disabled, label }: { color: ColorChoice; on
   </button>;
 }
 
-export function ColorVariants({ initialRows = [], choices = [], baseSku = "", onBusy, onValidityChange, saveError }: {
+export function ColorVariants({ initialRows = [], choices = [], baseSku = "", onBusy, onValidityChange, saveError, galleryImages = [] }: {
   initialRows?: ColorVariantDraft[];
   choices?: ColorChoice[];
   baseSku?: string;
   onBusy: (busy: boolean) => void;
   onValidityChange: (valid: boolean) => void;
   saveError?: string | null;
+  galleryImages?: VariantGalleryImage[];
 }) {
   const [rows, setRows] = useState<DraftRow[]>(() => initialRows.map((row) => ({ ...row, key: row.id!, autoSku: false })));
   const [openKeys, setOpenKeys] = useState<Set<string>>(() => new Set());
@@ -114,7 +116,7 @@ export function ColorVariants({ initialRows = [], choices = [], baseSku = "", on
     try {
       let source: Blob | undefined = imageFiles.current.get(row.key);
       if (!source) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${row.image_path}`);
+        const response = await fetch(variantImageUrl(row.image_path));
         if (!response.ok) throw new Error("L’image n’a pas pu être analysée.");
         source = await response.blob();
       }
@@ -192,8 +194,13 @@ export function ColorVariants({ initialRows = [], choices = [], baseSku = "", on
               <label>Prix barré (DH)<input type="number" min="0" step="0.01" value={row.compare_at_price ?? ""} onChange={(event) => update(row.key, { compare_at_price: event.target.value })} /></label>
               <label>Stock total<input type="number" min={Math.min(row.expected_stock, row.reserved)} step="1" value={row.stock} onChange={(event) => update(row.key, { stock: Number(event.target.value) })} /><small>{row.reserved} réservé(s) · {Math.max(0, row.stock - row.reserved)} disponible(s)</small></label>
             </div>
+            <label>Image de la galerie (facultatif)<select aria-label={`Image de la variante ${title}`} value={galleryImages.some(i => i.storage_path === row.image_path) ? row.image_path : row.image_path ? "__uploaded" : ""} onChange={event => update(row.key, {image_path:event.target.value})}>
+              <option value="">Image principale du produit (par défaut)</option>
+              {row.image_path && !galleryImages.some(i => i.storage_path === row.image_path) ? <option value="__uploaded" disabled>Image importée</option> : null}
+              {galleryImages.map((image, i) => <option value={image.storage_path} key={image.storage_path}>{image.alt_text || `Image produit ${i + 1}`}</option>)}
+            </select></label>
             <div className="admin-variant-image-upload">
-              {row.image_path ? <Image src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${row.image_path}`} alt={`Image ${title}`} width={96} height={96} /> : <span className="admin-color-image-empty"><Upload size={24} aria-hidden="true" />Photo manquante</span>}
+              {row.image_path ? <Image src={variantImageUrl(row.image_path)} alt={`Image ${title}`} width={96} height={96} /> : <span className="admin-color-image-empty"><Upload size={24} aria-hidden="true" />Image principale du produit</span>}
               <div><label><span><Upload size={16} aria-hidden="true" />{uploading.includes(row.key) ? "Import en cours…" : row.image_path ? "Remplacer la photo" : "Ajouter la photo réelle"}</span><input type="file" accept="image/png,image/jpeg,image/webp" aria-label={`Photo de ${title}`} onChange={(event) => { void upload(row.key, event.target.files?.[0]); event.target.value = ""; }} /></label><small>PNG, JPEG ou WebP · 8 Mo maximum</small></div>
             </div>
             {row.image_path ? <button type="button" className="admin-secondary" disabled={estimating.includes(row.key)} onClick={() => { void estimateColor(row); }}><Sparkles size={15} aria-hidden="true" />{estimating.includes(row.key) ? "Analyse en cours…" : "Suggérer depuis la photo"}</button> : null}

@@ -6,7 +6,7 @@ import { hasSupabaseEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { homepageDepartments, philipsCampaignProducts } from "@/lib/homepage-model";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
-import { isAppareillage, productDisplayImage } from "@/lib/product-variants";
+import { productDisplayImage } from "@/lib/product-variants";
 
 type RawCategory = {
   id: string;
@@ -125,11 +125,11 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
   );
   const ratingTotal = row.reviews.reduce((sum, review) => sum + Number(review.rating), 0);
   const categoryIds = row.product_categories.flatMap((item) => item.categories?.id ? [item.categories.id] : []);
-  const colors = isAppareillage(categoryIds, categories) ? (row.product_variants ?? []).filter((variant) => variant.color_name && variant.color_hex && variant.image_path) : [];
-  const hasColorVariants = isAppareillage(categoryIds, categories) && (row.color_variants_enabled || colors.length > 0);
-  const general = (row.product_variants ?? []).filter(variant => variant.is_active && !variant.color_name && !variant.color_hex && !variant.image_path);
+  const colors = (row.product_variants ?? []).filter((variant) => variant.color_name && variant.color_hex);
+  const hasColorVariants = Boolean(row.color_variants_enabled || colors.length > 0);
+  const general = (row.product_variants ?? []).filter(variant => variant.is_active && !variant.color_name && !variant.color_hex);
   const hasGeneralVariants = !hasColorVariants && general.length > 0;
-  const variants = (hasColorVariants ? colors : general).filter((variant) => variant.is_active).map((variant) => {
+  const variants = (hasColorVariants ? [...colors, ...general] : general).filter((variant) => variant.is_active).map((variant) => {
     const inventory = row.inventory.find((item) => item.variant_id === variant.id);
     return { id: variant.id, name: variant.name, sku: variant.sku, barcode: variant.barcode,
       colorName: variant.color_name ?? "", colorHex: variant.color_hex ?? "", finish: variant.finish ?? null,

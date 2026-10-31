@@ -52,7 +52,7 @@ test('Initial color prefers the original image when available and never defaults
 test('Color input accepts custom names and HEX, rejects incomplete images, invalid prices/stock and duplicate SKUs', () => {
   const row = {color_name:'Champagne personnalisé',color_hex:'#b5A08c',name:'Champagne',sku:'CUSTOM',barcode:'',price:55,stock:3,expected_stock:null,image_path:'variants/image.jpg',finish:'Satiné',is_active:true};
   assert.equal(colorVariantListSchema.safeParse([row]).success,true);
-  for (const patch of [{color_hex:'#nohex'}, {image_path:''},{image_path:'../../other.png'},{price:-1},{stock:-1},{stock:1.2},{color_name:''},{sku:''}]) assert.equal(colorVariantListSchema.safeParse([{...row,...patch}]).success,false);
+  for (const patch of [{color_hex:'#nohex'}, {image_path:'../../other.png'},{price:-1},{stock:-1},{stock:1.2},{color_name:''},{sku:''}]) assert.equal(colorVariantListSchema.safeParse([{...row,...patch}]).success,false);
   assert.equal(colorVariantListSchema.safeParse([row,row]).success,false);
   assert.equal(colorVariantListSchema.safeParse([]).success,true);
   assert.equal(colorVariantListSchema.safeParse([{...row,stock:null,expected_stock:-2}]).success,true,'metadata edits preserve existing backorder inventory');
@@ -73,4 +73,10 @@ test('Variant save feedback explains conflicts and stock errors without exposing
   assert.doesNotMatch(variantSaveError(new Error('SUPABASE_SECRET_KEY is not configured.')),/SUPABASE|SECRET/);
   const invalid=colorVariantListSchema.safeParse([{sku:''}]);
   assert.match(variantSaveError(invalid.error),/Vérifiez les couleurs/);
+});
+
+test('color variants allow the existing gallery and optional main-image fallback',()=>{
+ const row={color_name:'Noir',color_hex:'#000000',name:'Noir',sku:'BLACK',barcode:'',price:null,stock:0,expected_stock:null,image_path:'',finish:'',is_active:true};
+ for(const image_path of ['', 'products/product-id/black.jpg','uploads/white.webp','variants/black.png'])assert.equal(colorVariantListSchema.safeParse([{...row,image_path}]).success,true);
+ for(const image_path of ['https://example.com/x.png','../../x.png','products/../x.jpg'])assert.equal(colorVariantListSchema.safeParse([{...row,image_path}]).success,false);
 });
