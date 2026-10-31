@@ -16,7 +16,7 @@ export function ShowroomSection({ settings }: { settings: PublicStoreSettings })
     <div className={styles.card}>
       <div className={styles.photo}>
         <div className={styles.frame}>
-          <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" width={676} height={651} sizes="(max-width: 767px) 100vw, 676px" />
+          <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" width={676} height={651} sizes="(max-width: 375px) calc(100vw - 66px), 338px" quality={100} />
         </div>
       </div>
       <div className={styles.information}>

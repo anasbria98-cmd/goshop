@@ -5,11 +5,29 @@
 }
 
 .card {
-  max-width: 676px;
+  display: grid;
+  grid-template-columns: minmax(0, 386px) minmax(0, 1fr);
+  max-width: 1040px;
   margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 4px 16px rgb(29 57 119 / 6%);
+}
+
+.photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 24px;
+  background: var(--pale);
 }
 
 .frame {
+  width: 100%;
+  max-width: 338px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -19,30 +37,46 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1.35;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center;
 }
 
 .information {
-  padding: 24px;
+  min-width: 0;
+  padding: 32px;
+  align-self: center;
 }
 
 .label {
-  display: block;
-  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--blue);
+  font-size: 11px;
+}
+
+.label::before {
+  width: 22px;
+  height: 3px;
+  flex: none;
+  background: var(--orange);
+  content: "";
 }
 
 .information h2 {
-  margin: 0 0 16px;
-  font-size: 32px;
+  margin: 0 0 20px;
+  color: var(--ink);
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .details {
   display: grid;
-  gap: 8px;
+  gap: 14px;
+  padding-block: 18px;
+  border-block: 1px solid var(--line);
   font-style: normal;
 }
 
@@ -50,7 +84,7 @@
 .details a {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
 }
 
@@ -61,10 +95,8 @@
 }
 
 .cta {
-  min-height: 50px;
-  margin-top: 24px;
-  padding: 14px 26px;
-  border-radius: 26px;
+  min-height: 46px;
+  margin-top: 20px;
   gap: 10px;
   color: white;
 }
@@ -79,12 +111,34 @@
     padding-top: 24px;
   }
 
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .photo {
+    padding: 16px;
+  }
+
   .information {
-    padding: 22px 16px 0;
+    padding: 22px 20px;
   }
 
   .label {
-    font-size: 12px;
+    font-size: 10px;
     letter-spacing: 1px;
+  }
+
+  .information h2 {
+    margin-bottom: 16px;
+    font-size: 26px;
+  }
+
+  .details {
+    padding-block: 16px;
+    gap: 12px;
+  }
+
+  .cta {
+    width: 100%;
   }
 }
