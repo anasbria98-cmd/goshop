@@ -16,13 +16,12 @@ export function ShowroomSection({ settings }: { settings: PublicStoreSettings })
     <div className={styles.card}>
       <div className={styles.photo}>
         <div className={styles.frame}>
-          <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" width={676} height={651} sizes="(max-width: 767px) 100vw, 500px" />
+          <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" width={676} height={651} sizes="(max-width: 767px) 100vw, 676px" />
         </div>
       </div>
       <div className={styles.information}>
-        <span className="eyebrow">GO ELEC</span>
-        <h2 id="showroom-title"><StoreText>Venez nous voir en magasin</StoreText></h2>
-        <p className={styles.introduction}><StoreText>Découvrez notre showroom et profitez de nos conseils sur place.</StoreText></p>
+        <span className={`eyebrow ${styles.label}`}><StoreText>VISITEZ NOTRE SHOWROOM</StoreText></span>
+        <h2 id="showroom-title">GO ELEC</h2>
         <address className={styles.details}>
           <p><MapPin size={20} aria-hidden="true" /><span>{address}</span></p>
           <a href="tel:+212522900590"><Phone size={20} aria-hidden="true" /><span>05 22 90 05 90</span></a>
