@@ -1,122 +1,204 @@
 .section {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
   margin-block: 24px 56px;
+  padding: 48px 24px;
+  background: linear-gradient(120deg, white, var(--pale));
+  border-radius: 16px;
+}
+
+.section::before,
+.section::after {
+  position: absolute;
+  z-index: -1;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  pointer-events: none;
+  content: "";
+}
+
+.section::before {
+  top: -260px;
+  inset-inline-end: -160px;
+  background: var(--blue);
+  opacity: 0.06;
+}
+
+.section::after {
+  bottom: -300px;
+  inset-inline-end: -220px;
+  background: var(--orange);
+  opacity: 0.1;
 }
 
 .card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--pale);
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
 }
 
-.photo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.photo,
+.information {
   min-width: 0;
-  padding: 20px;
 }
 
 .frame {
-  position: relative;
-  width: 100%;
-  max-width: 440px;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 6px 0 white, 0 18px 36px rgb(29 57 119 / 8%);
 }
 
 .photo img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 6px;
   object-fit: contain;
 }
 
-.badge {
-  position: absolute;
-  inset-inline-end: 14px;
-  bottom: 14px;
+.name {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: white;
+  gap: 14px;
   color: var(--blue);
-  box-shadow: 0 3px 12px rgb(0 0 0 / 10%);
-}
-
-.information {
-  min-width: 0;
-  padding: 36px 40px;
-  align-self: center;
-}
-
-.name {
-  color: var(--blue);
-  font-size: 12px;
+  font-size: 22px;
   font-weight: 700;
 }
 
+.name::before {
+  width: 34px;
+  height: 5px;
+  flex: none;
+  border-radius: 3px;
+  background: var(--orange);
+  content: "";
+}
+
 .information h2 {
-  margin: 10px 0 24px;
+  margin: 24px 0 18px;
   color: var(--blue-dark);
-  font-size: clamp(24px, 2.4vw, 32px);
-  line-height: 1.2;
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1px;
+}
+
+.information h2 span {
+  color: var(--blue);
+}
+
+.introduction {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.5;
 }
 
 .details {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   font-style: normal;
+  font-size: 16px;
 }
 
 .details p,
 .details a {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  min-height: 54px;
+  gap: 16px;
   margin: 0;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgb(41 79 159 / 8%), rgb(41 79 159 / 3%));
 }
 
 .details svg {
   flex: none;
-  margin-top: 2px;
+  box-sizing: content-box;
+  padding-inline-end: 16px;
+  border-inline-end: 1px solid rgb(41 79 159 / 25%);
   color: var(--blue);
 }
 
 .cta {
-  margin-top: 26px;
-  gap: 10px;
-  background: var(--blue);
+  min-height: 64px;
+  margin-top: 32px;
+  padding: 16px 36px;
+  gap: 18px;
+  border-radius: 18px;
+  background: linear-gradient(var(--blue), var(--blue-dark));
   color: white;
+  font-size: 20px;
+  box-shadow: 4px 4px 0 var(--orange), 0 12px 24px rgb(29 57 119 / 10%);
+}
+
+.cta svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
 }
 
 .cta:hover {
   background: var(--blue-dark);
 }
 
+@media (max-width: 1023px) {
+  .section {
+    padding: 32px 20px;
+  }
+
+  .name {
+    font-size: 18px;
+  }
+
+  .details {
+    font-size: 14px;
+  }
+
+  .details p,
+  .details a {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .details svg {
+    padding-inline-end: 12px;
+  }
+}
+
 @media (max-width: 767px) {
   .section {
     margin-block: 20px 36px;
+    padding: 20px 16px 28px;
   }
 
   .card {
     grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
   }
 
-  .photo {
-    padding: 12px 12px 0;
-  }
-
-  .information {
-    padding: 24px;
+  .frame {
+    border-radius: 18px;
   }
 
   .information h2 {
-    margin-bottom: 20px;
+    margin-top: 20px;
+    font-size: clamp(30px, 7.5vw, 36px);
+    letter-spacing: -0.6px;
+  }
+
+  .introduction {
+    margin-bottom: 24px;
+  }
+
+  .cta {
+    width: 100%;
+    min-height: 56px;
+    margin-top: 26px;
+    padding: 14px 20px;
+    font-size: 18px;
   }
 }
