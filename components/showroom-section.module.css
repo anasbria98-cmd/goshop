@@ -12,13 +12,41 @@
 }
 
 .photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 20px;
+}
+
+.frame {
   position: relative;
-  min-height: 340px;
+  width: 100%;
+  max-width: 440px;
 }
 
 .photo img {
-  object-fit: cover;
-  object-position: center top;
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.badge {
+  position: absolute;
+  inset-inline-end: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: white;
+  color: var(--blue);
+  box-shadow: 0 3px 12px rgb(0 0 0 / 10%);
 }
 
 .information {
@@ -81,8 +109,7 @@
   }
 
   .photo {
-    min-height: 0;
-    aspect-ratio: 4 / 3;
+    padding: 12px 12px 0;
   }
 
   .information {

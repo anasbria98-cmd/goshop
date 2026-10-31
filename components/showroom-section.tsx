@@ -15,7 +15,10 @@ export function ShowroomSection({ settings }: { settings: PublicStoreSettings })
   return <section className={`wrap ${styles.section}`} aria-labelledby="showroom-title">
     <div className={styles.card}>
       <div className={styles.photo}>
-        <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" fill sizes="(max-width: 767px) 100vw, 50vw" />
+        <div className={styles.frame}>
+          <Image src="/store/go-elec-storefront.jpeg" alt="La devanture du magasin GO ELEC" width={676} height={651} sizes="(max-width: 767px) 100vw, 440px" />
+          <span className={styles.badge} aria-hidden="true"><MapPin size={22} strokeWidth={1.75} /></span>
+        </div>
       </div>
       <div className={styles.information}>
         <span className={styles.name}>GO ELEC</span>
