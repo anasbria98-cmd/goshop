@@ -6,7 +6,7 @@ import styles from "./showroom-section.module.css";
 
 const mapsUrl = "https://www.google.com/maps/place/GOELEC+s.a.r.l/data=!4m2!3m1!1s0x0:0x14dfdc0be6084066?sa=X&ved=1t:2428&ictx=111";
 // Verified against the client-provided Google Maps listing; prefer the public store setting when available.
-const storeAddress = "EL AZHARI 2 Rue 41 N°149 Casablanca";
+const storeAddress = "EL AZHARI 2 Rue 41 N°149 Oulfa Casablanca";
 
 export function ShowroomSection({ settings }: { settings: PublicStoreSettings }) {
   const address = typeof settings.business_address === "string" && settings.business_address.trim()

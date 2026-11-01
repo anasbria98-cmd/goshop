@@ -6,7 +6,7 @@
 
 .card {
   display: grid;
-  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 468px) minmax(0, 1fr);
   align-items: center;
   gap: clamp(36px, 5.21vw, 80px);
   max-width: 1332px;
@@ -22,21 +22,21 @@
 .frame {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 468px;
   aspect-ratio: 1;
   padding: 0;
   overflow: hidden;
-  border: 3px solid #0646d8;
+  border: 2.34px solid #0646d8;
   border-radius: 50%;
   background: var(--blue);
-  box-shadow: 0 14px 32px rgb(0 72 180 / 20%), 0 2px 6px rgb(29 57 119 / 5%);
+  box-shadow: 0 10.92px 24.96px rgb(0 72 180 / 20%), 0 1.56px 4.68px rgb(29 57 119 / 5%);
 }
 
 .frame::before {
   position: absolute;
   inset: 0;
   z-index: 1;
-  border: 7px solid white;
+  border: 5.46px solid white;
   border-radius: 50%;
   pointer-events: none;
   content: "";
@@ -46,7 +46,7 @@
   z-index: 2;
   position: absolute;
   inset: 0;
-  border: 7px solid transparent;
+  border: 5.46px solid transparent;
   border-right-color: #ff8500;
   border-radius: 50%;
   clip-path: inset(12% 0 64% 50%);
@@ -154,6 +154,10 @@
     gap: 32px;
     margin-inline: 0;
   }
+
+  .frame {
+    width: 78%;
+  }
 }
 
 @media (max-width: 767px) {
@@ -169,8 +173,8 @@
   }
 
   .frame {
-    width: calc(100% - 8px);
-    max-width: 420px;
+    width: calc((100% - 8px) * 0.78);
+    max-width: 327.6px;
     padding: 0;
   }
 
