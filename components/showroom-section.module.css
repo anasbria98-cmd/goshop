@@ -59,13 +59,13 @@
   top: 0;
   left: 50%;
   display: block;
-  /* Fill the mask with the collage’s storefront, retaining a little interior context to avoid over-zooming. */
-  width: 125%;
+  /* Preserve the full collage composition; only the circular mask clips its corners. */
+  width: 100%;
   max-width: none;
-  height: 125%;
+  height: 100%;
   object-fit: cover;
-  object-position: center top;
-  transform: translateX(-54%);
+  object-position: center;
+  transform: translateX(-50%);
 }
 
 .information {
