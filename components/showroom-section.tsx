@@ -16,8 +16,7 @@ export function ShowroomSection({ settings }: { settings: PublicStoreSettings })
     <div className={styles.card}>
       <div className={styles.photo}>
         <div className={styles.frame}>
-          <span className={styles.photoBackdrop} aria-hidden="true" />
-          <Image src="/store/go-elec-storefront-landscape.jpg" alt="La devanture et les deux vues intérieures du magasin GO ELEC" width={590} height={591} sizes="(max-width: 767px) calc(100vw - 52px), 482px" quality={100} />
+          <Image src="/store/go-elec-showroom-approved-reference.png" alt="La devanture et les deux vues intérieures du magasin GO ELEC" width={1536} height={1024} sizes="(max-width: 767px) 1100px, 1536px" quality={100} />
         </div>
       </div>
       <div className={styles.information}>
