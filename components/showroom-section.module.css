@@ -1,15 +1,15 @@
 .section {
-  margin-block: 24px 48px;
-  padding-top: 32px;
+  margin-block: 24px 64px;
+  padding-top: 64px;
   border-top: 1px solid var(--line);
 }
 
 .card {
   display: grid;
-  grid-template-columns: minmax(0, 500px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(32px, 5vw, 72px);
-  max-width: 1100px;
+  gap: clamp(36px, 5.21vw, 80px);
+  max-width: 1300px;
   margin-inline: auto;
 }
 
@@ -22,11 +22,11 @@
 .frame {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   aspect-ratio: 1;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--blue);
+  border: 3px solid var(--blue);
   border-radius: 50%;
   background: var(--blue);
   box-shadow: 0 12px 32px rgb(29 57 119 / 13%), 0 2px 6px rgb(29 57 119 / 5%);
@@ -36,7 +36,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  border: 5px solid white;
+  border: 7px solid white;
   border-radius: 50%;
   pointer-events: none;
   content: "";
@@ -46,7 +46,7 @@
   z-index: 2;
   position: absolute;
   inset: 0;
-  border: 3px solid transparent;
+  border: 7px solid transparent;
   border-right-color: var(--orange);
   border-radius: 50%;
   clip-path: inset(12% 0 64% 50%);
@@ -85,59 +85,80 @@
 .label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 20px;
+  margin-bottom: 22px;
   color: var(--blue);
-  font-size: 11px;
+  font-size: clamp(14px, 1.65vw, 24px);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .label::before {
-  width: 22px;
-  height: 3px;
+  width: 52px;
+  height: 4px;
   flex: none;
   background: var(--orange);
   content: "";
 }
 
 .information h2 {
-  margin: 0 0 20px;
+  margin: 0 0 30px;
   color: var(--ink);
-  font-size: 28px;
+  font-size: clamp(36px, 4vw, 60px);
   font-weight: 700;
   line-height: 1.2;
 }
 
 .details {
   display: grid;
-  gap: 14px;
-  padding-block: 18px;
+  gap: 24px;
+  padding-block: 28px;
   border-block: 1px solid var(--line);
   font-style: normal;
+  font-size: clamp(15px, 1.8vw, 25px);
 }
 
 .details p,
 .details a {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 24px;
   margin: 0;
 }
 
 .details svg {
+  width: 30px;
+  height: 30px;
   flex: none;
-  margin-top: 1px;
+  margin-top: 2px;
   color: var(--blue);
 }
 
 .cta {
-  min-height: 46px;
-  margin-top: 20px;
-  gap: 10px;
+  min-height: 88px;
+  width: 362px;
+  max-width: 100%;
+  margin-top: 32px;
+  gap: 24px;
+  border-radius: 8px;
+  font-size: 25px;
   color: white;
+}
+
+.cta svg {
+  width: 28px;
+  height: 28px;
 }
 
 .cta:hover {
   background: var(--blue-dark);
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -162,21 +183,42 @@
   }
 
   .label {
-    font-size: 10px;
-    letter-spacing: 1px;
+    font-size: 12px;
+    letter-spacing: 0;
+    gap: 12px;
+    margin-bottom: 14px;
   }
 
   .information h2 {
     margin-bottom: 16px;
-    font-size: 26px;
+    font-size: 34px;
   }
 
   .details {
     padding-block: 16px;
+    gap: 14px;
+    font-size: 14px;
+  }
+
+  .details p,
+  .details a {
     gap: 12px;
+  }
+
+  .details svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .label::before {
+    width: 28px;
+    height: 3px;
   }
 
   .cta {
     width: 100%;
+    min-height: 54px;
+    margin-top: 22px;
+    font-size: 18px;
   }
 }
