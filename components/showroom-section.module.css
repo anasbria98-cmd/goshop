@@ -6,48 +6,40 @@
 
 .card {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  max-width: 1160px;
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+  max-width: 1040px;
   margin-inline: auto;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: white;
-  box-shadow: 0 4px 16px rgb(29 57 119 / 6%);
 }
 
 .photo {
   display: flex;
-  align-items: center;
   justify-content: center;
   min-width: 0;
-  padding: 24px;
-  background: var(--pale);
 }
 
 .frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 590 / 390;
+  max-width: 440px;
+  aspect-ratio: 1;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgb(29 57 119 / 10%);
 }
 
 .photo img {
-  position: absolute;
-  inset: 0 auto auto 0;
   display: block;
   width: 100%;
-  height: auto;
-  /* The original collage’s top 390px contains the complete landscape facade. */
-  object-position: top;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .information {
   min-width: 0;
-  padding: 32px;
-  align-self: center;
+  padding-block: 16px;
 }
 
 .label {
@@ -116,14 +108,15 @@
 
   .card {
     grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
   }
 
-  .photo {
-    padding: 16px;
+  .frame {
+    width: min(100%, 310px);
   }
 
   .information {
-    padding: 22px 20px;
+    padding: 0 4px;
   }
 
   .label {
