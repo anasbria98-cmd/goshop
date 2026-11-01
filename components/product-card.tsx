@@ -1,6 +1,6 @@
 "use client";
 import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
-import Image from "next/image";
+import { StorefrontProductImage } from "./storefront-product-image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
@@ -70,13 +70,14 @@ export function ProductCard({ product: p }: { product: CatalogProduct }) {
         </button>
       </div>
       <Link href={`/produit/${p.slug}`} className="product-image">
-        {p.imageUrl ? <Image
+        <StorefrontProductImage
           src={p.imageUrl}
+          alternatives={p.images.map((image) => image.url)}
           width={220}
           height={180}
           alt={p.name}
           sizes="(max-width: 600px) 45vw, 220px"
-        /> : <span className="product-image-placeholder" aria-hidden="true" />}
+        />
       </Link>
       <div
         className={`product-brand brand-${p.brand.split(" ")[0].toLowerCase()}`}

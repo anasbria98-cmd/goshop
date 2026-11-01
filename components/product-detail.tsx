@@ -1,6 +1,6 @@
 "use client";
 import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
-import Image from "next/image";
+import { StorefrontProductImage } from "./storefront-product-image";
 import Link from "next/link";
 import { useState } from "react";
 import { ShoppingCart, Heart, Truck, ShieldCheck } from "lucide-react";
@@ -30,16 +30,18 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
       </div>
       <div className="detail-grid">
         <div className="detail-image">
-          {selectedImage ? <Image
+          <StorefrontProductImage
             src={selectedImage}
+            alternatives={[p.imageUrl, ...p.images.map((image) => image.url)].filter((url): url is string => Boolean(url))}
+            fallbackClassName="product-image-placeholder detail-placeholder"
             width={550}
             height={500}
             alt={`${p.name}${selectedVariant ? ` — ${selectedVariant.colorName || selectedVariant.name}` : ""}`}
             priority
             key={p.hasColorVariants ? selectedImage : undefined}
             className={p.hasColorVariants ? "variant-product-image" : undefined}
-          /> : <span className="product-image-placeholder detail-placeholder" />}
-          {p.images.length > 1 ? <div className="detail-thumbnails">{p.images.map((image) => <button type="button" className={selectedImage === image.url ? "active" : ""} onClick={() => setSelectedImage(image.url)} key={image.url} aria-label={`${t("Afficher")} ${image.alt}`}><Image src={image.url} width={72} height={72} alt="" /></button>)}</div> : null}
+          />
+          {p.images.length > 1 ? <div className="detail-thumbnails">{p.images.map((image) => <button type="button" className={selectedImage === image.url ? "active" : ""} onClick={() => setSelectedImage(image.url)} key={image.url} aria-label={`${t("Afficher")} ${image.alt}`}><StorefrontProductImage src={image.url} width={72} height={72} alt="" /></button>)}</div> : null}
         </div>
         <div className="detail-info">
           <span className="product-brand"><bdi>{p.brand}</bdi></span>
