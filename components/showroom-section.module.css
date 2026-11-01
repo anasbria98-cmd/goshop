@@ -54,18 +54,27 @@
   content: "";
 }
 
+.photoBackdrop {
+  position: absolute;
+  inset: -8px;
+  background: url("/store/go-elec-storefront-landscape.jpg") center / cover;
+  filter: blur(8px);
+}
+
 .photo img {
   position: absolute;
-  top: 0;
+  top: 6%;
   left: 50%;
   display: block;
-  /* Preserve the full collage composition; only the circular mask clips its corners. */
-  width: 100%;
+  /* Reduce corner clipping while the same-image backdrop fills the circular edge. */
+  width: 88%;
   max-width: none;
-  height: 100%;
-  object-fit: cover;
+  height: 88%;
+  object-fit: contain;
   object-position: center;
   transform: translateX(-50%);
+  mask-image: linear-gradient(transparent, black 2%, black 98%, transparent), linear-gradient(90deg, transparent, black 2%, black 98%, transparent);
+  mask-composite: intersect;
 }
 
 .information {
