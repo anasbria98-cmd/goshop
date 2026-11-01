@@ -11,6 +11,9 @@
   gap: clamp(36px, 5.21vw, 80px);
   max-width: 1332px;
   margin-inline: 10px -22px;
+  /* Scale the approved composition as one unit, including typography, rings and gaps. */
+  transform: translateX(-16px) scale(0.82);
+  transform-origin: center;
 }
 
 .photo {
@@ -153,6 +156,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 32px;
     margin-inline: 0;
+    transform: scale(0.82);
   }
 
   .frame {
@@ -170,6 +174,7 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 22px;
     margin-inline: 0;
+    transform: scale(0.82);
   }
 
   .frame {
