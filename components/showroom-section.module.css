@@ -6,8 +6,8 @@
 
 .card {
   display: grid;
-  grid-template-columns: minmax(0, 386px) minmax(0, 1fr);
-  max-width: 1040px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  max-width: 1160px;
   margin-inline: auto;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -26,19 +26,22 @@
 }
 
 .frame {
+  position: relative;
   width: 100%;
-  max-width: 338px;
+  aspect-ratio: 590 / 390;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 4px;
 }
 
 .photo img {
+  position: absolute;
+  inset: 0 auto auto 0;
   display: block;
   width: 100%;
   height: auto;
-  object-fit: contain;
-  object-position: center;
+  /* The original collage’s top 390px contains the complete landscape facade. */
+  object-position: top;
 }
 
 .information {
