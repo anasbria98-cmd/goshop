@@ -2212,7 +2212,7 @@ img {
   align-items: center;
   justify-content: center;
 }
-.detail-image img {
+.detail-image > img {
   height: 360px;
   object-fit: contain;
 }
@@ -2385,7 +2385,7 @@ img {
   .detail-image {
     padding: 15px;
   }
-  .detail-image img {
+  .detail-image > img {
     height: 280px;
   }
   .detail-info h1 {
@@ -2507,7 +2507,7 @@ img {
     gap: 24px;
     padding: 0;
   }
-  .detail-image img {
+  .detail-image > img {
     height: 260px;
   }
   .detail-image small {
