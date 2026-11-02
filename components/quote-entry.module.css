@@ -6,16 +6,19 @@
 @media (max-width: 900px) {
   .desktop { display: none; }
   .mobileHeader { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-bottom: 10px; }
-  .technician { position: relative; overflow: hidden; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; color: var(--blue); background: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 600; white-space: nowrap; }
-  .technician::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--blue) 10%, transparent) 50%, transparent 80%); transform: translateX(-110%); animation: technician-sweep 5s ease-in-out infinite; }
+  .technician { position: relative; overflow: hidden; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; color: var(--blue); background: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 600; white-space: nowrap; animation: technician-glow 3s ease-in-out infinite; }
+  .technician::before { content: ""; position: absolute; inset: -1px; z-index: -1; padding: 2px; border-radius: inherit; pointer-events: none; background: conic-gradient(from var(--goelec-technician-angle), var(--blue) 0deg, color-mix(in srgb, var(--blue) 22%, white) 70deg, var(--blue) 120deg, var(--blue-dark) 210deg, color-mix(in srgb, var(--blue) 35%, white) 290deg, var(--blue) 360deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: technician-border-flow 4s linear infinite; }
   .technician > span:first-child { font-size: 16px; line-height: 1; transform-origin: center bottom; animation: technician-tilt 5s ease-in-out infinite; }
-  .technician:hover { background: var(--pale); }
+  .technician:hover { background: #fff; }
   .mobileHeaderLink { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; background: var(--blue); color: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 700; white-space: nowrap; }
   .mobileHeaderLink > svg { flex-shrink: 0; }
 }
-@keyframes technician-sweep { 0%, 66% { transform: translateX(-110%); } 92%, 100% { transform: translateX(110%); } }
-@keyframes technician-tilt { 0%, 66%, 92%, 100% { transform: rotate(0deg); } 74% { transform: rotate(-5deg); } 83% { transform: rotate(4deg); } }
+@property --goelec-technician-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes technician-border-flow { to { --goelec-technician-angle: 360deg; } }
+@keyframes technician-glow { 0%, 100% { box-shadow: 0 0 2px color-mix(in srgb, var(--blue) 8%, transparent); } 50% { box-shadow: 0 0 9px color-mix(in srgb, var(--blue) 28%, transparent); } }
+@keyframes technician-tilt { 0%, 66%, 92%, 100% { transform: translateY(0) rotate(0deg); } 74% { transform: translateY(-1.5px) rotate(-5deg); } 83% { transform: translateY(-.5px) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) {
+  .technician { animation: none; box-shadow: none; }
   .technician::before { animation: none; opacity: 0; }
   .technician > span:first-child { animation: none; }
 }
