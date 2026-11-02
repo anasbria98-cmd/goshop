@@ -2,14 +2,21 @@
 .desktop:hover { background: var(--navy); border-color: var(--navy); }
 .desktop:focus-visible, .mobile:focus-visible, .mobileHeaderLink:focus-visible, .technician:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
 .mobile[href] { display: flex; align-items: center; gap: 10px; margin: 12px 0; padding: 14px 18px; background: var(--blue); color: #fff; border-radius: 4px; font-weight: 700; }
+.technician { position: relative; overflow: hidden; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; color: var(--blue); background: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 600; white-space: nowrap; animation: technician-glow 3s ease-in-out infinite; }
+.technician::before { content: ""; position: absolute; inset: -1px; z-index: -1; padding: 2px; border-radius: inherit; pointer-events: none; background: conic-gradient(from var(--goelec-technician-angle), var(--blue) 0deg, color-mix(in srgb, var(--blue) 22%, white) 70deg, var(--blue) 120deg, var(--blue-dark) 210deg, color-mix(in srgb, var(--blue) 35%, white) 290deg, var(--blue) 360deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: technician-border-flow 4s linear infinite; }
+.technician > span:first-child { font-size: 16px; line-height: 1; transform-origin: center bottom; animation: technician-tilt 5s ease-in-out infinite; }
+.technician:hover { background: #fff; }
+.desktopGroup { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.desktopTechnician { height: 44px; padding: 12px 14px; font-size: 12px; flex-shrink: 0; }
+@media (min-width: 901px) and (max-width: 1100px) {
+  .desktopGroup { gap: 8px; }
+  .desktopGroup .desktop, .desktopTechnician { width: 120px; height: 44px; padding: 6px; gap: 5px; font-size: 11px; line-height: 1.25; white-space: normal; text-align: center; }
+  .desktopTechnician > span:first-child, .desktopGroup .desktop > svg { flex-shrink: 0; }
+}
 .mobileHeader { display: none; }
 @media (max-width: 900px) {
-  .desktop { display: none; }
+  .desktop, .desktopGroup { display: none; }
   .mobileHeader { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-bottom: 10px; }
-  .technician { position: relative; overflow: hidden; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; color: var(--blue); background: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 600; white-space: nowrap; animation: technician-glow 3s ease-in-out infinite; }
-  .technician::before { content: ""; position: absolute; inset: -1px; z-index: -1; padding: 2px; border-radius: inherit; pointer-events: none; background: conic-gradient(from var(--goelec-technician-angle), var(--blue) 0deg, color-mix(in srgb, var(--blue) 22%, white) 70deg, var(--blue) 120deg, var(--blue-dark) 210deg, color-mix(in srgb, var(--blue) 35%, white) 290deg, var(--blue) 360deg); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: technician-border-flow 4s linear infinite; }
-  .technician > span:first-child { font-size: 16px; line-height: 1; transform-origin: center bottom; animation: technician-tilt 5s ease-in-out infinite; }
-  .technician:hover { background: #fff; }
   .mobileHeaderLink { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 36px; padding: 7px 6px; border: 1px solid var(--blue); border-radius: 4px; background: var(--blue); color: #fff; font-size: clamp(10px, 2.8vw, 12px); font-weight: 700; white-space: nowrap; }
   .mobileHeaderLink > svg { flex-shrink: 0; }
 }

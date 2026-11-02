@@ -137,7 +137,10 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
               <Search size={22} />
             </button>
           </form>
-          <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.desktop}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+          <div className={quoteEntry.desktopGroup}>
+            <a href="https://wa.me/212644605258" target="_blank" rel="noopener noreferrer" className={`${quoteEntry.technician} ${quoteEntry.desktopTechnician}`} aria-label="Technicien confirmé sur WhatsApp (nouvel onglet)"><span aria-hidden="true">👷🏻‍♂️</span><StoreText>Technicien confirmé</StoreText></a>
+            <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.desktop}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+          </div>
           <div className="header-actions">
             <Link href="/compte" prefetch={true} className="header-action account navigation-link">
               <UserRound size={25} />
