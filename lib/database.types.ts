@@ -225,11 +225,13 @@ export type Database = {
         created_at: string;
         updated_at: string;
       }>;
+      quote_requests: Table<GenericRow>;
       media_assets: Table<GenericRow>;
       admin_audit_logs: Table<GenericRow>;
     };
     Views: Record<string, never>;
     Functions: {
+      claim_quote_request: {Args:{p_id:string;p_hash:string;p_rate_key:string;p_input:Json};Returns:string};
       set_product_variant_image: {Args:{p_product_id:string;p_variant_id:string;p_image_path:string};Returns:undefined};
       add_product_general_variants: {Args:{p_product_id:string;p_variants:Json};Returns:undefined};
       create_product_with_general_variants: {Args:{p_product:Json;p_category_ids:string[];p_primary_category_id:string|null;p_stock:number;p_low_stock_threshold:number;p_variants:Json};Returns:string};

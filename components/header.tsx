@@ -2,9 +2,11 @@
 import { StoreText, LanguageSwitcher, useStorefrontLanguage } from "@/components/storefront-language";
 import Link from "next/link";
 import utilityStyles from "./utility-items.module.css";
+import quoteEntry from "./quote-entry.module.css";
 import { UtilityReturnIcon } from "./utility-return-icon";
 import { useState, useRef, useEffect } from "react";
 import {
+  FileText,
   Search,
   Heart,
   ShoppingCart,
@@ -135,6 +137,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
               <Search size={22} />
             </button>
           </form>
+          <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.desktop}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
           <div className="header-actions">
             <Link href="/compte" prefetch={true} className="header-action account navigation-link">
               <UserRound size={25} />
@@ -308,6 +311,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
             <X />
           </button>
         </div>
+        <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobile} onClick={() => setMobile(false)}><FileText size={18} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
         {mobile && <MobileCategoryMenu nodes={navigation.mobile} onNavigate={() => setMobile(false)} />}
         <Link href="/compte" prefetch={true} className="navigation-link" onClick={() => setMobile(false)}><StoreText>
           Mon compte
