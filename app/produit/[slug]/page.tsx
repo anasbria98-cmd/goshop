@@ -1,3 +1,6 @@
+import { cache } from "react";
+import { productShareImage, productSharingMetadata } from "@/lib/product-sharing";
+import { productShareImageChecker } from "@/lib/product-sharing-server";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts, getStorefrontBrands } from "@/lib/catalog";
 import { BrandsSection } from "@/components/brands-section";
@@ -6,14 +9,18 @@ import { getProductReviews } from "@/lib/product-reviews";
 import { rankSimilarProducts } from "@/lib/product-page-model";
 import { ProductReviews, ProductRecommendations, RecentlyViewed } from "@/components/product-page-extras";
 
+const getPageProduct = cache(getProductBySlug);
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
-  return { title: product?.name || "Produit", description: product?.shortDescription || undefined };
+  const product = await getPageProduct(slug);
+  if (!product) return { title: "Produit" };
+  const image = await productShareImage(product, productShareImageChecker());
+  return productSharingMetadata(product, image);
 }
 export default async function Page({
   params,
@@ -21,7 +28,7 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getPageProduct(slug);
   if (!product) notFound();
   const [reviewData, candidates, brands] = await Promise.all([
     getProductReviews(product.id),
