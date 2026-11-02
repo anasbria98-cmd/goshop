@@ -172,6 +172,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
           </div>
         </div>
         <div className={`wrap ${quoteEntry.mobileHeader}`}>
+          <a href="https://wa.me/212644605258" target="_blank" rel="noopener noreferrer" className={quoteEntry.technician} aria-label="Technicien confirmé sur WhatsApp (nouvel onglet)"><span aria-hidden="true">👷🏻‍♂️</span><StoreText>Technicien confirmé</StoreText></a>
           <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobileHeaderLink}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
         </div>
         <nav
