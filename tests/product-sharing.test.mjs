@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {absoluteShareImage,productShareImage,productShareDescription,productSharingMetadata,DEFAULT_PRODUCT_SHARE_IMAGE} from '../lib/product-sharing.ts';
+import {absoluteShareImage,productShareImage,productShareDescription,productSharingMetadata,productSocialPreviewUrl,DEFAULT_PRODUCT_SHARE_IMAGE} from '../lib/product-sharing.ts';
 const base={name:'Produit réel',slug:'produit-reel',brand:'GO ELEC',sku:'REF-1',imageUrl:'https://storage.example/main.jpg',images:[{url:'https://storage.example/main.jpg',alt:'Main'},{url:'https://storage.example/gallery.jpg',alt:'Gallery'}],shortDescription:'<p>Matériel &amp; qualité</p>',description:null};
 test('each product gets its own absolute Open Graph/Twitter image and canonical URL',async()=>{
  const a=productSharingMetadata(base,await productShareImage(base,async()=> 'available'));
  const other={...base,name:'Deuxième produit',slug:'deuxieme-produit',imageUrl:'https://storage.example/other.png',images:[{url:'https://storage.example/other.png',alt:'Other'}]};
  const b=productSharingMetadata(other,await productShareImage(other,async()=> 'available'));
- assert.equal(a.openGraph.images[0].url,base.imageUrl);assert.notEqual(a.openGraph.images[0].url,b.openGraph.images[0].url);
+ assert.equal(a.openGraph.images[0].url,productSocialPreviewUrl(base.slug,base.imageUrl));assert.equal(a.openGraph.images[0].secureUrl,a.openGraph.images[0].url);assert.equal(a.openGraph.images[0].type,'image/jpeg');assert.equal(a.openGraph.images[0].width,1200);assert.equal(a.openGraph.images[0].height,630);assert.notEqual(a.openGraph.images[0].url,b.openGraph.images[0].url);
  assert.equal(a.openGraph.title,base.name);assert.equal(a.twitter.title,base.name);assert.equal(a.twitter.card,'summary_large_image');assert.equal(a.twitter.images[0].url,a.openGraph.images[0].url);assert.equal(a.openGraph.url,'https://www.goelec.ma/produit/produit-reel');assert.equal(a.alternates.canonical,a.openGraph.url);assert.equal(a.openGraph.type,'website');
 });
 test('main image wins over gallery, but confirmed missing main selects first working gallery',async()=>{

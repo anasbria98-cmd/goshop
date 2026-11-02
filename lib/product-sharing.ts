@@ -1,9 +1,12 @@
+import { createHash } from 'node:crypto';
 import type { Metadata } from 'next';
 import type { CatalogProduct } from './catalog-model';
 
 export const STOREFRONT_ORIGIN = 'https://www.goelec.ma';
 export const DEFAULT_PRODUCT_SHARE_IMAGE = `${STOREFRONT_ORIGIN}/branding/goelec_electrical_security_logo.png`;
 type ShareProduct = Pick<CatalogProduct, 'name' | 'slug' | 'brand' | 'sku' | 'imageUrl' | 'images' | 'shortDescription' | 'description'>;
+export const PRODUCT_SHARE_WIDTH = 1200;
+export const PRODUCT_SHARE_HEIGHT = 630;
 export type ImageAvailability = 'available' | 'missing' | 'unknown';
 
 export function absoluteShareImage(value: string | null | undefined): string | null {
@@ -16,8 +19,15 @@ export function absoluteShareImage(value: string | null | undefined): string | n
   } catch { return null; }
 }
 /** The catalogue gallery already puts the stored main image first. */
+export function productShareSources(product: ShareProduct): string[] {
+  return [...new Set([...product.images.map(image => image.url), product.imageUrl].map(absoluteShareImage).filter((url): url is string => !!url))];
+}
+export function productSocialPreviewUrl(slug: string, source: string): string {
+  const revision = createHash('sha256').update(`jpeg-v1:${source}`).digest('hex').slice(0, 16);
+  return `${STOREFRONT_ORIGIN}/produit/${encodeURIComponent(slug)}/partage.jpg?v=${revision}`;
+}
 export async function productShareImage(product: ShareProduct, check: (url: string) => Promise<ImageAvailability>): Promise<string> {
-  const candidates = [...new Set([...product.images.map(image => image.url), product.imageUrl].map(absoluteShareImage).filter((url): url is string => !!url))];
+  const candidates = productShareSources(product);
   let uncertain: string | null = null;
   for (const url of candidates) {
     let status: ImageAvailability = 'unknown';
@@ -40,11 +50,12 @@ export function productShareDescription(product: ShareProduct): string {
 export function productSharingMetadata(product: ShareProduct, image: string): Metadata {
   const url = `${STOREFRONT_ORIGIN}/produit/${encodeURIComponent(product.slug)}`;
   const description = productShareDescription(product);
+  const preview = productSocialPreviewUrl(product.slug, image);
   return {
     title: product.name,
     description,
     alternates: {canonical: url},
-    openGraph: {type: 'website', siteName: 'GO ELEC', locale: 'fr_MA', title: product.name, description, url, images: [{url: image, alt: product.name}]},
-    twitter: {card: 'summary_large_image', title: product.name, description, images: [{url: image, alt: product.name}]},
+    openGraph: {type: 'website', siteName: 'GO ELEC', locale: 'fr_MA', title: product.name, description, url, images: [{url: preview, secureUrl: preview, type: 'image/jpeg', width: PRODUCT_SHARE_WIDTH, height: PRODUCT_SHARE_HEIGHT, alt: product.name}]},
+    twitter: {card: 'summary_large_image', title: product.name, description, images: [{url: preview, alt: product.name}]},
   };
 }
