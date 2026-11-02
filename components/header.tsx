@@ -171,6 +171,9 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
             </Link>
           </div>
         </div>
+        <div className={`wrap ${quoteEntry.mobileHeader}`}>
+          <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobileHeaderLink}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+        </div>
         <nav
           className="desktop-nav"
           ref={nav}

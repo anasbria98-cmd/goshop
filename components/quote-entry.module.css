@@ -1,5 +1,10 @@
 .desktop { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; background: var(--blue); color: #fff; border: 1px solid var(--blue); border-radius: 4px; padding: 12px 14px; font-size: 12px; font-weight: 700; white-space: nowrap; min-height: 44px; }
 .desktop:hover { background: var(--navy); border-color: var(--navy); }
-.desktop:focus-visible, .mobile:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.desktop:focus-visible, .mobile:focus-visible, .mobileHeaderLink:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
 .mobile[href] { display: flex; align-items: center; gap: 10px; margin: 12px 0; padding: 14px 18px; background: var(--blue); color: #fff; border-radius: 4px; font-weight: 700; }
-@media (max-width: 900px) { .desktop { display: none; } }
+.mobileHeader { display: none; }
+@media (max-width: 900px) {
+  .desktop { display: none; }
+  .mobileHeader { display: flex; justify-content: flex-end; padding-bottom: 10px; }
+  .mobileHeaderLink { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 12px; border-radius: 4px; background: var(--blue); color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; }
+}
