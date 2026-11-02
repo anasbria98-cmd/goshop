@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { Metadata } from 'next';
 import type { CatalogProduct } from './catalog-model';
+import { canonicalProductUrl, STOREFRONT_ORIGIN } from './product-url.js';
 
-export const STOREFRONT_ORIGIN = 'https://www.goelec.ma';
+export { STOREFRONT_ORIGIN } from './product-url.js';
 export const DEFAULT_PRODUCT_SHARE_IMAGE = `${STOREFRONT_ORIGIN}/branding/goelec_electrical_security_logo.png`;
 type ShareProduct = Pick<CatalogProduct, 'name' | 'slug' | 'brand' | 'sku' | 'imageUrl' | 'images' | 'shortDescription' | 'description'>;
 export const PRODUCT_SHARE_WIDTH = 1200;
@@ -48,7 +49,7 @@ export function productShareDescription(product: ShareProduct): string {
   return description.length > 220 ? `${description.slice(0, 217).trimEnd()}…` : description;
 }
 export function productSharingMetadata(product: ShareProduct, image: string): Metadata {
-  const url = `${STOREFRONT_ORIGIN}/produit/${encodeURIComponent(product.slug)}`;
+  const url = canonicalProductUrl(product.slug);
   const description = productShareDescription(product);
   const preview = productSocialPreviewUrl(product.slug, image);
   return {

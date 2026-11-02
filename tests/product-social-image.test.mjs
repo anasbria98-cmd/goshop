@@ -34,3 +34,17 @@ test('source loader uses unauthenticated image GET and rejects non-image or over
  }
  await assert.rejects(createProductPhotoLoader('https://store.supabase.co','https://www.goelec.ma',async()=>new Response(null,{status:404}))(source),/missing/);
 });
+test('a timed-out main image does not poison the valid gallery image deadline',async()=>{
+ const bytes=await photo('png','#3355aa');const calls=[];
+ const loader=createProductPhotoLoader('https://store.supabase.co','https://www.goelec.ma',async(url,options)=>{
+  calls.push(String(url));
+  if(String(url)===source){
+   await new Promise(resolve=>{options.signal.addEventListener('abort',resolve,{once:true});setTimeout(resolve,6500);});
+   throw new Error('main image timeout');
+  }
+  if(options.signal.aborted)throw new Error('gallery incorrectly inherits expired main timeout');
+  return new Response(bytes,{headers:{'content-type':'image/png'}});
+ });
+ const output=await makeProductSocialJpeg([source,gallery],fallback,loader);
+ assert.deepEqual(calls,[source,gallery]);assert.equal((await sharp(output).metadata()).format,'jpeg');
+});

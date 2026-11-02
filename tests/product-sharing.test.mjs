@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {absoluteShareImage,productShareImage,productShareDescription,productSharingMetadata,productSocialPreviewUrl,DEFAULT_PRODUCT_SHARE_IMAGE} from '../lib/product-sharing.ts';
+import {canonicalProductUrl} from '../lib/product-url.js';
+import {productShareLinks} from '../lib/product-page-model.ts';
 const base={name:'Produit réel',slug:'produit-reel',brand:'GO ELEC',sku:'REF-1',imageUrl:'https://storage.example/main.jpg',images:[{url:'https://storage.example/main.jpg',alt:'Main'},{url:'https://storage.example/gallery.jpg',alt:'Gallery'}],shortDescription:'<p>Matériel &amp; qualité</p>',description:null};
 test('each product gets its own absolute Open Graph/Twitter image and canonical URL',async()=>{
  const a=productSharingMetadata(base,await productShareImage(base,async()=> 'available'));
@@ -28,4 +30,18 @@ test('metadata normalizes URLs and uses plain verified description, then real pr
  assert.equal(productShareDescription(base),'Matériel & qualité');
  assert.equal(productShareDescription({...base,shortDescription:' ',description:'<p>Description complète &#233;lectrique</p><script>bad()</script>'}),'Description complète électrique');
  assert.match(productShareDescription({...base,shortDescription:null,description:null}),/Produit réel.*GO ELEC.*REF-1/);
+});
+test('new arbitrary product slugs inherit their own metadata, photo and clean WhatsApp URL',async()=>{
+ const urls=new Set();
+ for(let i=0;i<12;i++){
+  const slug=`nouvel-article-${i}`,source=`https://storage.example/${i}.webp`;
+  const product={...base,slug,name:`Article ${i}`,imageUrl:source,images:[{url:source,alt:`Article ${i}`}]};
+  const metadata=productSharingMetadata(product,await productShareImage(product,async()=> 'available'));
+  const canonical=canonicalProductUrl(slug),links=productShareLinks(canonical,product.name);
+  assert.equal(metadata.alternates.canonical,canonical);assert.equal(metadata.openGraph.url,canonical);
+  assert.equal(new URL(links.whatsapp).searchParams.get('text'),`${product.name}\n${canonical}`);
+  assert.equal(new URL(canonical).search,'');assert.equal(new URL(canonical).hash,'');
+  urls.add(metadata.openGraph.images[0].url);
+ }
+ assert.equal(urls.size,12);
 });

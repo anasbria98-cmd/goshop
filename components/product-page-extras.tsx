@@ -8,13 +8,14 @@ import type { ProductReview } from '@/lib/product-reviews';
 import { loadRecentProducts, submitProductReview } from '@/app/produit/actions';
 import { productShareLinks, recentProductIds, rememberProduct, RECENT_PRODUCTS_KEY } from '@/lib/product-page-model';
 import { ProductCard } from './product-card';
+import { canonicalProductUrl } from '@/lib/product-url.js';
 import './product-page-extras.css';
 
-export function ProductShare({ name }: { name: string }) {
+export function ProductShare({ name, slug }: { name: string; slug: string }) {
   const [message, setMessage] = useState('');
+  const url = canonicalProductUrl(slug);
   async function shareInstagram() {
     setMessage('');
-    const url = window.location.href;
     if (navigator.share) {
       try { await navigator.share({ title: name, text: name, url }); }
       catch (error) { if (!(error instanceof Error && error.name === 'AbortError')) setMessage('Partage indisponible. Vous pouvez copier le lien ci-dessous.'); }
@@ -23,11 +24,11 @@ export function ProductShare({ name }: { name: string }) {
     await copyUrl();
   }
   async function copyUrl() {
-    try { await navigator.clipboard.writeText(window.location.href); setMessage('Lien copié'); }
-    catch { setMessage(`Copiez ce lien : ${window.location.href}`); }
+    try { await navigator.clipboard.writeText(url); setMessage('Lien copié'); }
+    catch { setMessage(`Copiez ce lien : ${url}`); }
   }
   function social(network: 'facebook' | 'whatsapp') {
-    const links = productShareLinks(window.location.href, name);
+    const links = productShareLinks(url, name);
     window.open(links[network], '_blank', 'noopener,noreferrer');
   }
   return <section className="product-share" aria-labelledby="product-share-title">

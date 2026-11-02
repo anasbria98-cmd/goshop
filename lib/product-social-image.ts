@@ -6,12 +6,13 @@ export class ProductPhotoError extends Error {
 }
 const MAX_SOURCE_BYTES = 8 * 1024 * 1024;
 export function createProductPhotoLoader(storageOrigin: string | null, siteOrigin: string, request: typeof fetch = fetch) {
-  const signal = AbortSignal.timeout(6000);
   const trusted = (url: URL) => !url.username && !url.password && (
     (url.origin === storageOrigin && url.pathname.startsWith('/storage/v1/object/public/product-images/')) ||
     (url.origin === siteOrigin && /^\/(products|branding|promotions|store|uploads)\//.test(url.pathname))
   );
   return async (source: string): Promise<Buffer> => {
+    // Each candidate gets its own deadline; a slow main photo must not abort its gallery fallback.
+    const signal = AbortSignal.timeout(6000);
     let url = new URL(source);
     for (let hop = 0; hop < 3; hop++) {
       if (!trusted(url)) throw new ProductPhotoError('unavailable');

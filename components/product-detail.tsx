@@ -103,7 +103,7 @@ export function ProductDetail({ product: p }: { product: CatalogProduct }) {
               électriques
             </StoreText></span>
           </div>
-          <ProductShare name={p.name} />
+          <ProductShare name={p.name} slug={p.slug} />
           {p.shortDescription && <p>{p.shortDescription}</p>}
           {p.attributes.length > 0 && <dl className="product-attributes">
             {p.attributes.map((attribute) => <div key={attribute.slug}><dt><StoreText>{attribute.name}</StoreText></dt><dd>{attribute.value}{attribute.unit ? ` ${attribute.unit}` : ""}</dd></div>)}
