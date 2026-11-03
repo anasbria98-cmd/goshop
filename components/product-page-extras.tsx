@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Facebook, Instagram, MessageCircle } from 'lucide-react';
 import type { CatalogProduct } from '@/lib/catalog-model';
@@ -9,23 +9,67 @@ import { loadRecentProducts, submitProductReview } from '@/app/produit/actions';
 import { productShareLinks, recentProductIds, rememberProduct, RECENT_PRODUCTS_KEY } from '@/lib/product-page-model';
 import { ProductCard } from './product-card';
 import { canonicalProductUrl } from '@/lib/product-url.js';
+import { copyProductShare, createProductSharePhoto, mobilePhotoSharingAvailable, nativeProductShareData } from '@/lib/product-share-client';
 import './product-page-extras.css';
 
 export function ProductShare({ name, slug }: { name: string; slug: string }) {
   const [message, setMessage] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
   const url = canonicalProductUrl(slug);
+  const photo = useMemo(() => createProductSharePhoto(slug), [slug]);
+  function preparePhoto() {
+    if (mobilePhotoSharingAvailable(navigator)) void photo.prepare();
+  }
+  async function prepareFallback() {
+    setMessage('Préparation de la photo et du lien…');
+    const copied = copyProductShare(name, slug, navigator.clipboard);
+    const prepared = await photo.prepare();
+    const result = await copied;
+    setShowFallback(true);
+    setMessage(`${prepared ? 'Enregistrez la photo, puis choisissez-la dans Instagram.' : 'La photo est temporairement indisponible.'} ${result.copied ? 'Nom et lien copiés : collez-les dans votre publication ou message.' : 'Utilisez « Copier le nom et le lien » pour préparer votre texte.'} Aucune publication automatique n’a été effectuée.`);
+  }
+  function downloadPhoto() {
+    const file = photo.peek();
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = file.name;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+  }
   async function shareInstagram() {
+    if (sharing) return;
     setMessage('');
-    if (navigator.share) {
-      try { await navigator.share({ title: name, text: name, url }); }
-      catch (error) { if (!(error instanceof Error && error.name === 'AbortError')) setMessage('Partage indisponible. Vous pouvez copier le lien ci-dessous.'); }
-      return;
+    setShowFallback(false);
+    setSharing(true);
+    try {
+      if (!mobilePhotoSharingAvailable(navigator)) { await prepareFallback(); return; }
+      const ready = photo.peek();
+      if (!ready && !photo.settled() && typeof navigator.canShare === 'function') {
+        setMessage('Préparation de la photo du produit…');
+        const prepared = await photo.prepare();
+        // A download can consume the gesture deadline. A fresh tap reliably opens native sharing.
+        if (prepared && navigator.canShare({files: [prepared]})) setMessage('Photo prête. Appuyez à nouveau sur Instagram, puis choisissez Instagram si votre appareil le propose.');
+        else await prepareFallback();
+        return;
+      }
+      const file = ready && navigator.canShare?.({files: [ready]}) ? ready : undefined;
+      if (!file) { await prepareFallback(); return; }
+      await navigator.share(nativeProductShareData(name, slug, file));
+      setMessage('Produit transmis au partage de votre appareil. Instagram doit être proposé par votre appareil ; l’application peut ne pas reprendre le texte ou le lien.');
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) await prepareFallback();
+    } finally {
+      setSharing(false);
     }
-    await copyUrl();
   }
   async function copyUrl() {
-    try { await navigator.clipboard.writeText(url); setMessage('Lien copié'); }
-    catch { setMessage(`Copiez ce lien : ${url}`); }
+    const result = await copyProductShare(name, slug, navigator.clipboard);
+    setMessage(result.copied
+      ? 'Nom et lien copiés. Collez-les dans Instagram après avoir choisi la photo.'
+      : `Copiez le nom et le lien dans Instagram : ${result.text}`);
   }
   function social(network: 'facebook' | 'whatsapp') {
     const links = productShareLinks(url, name);
@@ -35,10 +79,10 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     <h2 id="product-share-title">Partagez ce produit</h2>
     <div className="product-share-buttons">
       <button type="button" onClick={() => social('facebook')} aria-label="Partager sur Facebook"><Facebook size={18} />Facebook</button>
-      <button type="button" onClick={shareInstagram} aria-label="Partager via Instagram ou copier le lien"><Instagram size={18} />Instagram</button>
+      <button type="button" onClick={shareInstagram} onPointerEnter={preparePhoto} onFocus={preparePhoto} onTouchStart={preparePhoto} disabled={sharing} aria-busy={sharing} aria-label="Partager via Instagram ou copier le lien"><Instagram size={18} />Instagram</button>
       <button type="button" onClick={() => social('whatsapp')} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
     </div>
-    {message && <div className="product-share-status" role="status">{message}{message.startsWith('Partage indisponible') && <button type="button" onClick={copyUrl}>Copier le lien</button>}</div>}
+    {message && <div className="product-share-status" role="status">{message}{showFallback && <>{photo.peek() && <button type="button" onClick={downloadPhoto}>Enregistrer la photo</button>}<button type="button" onClick={copyUrl}>Copier le nom et le lien</button></>}</div>}
   </section>;
 }
 
