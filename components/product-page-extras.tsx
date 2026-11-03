@@ -10,6 +10,7 @@ import { productShareLinks, recentProductIds, rememberProduct, RECENT_PRODUCTS_K
 import { ProductCard } from './product-card';
 import { canonicalProductUrl } from '@/lib/product-url.js';
 import { copyProductShare, createProductSharePhoto, mobilePhotoSharingAvailable, nativeProductShareData } from '@/lib/product-share-client';
+import { createWhatsappPreviewWarmup } from '@/lib/whatsapp-preview';
 import './product-page-extras.css';
 
 export function ProductShare({ name, slug }: { name: string; slug: string }) {
@@ -18,6 +19,21 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
   const [showFallback, setShowFallback] = useState(false);
   const url = canonicalProductUrl(slug);
   const photo = useMemo(() => createProductSharePhoto(slug), [slug]);
+  const whatsappPreview = useMemo(() => createWhatsappPreviewWarmup(slug,
+    () => document.querySelector<HTMLMetaElement>('meta[property="og:image"]')?.content ?? null), [slug]);
+  useEffect(() => {
+    const connection = (navigator as Navigator & {connection?: {saveData?: boolean}}).connection;
+    if (connection?.saveData) return;
+    const warm = () => { void whatsappPreview.prepare(); };
+    const idle = typeof window.requestIdleCallback === 'function';
+    const task = idle ? window.requestIdleCallback(warm, {timeout: 2000}) : window.setTimeout(warm, 700);
+    return () => {
+      if (idle) window.cancelIdleCallback(task); else window.clearTimeout(task);
+      whatsappPreview.cancel();
+    };
+  }, [whatsappPreview]);
+  function prepareWhatsapp() { void whatsappPreview.prepare(); }
+  function shareWhatsapp() { prepareWhatsapp(); social('whatsapp'); }
   function preparePhoto() {
     if (mobilePhotoSharingAvailable(navigator)) void photo.prepare();
   }
@@ -80,7 +96,7 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     <div className="product-share-buttons">
       <button type="button" onClick={() => social('facebook')} aria-label="Partager sur Facebook"><Facebook size={18} />Facebook</button>
       <button type="button" onClick={shareInstagram} onPointerEnter={preparePhoto} onFocus={preparePhoto} onTouchStart={preparePhoto} disabled={sharing} aria-busy={sharing} aria-label="Partager via Instagram ou copier le lien"><Instagram size={18} />Instagram</button>
-      <button type="button" onClick={() => social('whatsapp')} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
+      <button type="button" onClick={shareWhatsapp} onPointerEnter={prepareWhatsapp} onFocus={prepareWhatsapp} onTouchStart={prepareWhatsapp} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
     </div>
     {message && <div className="product-share-status" role="status">{message}{showFallback && <>{photo.peek() && <button type="button" onClick={downloadPhoto}>Enregistrer la photo</button>}<button type="button" onClick={copyUrl}>Copier le nom et le lien</button></>}</div>}
   </section>;
