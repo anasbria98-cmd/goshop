@@ -10,21 +10,25 @@ import { productShareLinks, recentProductIds, rememberProduct, RECENT_PRODUCTS_K
 import { ProductCard } from './product-card';
 import { canonicalProductUrl } from '@/lib/product-url.js';
 import { copyProductShare, createProductSharePhoto, mobilePhotoSharingAvailable, nativeProductShareData } from '@/lib/product-share-client';
-import { createWhatsappPreviewWarmup } from '@/lib/whatsapp-preview';
+import { createWhatsappPreviewWarmup, startWhatsappShare } from '@/lib/whatsapp-preview';
 import './product-page-extras.css';
 
 export function ProductShare({ name, slug }: { name: string; slug: string }) {
   const [message, setMessage] = useState('');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [whatsappBusy, setWhatsappBusy] = useState(false);
+  const [whatsappFallback, setWhatsappFallback] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const url = canonicalProductUrl(slug);
   const photo = useMemo(() => createProductSharePhoto(slug), [slug]);
   const whatsappPreview = useMemo(() => createWhatsappPreviewWarmup(slug,
-    () => document.querySelector<HTMLMetaElement>('meta[property="og:image"]')?.content ?? null), [slug]);
+    () => document.querySelector<HTMLMetaElement>('meta[property="og:image"]')?.content ?? null, fetch, () => mobilePhotoSharingAvailable(navigator)), [slug]);
   useEffect(() => {
     const connection = (navigator as Navigator & {connection?: {saveData?: boolean}}).connection;
     if (connection?.saveData) return;
     const warm = () => { void whatsappPreview.prepare(); };
+    if (mobilePhotoSharingAvailable(navigator)) { warm(); return () => whatsappPreview.cancel(); }
     const idle = typeof window.requestIdleCallback === 'function';
     const task = idle ? window.requestIdleCallback(warm, {timeout: 2000}) : window.setTimeout(warm, 700);
     return () => {
@@ -33,7 +37,37 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     };
   }, [whatsappPreview]);
   function prepareWhatsapp() { void whatsappPreview.prepare(); }
-  function shareWhatsapp() { prepareWhatsapp(); social('whatsapp'); }
+  async function shareWhatsapp() {
+    if (whatsappBusy) return;
+    setWhatsappMessage('');
+    try {
+      // No awaited work before share(): preserve the original tap's user activation.
+      const handoff = startWhatsappShare(name, slug, whatsappPreview.peekFile(), navigator, () => {
+        prepareWhatsapp(); social('whatsapp');
+      });
+      if (handoff.kind === 'link') return;
+      setWhatsappBusy(true);
+      if (handoff.kind === 'prepare') {
+        const prepared = await whatsappPreview.prepare();
+        setWhatsappFallback(!prepared);
+        setWhatsappMessage(prepared
+          ? 'Photo prête. Appuyez à nouveau sur WhatsApp, puis choisissez WhatsApp dans le partage de votre appareil.'
+          : 'Photo temporairement indisponible. Réessayez ou partagez uniquement le lien.');
+        return;
+      }
+      await handoff.completion;
+      setWhatsappMessage('Photo transmise au partage de votre appareil. Sur iPhone/iPad, copiez le nom et le lien ci-dessous, puis collez-les avec la photo dans WhatsApp. Aucune publication automatique n’a été effectuée.');
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        setWhatsappFallback(true);
+        setWhatsappMessage('Le partage de photo n’a pas abouti. Réessayez ou utilisez le partage du lien.');
+      }
+    } finally { setWhatsappBusy(false); }
+  }
+  async function copyWhatsappCaption() {
+    const result = await copyProductShare(name, slug, navigator.clipboard);
+    setWhatsappMessage(result.copied ? 'Nom et lien copiés : collez-les avec la photo dans WhatsApp.' : result.text);
+  }
   function preparePhoto() {
     if (mobilePhotoSharingAvailable(navigator)) void photo.prepare();
   }
@@ -96,8 +130,9 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     <div className="product-share-buttons">
       <button type="button" onClick={() => social('facebook')} aria-label="Partager sur Facebook"><Facebook size={18} />Facebook</button>
       <button type="button" onClick={shareInstagram} onPointerEnter={preparePhoto} onFocus={preparePhoto} onTouchStart={preparePhoto} disabled={sharing} aria-busy={sharing} aria-label="Partager via Instagram ou copier le lien"><Instagram size={18} />Instagram</button>
-      <button type="button" onClick={shareWhatsapp} onPointerEnter={prepareWhatsapp} onFocus={prepareWhatsapp} onTouchStart={prepareWhatsapp} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
+      <button type="button" onClick={shareWhatsapp} disabled={whatsappBusy} aria-busy={whatsappBusy} onPointerEnter={prepareWhatsapp} onFocus={prepareWhatsapp} onTouchStart={prepareWhatsapp} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
     </div>
+    {whatsappMessage && <div className="product-share-status" role="status">{whatsappMessage}<button type="button" onClick={copyWhatsappCaption}>Copier le nom et le lien pour WhatsApp</button>{whatsappFallback && <button type="button" onClick={() => social('whatsapp')}>Partager uniquement le lien</button>}</div>}
     {message && <div className="product-share-status" role="status">{message}{showFallback && <>{photo.peek() && <button type="button" onClick={downloadPhoto}>Enregistrer la photo</button>}<button type="button" onClick={copyUrl}>Copier le nom et le lien</button></>}</div>}
   </section>;
 }

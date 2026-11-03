@@ -54,3 +54,47 @@ test('unmount cancellation aborts only the background warmup',async()=>{
  }));
  const pending=warm.prepare();await Promise.resolve();warm.cancel();assert.equal(await pending,false);
 });
+
+test('mobile JPEG is a reusable File prepared before the tap and invalidated by photo revision',async()=>{
+ let calls=0,revision='1234567890abcdef';
+ const warm=createWhatsappPreviewWarmup('a',()=>`https://www.goelec.ma/produit/a/partage.jpg?v=${revision}`,async()=>{
+  calls++;return new Response(new Uint8Array([255,216,255,1]),{headers:{'content-type':'image/jpeg'}});
+ },()=>true);
+ assert.equal(warm.peekFile(),null);await warm.prepare();const file=warm.peekFile();
+ assert.ok(file instanceof File);assert.equal(file.type,'image/jpeg');assert.equal(file.name,'a.jpg');
+ await warm.prepare();assert.equal(warm.peekFile(),file);assert.equal(calls,1);
+ revision='abcdef1234567890';assert.equal(warm.peekFile(),null);await warm.prepare();assert.notEqual(warm.peekFile(),file);
+});
+test('mobile rejects an HTML/error body masquerading as a JPEG',async()=>{
+ const warm=createWhatsappPreviewWarmup('a',()=>null,async()=>new Response('<html>',{headers:{'content-type':'image/jpeg'}}),()=>true);
+ assert.equal(await warm.prepare(),false);assert.equal(warm.peekFile(),null);
+});
+test('iPhone dispatches media safely; Android includes the name and canonical caption synchronously',async()=>{
+ const {startWhatsappShare}=await import('../lib/whatsapp-preview.ts');
+ const file=new File([new Uint8Array([255,216,255])],'a.jpg',{type:'image/jpeg'});
+ for(const userAgent of ['iPhone Safari','Android Chrome']){
+  let payload;const result=startWhatsappShare('Produit A','a',file,{userAgent,maxTouchPoints:1,canShare:()=>true,share:data=>{payload=data;return Promise.resolve();}},()=>assert.fail('must not open URL'));
+  assert.equal(result.kind,'native');assert.equal(payload.files[0],file);
+  if(userAgent.startsWith('Android'))assert.equal(payload.text,'Produit A\nhttps://www.goelec.ma/produit/a');
+  else assert.deepEqual(Object.keys(payload),['files']);
+  await result.completion;
+ }
+});
+test('early mobile tap does not hand off until a photo exists; unsupported desktop retains link fallback',async()=>{
+ const {startWhatsappShare}=await import('../lib/whatsapp-preview.ts');let opened=0;
+ const mobile={userAgent:'iPhone',maxTouchPoints:1,canShare:()=>true,share:()=>assert.fail('no file yet')};
+ assert.equal(startWhatsappShare('A','a',null,mobile,()=>opened++).kind,'prepare');assert.equal(opened,0);
+ assert.equal(startWhatsappShare('A','a',null,{...mobile,userAgent:'Macintosh',maxTouchPoints:0},()=>opened++).kind,'link');assert.equal(opened,1);
+ const file=new File(['photo'],'a.jpg');
+ assert.equal(startWhatsappShare('A','a',file,{...mobile,canShare:()=>false},()=>opened++).kind,'link');
+ assert.equal(startWhatsappShare('A','a',file,{...mobile,canShare:()=>{throw Error('unsupported')}},()=>opened++).kind,'link');assert.equal(opened,3);
+});
+test('native cancellation/failure never silently opens a second WhatsApp link',async()=>{
+ const {startWhatsappShare}=await import('../lib/whatsapp-preview.ts');
+ const file=new File(['photo'],'a.jpg');
+ for(const error of [new DOMException('Cancelled','AbortError'),new Error('Share unavailable')]){
+  const result=startWhatsappShare('A','a',file,{userAgent:'Android',maxTouchPoints:1,canShare:()=>true,share:()=>Promise.reject(error)},()=>assert.fail('no surprise URL handoff'));
+  await assert.rejects(result.completion,error);
+ }
+ assert.throws(()=>startWhatsappShare('A','a',file,{userAgent:'iPhone',maxTouchPoints:1,canShare:()=>true,share:()=>{throw Error('NotAllowed')}},()=>assert.fail('no automatic popup')),/NotAllowed/);
+});
