@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { NextRequest } from 'next/server';
-import { getProductBySlug } from '@/lib/catalog';
+import { getSocialProduct } from '@/lib/product-social-catalog';
 import { productShareSources } from '@/lib/product-sharing';
 import { getProductSocialJpeg } from '@/lib/product-social-image-server';
 import { createPublicPreviewCache, publicPreviewCacheKey } from '@/lib/public-preview-cache';
@@ -8,19 +8,23 @@ import { createPublicPreviewCache, publicPreviewCacheKey } from '@/lib/public-pr
 export const runtime = 'nodejs';
 type Context = {params: Promise<{slug: string}>};
 class PreviewNotFound extends Error {}
-// Same five-minute freshness window as the existing public HTTP image cache.
-// Source-version query keys invalidate the response when the product photo changes.
-const previews = createPublicPreviewCache<{bytes: Buffer; etag: string; catalogMs: number; jpegMs: number}>();
+// Recheck public product/source state every 30s via the shared lightweight lookup.
+// Encoded bytes are retained for an hour, keyed by actual product/source identity.
+const previews = createPublicPreviewCache<{bytes: Buffer; etag: string; catalogMs: number; jpegMs: number}>(32, 3600000);
 async function respond(request: NextRequest, {params}: Context, head: boolean) {
   const started = performance.now();
   try {
     const {slug} = await params;
-    const cached = await previews.get(publicPreviewCacheKey(slug, request.nextUrl.searchParams.get('v')), async () => {
-      const lookup = performance.now();
-      const product = await getProductBySlug(slug);
-      if (!product) throw new PreviewNotFound();
+    const lookup = performance.now();
+    const lookupResult = await getSocialProduct(slug);
+    const product = lookupResult?.value;
+    if (!product) throw new PreviewNotFound();
+    const sources = productShareSources(product);
+    const key = publicPreviewCacheKey(slug, request.nextUrl.searchParams.get('v'))
+      + createHash('sha256').update(JSON.stringify([product.id, product.revision, sources])).digest('hex');
+    const cached = await previews.get(key, async () => {
       const catalogMs = performance.now() - lookup, converting = performance.now();
-      const bytes = await getProductSocialJpeg(product.id, productShareSources(product));
+      const bytes = await getProductSocialJpeg(`${product.id}:${product.revision}`, sources);
       return {bytes, etag: `"${createHash('sha256').update(bytes).digest('hex')}"`, catalogMs, jpegMs: performance.now() - converting};
     });
     const {bytes, etag, catalogMs, jpegMs} = cached.value;

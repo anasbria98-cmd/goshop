@@ -11,7 +11,7 @@ export async function getProductSocialJpeg(productId: string, sources: string[])
   if (cached && cached.expires > Date.now()) return cached.image;
   const storageOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : null;
   const image = makeProductSocialJpeg(sources, DEFAULT_PRODUCT_SHARE_IMAGE, createProductPhotoLoader(storageOrigin, STOREFRONT_ORIGIN), PRODUCT_SHARE_WIDTH, PRODUCT_SHARE_HEIGHT);
-  const entry = {expires: Date.now() + 5 * 60 * 1000, image};
+  const entry = {expires: Date.now() + 60 * 60 * 1000, image};
   images.set(key, entry);
   while (images.size > 32) images.delete(images.keys().next().value!);
   try { return await image; }

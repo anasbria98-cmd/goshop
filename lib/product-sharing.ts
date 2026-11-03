@@ -60,3 +60,19 @@ export function productSharingMetadata(product: ShareProduct, image: string): Me
     twitter: {card: 'summary_large_image', title: product.name, description, images: [{url: preview, alt: product.name}]},
   };
 }
+
+const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+export function productSocialHtml(product: ShareProduct) {
+  // Same shared metadata builder as the visible product template; no source HEAD probes.
+  // The JPEG renderer itself selects the first valid main/gallery photo.
+  const metadata = productSharingMetadata(product, productShareSources(product)[0] ?? DEFAULT_PRODUCT_SHARE_IMAGE);
+  const og = metadata.openGraph as {title:string;description:string;url:string;images:{url:string}[]};
+  const image = og.images[0].url;
+  const tag=(property:string,content:unknown)=>`<meta property="${property}" content="${escape(content)}">`;
+  return '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+    + `<title>${escape(product.name)} | GO ELEC</title><meta name="description" content="${escape(og.description)}"><link rel="canonical" href="${escape(og.url)}">`
+    + tag('og:type','website')+tag('og:site_name','GO ELEC')+tag('og:locale','fr_MA')+tag('og:title',product.name)+tag('og:description',og.description)+tag('og:url',og.url)
+    + tag('og:image',image)+tag('og:image:secure_url',image)+tag('og:image:type','image/jpeg')+tag('og:image:width',1200)+tag('og:image:height',630)+tag('og:image:alt',product.name)
+    + `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(product.name)}"><meta name="twitter:description" content="${escape(og.description)}"><meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(product.name)}">`
+    + `</head><body><h1>${escape(product.name)}</h1><p>${escape(og.description)}</p><img src="${escape(image)}" alt="${escape(product.name)}"></body></html>`;
+}

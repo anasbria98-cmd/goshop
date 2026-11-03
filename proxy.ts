@@ -1,7 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { socialCrawlerPath } from "./lib/product-social-model";
+
 export async function proxy(request: NextRequest) {
+  if (socialCrawlerPath(request.nextUrl.pathname, request.headers.get('user-agent') ?? '', request.method, request.headers.has('rsc'))) {
+    const target=request.nextUrl.clone();
+    target.pathname='/api/product-social/'+request.nextUrl.pathname.split('/')[2];
+    target.search='';
+    const response=NextResponse.rewrite(target);
+    response.headers.set('Vary','User-Agent');
+    response.headers.set('Cache-Control','no-store');
+    return response;
+  }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return NextResponse.next({ request });
