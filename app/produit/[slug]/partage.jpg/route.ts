@@ -30,7 +30,9 @@ async function respond(request: NextRequest, {params}: Context, head: boolean) {
     const {bytes, etag, catalogMs, jpegMs} = cached.value;
     const timing = `preview;dur=${(performance.now() - started).toFixed(1)};desc="${cached.status}"`
       + (cached.status === 'miss' ? `, catalog;dur=${catalogMs.toFixed(1)}, jpeg;dur=${jpegMs.toFixed(1)}` : '');
-    const headers = {'Content-Type': 'image/jpeg', 'Content-Length': String(bytes.length), 'Content-Disposition': 'inline; filename="go-elec-produit.jpg"',
+    const headers = {'Content-Type': 'image/jpeg', 'Content-Length': String(bytes.length), 'Content-Disposition': request.nextUrl.searchParams.get('download') === 'instagram'
+        ? `attachment; filename="go-elec-produit.jpg"; filename*=UTF-8''${encodeURIComponent(slug + '.jpg')}`
+        : 'inline; filename="go-elec-produit.jpg"',
       'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
       'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'index, follow, max-image-preview:large', 'Server-Timing': timing, ETag: etag};
     if (request.headers.get('if-none-match') === etag) return new Response(null, {status: 304, headers});

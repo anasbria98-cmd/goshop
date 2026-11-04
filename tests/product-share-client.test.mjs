@@ -55,3 +55,15 @@ test('native photo preparation rejects HTML, fake JPEG bytes, HTTP errors and ne
   assert.equal(await prepared.prepare(),null);assert.equal(prepared.peek(),null);assert.equal(prepared.settled(),true);
  }
 });
+
+test('Instagram mobile prioritizes the actual JPEG on iPhone/iPad and retains canonical caption on Android',async()=>{
+ const {instagramNativeShareData}=await import('../lib/product-share-client.ts');
+ const photo=new File([new Uint8Array([255,216,255])],'product.jpg',{type:'image/jpeg'});
+ for(const device of [{userAgent:'iPhone Safari',maxTouchPoints:1},{userAgent:'Macintosh Safari',maxTouchPoints:5}]){
+  const payload=instagramNativeShareData('Produit A','produit-a',photo,device);
+  assert.deepEqual(Object.keys(payload),['files']);assert.equal(payload.files[0],photo);
+ }
+ const android=instagramNativeShareData('Produit A','produit-a',photo,{userAgent:'Android Chrome',maxTouchPoints:1});
+ assert.equal(android.files[0],photo);assert.equal(android.title,'Produit A');assert.equal(android.text,'Produit A\nhttps://www.goelec.ma/produit/produit-a');
+ assert.equal(android.url,undefined);
+});

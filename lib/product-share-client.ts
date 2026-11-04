@@ -50,3 +50,11 @@ export function createProductSharePhoto(slug: string, request: typeof fetch = fe
     },
   };
 }
+
+/** Instagram may be offered only by the OS; never promise a specific destination. */
+export function instagramNativeShareData(name: string, slug: string, photo: File, device: {userAgent: string; maxTouchPoints: number}): ShareData {
+  const ios = /iPhone|iPad|iPod/i.test(device.userAgent)
+    || (/Macintosh|Mac OS X/i.test(device.userAgent) && device.maxTouchPoints > 1);
+  // WebKit #251500: combining image and text can drop the image. Copy caption separately.
+  return ios ? {files: [photo]} : {files: [photo], title: name, text: `${name}\n${canonicalProductUrl(slug)}`};
+}
