@@ -73,16 +73,9 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     if (!connection?.saveData) void photo.prepare();
   }, [photo]);
   function preparePhoto() { void photo.prepare(); }
-  async function prepareFallback() {
-    setMessage('Préparation de la photo et du lien pour Instagram…');
-    // Start clipboard access during the click, before awaiting the image download.
-    const copied = copyProductShare(name, slug, navigator.clipboard);
-    // A direct same-origin attachment starts in the original click, even on a cold page.
-    const downloadStarted = downloadPhoto();
-    const prepared = photo.peek() ?? await photo.prepare();
-    const result = await copied;
+  function prepareFallback() {
     setShowFallback(true);
-    setMessage(`${downloadStarted && prepared ? 'Téléchargement de la photo lancé. Si nécessaire, utilisez « Enregistrer la photo ».' : 'La photo est temporairement indisponible. Réessayez.'} ${result.copied ? 'Nom et lien copiés pour Instagram.' : 'Utilisez « Copier le nom et le lien ».'} Ouvrez Instagram, choisissez la photo enregistrée et collez le texte. Aucune publication automatique n’a été effectuée.`);
+    setMessage('Pour partager ce produit sur Instagram, utilisez votre mobile et choisissez Instagram dans le partage de votre appareil. Vous pouvez aussi copier le nom et le lien ou enregistrer la photo avec les boutons ci-dessous.');
   }
   function downloadPhoto() {
     const link = document.createElement('a');
@@ -100,23 +93,23 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     setShowFallback(false);
     setSharing(true);
     try {
-      if (!mobilePhotoSharingAvailable(navigator)) { await prepareFallback(); return; }
+      if (!mobilePhotoSharingAvailable(navigator)) { prepareFallback(); return; }
       const ready = photo.peek();
       if (!ready && typeof navigator.canShare === 'function') {
         setMessage('Préparation de la photo du produit…');
         const prepared = await photo.prepare();
         // A download can consume the gesture deadline. A fresh tap reliably opens native sharing.
         if (prepared && navigator.canShare({files: [prepared]})) setMessage('Photo prête. Appuyez à nouveau sur Instagram, puis choisissez Instagram si votre appareil le propose.');
-        else await prepareFallback();
+        else prepareFallback();
         return;
       }
       const file = ready && navigator.canShare?.({files: [ready]}) ? ready : undefined;
-      if (!file) { await prepareFallback(); return; }
+      if (!file) { prepareFallback(); return; }
       await navigator.share(instagramNativeShareData(name, slug, file, navigator));
       setShowFallback(true);
       setMessage('Photo transmise au partage de votre appareil. Choisissez Instagram si proposé. Sur iPhone/iPad, copiez le nom et le lien ci-dessous et collez-les séparément dans Instagram. Si Instagram est absent, enregistrez la photo puis ouvrez l’application. Aucune publication automatique n’a été effectuée.');
     } catch (error) {
-      if (!(error instanceof Error && error.name === 'AbortError')) await prepareFallback();
+      if (!(error instanceof Error && error.name === 'AbortError')) prepareFallback();
     } finally {
       setSharing(false);
     }
