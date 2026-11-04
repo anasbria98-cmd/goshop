@@ -58,3 +58,24 @@ export function instagramNativeShareData(name: string, slug: string, photo: File
   // WebKit #251500: combining image and text can drop the image. Copy caption separately.
   return ios ? {files: [photo]} : {files: [photo], title: name, text: `${name}\n${canonicalProductUrl(slug)}`};
 }
+
+export const INSTAGRAM_DIRECT_INBOX = 'https://www.instagram.com/direct/inbox/';
+
+/** Open the supported inbox UI during the click; no invented prefilled-DM parameters. */
+export async function openInstagramDirect(slug: string, clipboard: Pick<Clipboard, 'writeText'> | undefined, open: (url: string) => void) {
+  const text = canonicalProductUrl(slug);
+  const copied = (async () => {
+    try { if (!clipboard) return false; await clipboard.writeText(text); return true; }
+    catch { return false; }
+  })();
+  // Do not await clipboard permission before opening: preserve popup user activation.
+  open(INSTAGRAM_DIRECT_INBOX);
+  return {copied: await copied, text};
+}
+
+export function shareInstagramPhoto(name: string, slug: string, photo: File,
+  device: {userAgent: string; maxTouchPoints: number; canShare?: (data: ShareData) => boolean; share?: (data: ShareData) => Promise<void>}) {
+  if (!device.share || !device.canShare || !device.canShare({files: [photo]})) return null;
+  // Called directly in the original tap when the background-prepared File is ready.
+  return device.share(instagramNativeShareData(name, slug, photo, device));
+}

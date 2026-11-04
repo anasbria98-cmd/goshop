@@ -9,7 +9,7 @@ import { loadRecentProducts, submitProductReview } from '@/app/produit/actions';
 import { productShareLinks, recentProductIds, rememberProduct, RECENT_PRODUCTS_KEY } from '@/lib/product-page-model';
 import { ProductCard } from './product-card';
 import { canonicalProductUrl } from '@/lib/product-url.js';
-import { copyProductShare, createProductSharePhoto, mobilePhotoSharingAvailable, instagramNativeShareData } from '@/lib/product-share-client';
+import { copyProductShare, createProductSharePhoto, mobilePhotoSharingAvailable, shareInstagramPhoto, openInstagramDirect } from '@/lib/product-share-client';
 import { createWhatsappPreviewWarmup, startWhatsappShare } from '@/lib/whatsapp-preview';
 import './product-page-extras.css';
 
@@ -73,9 +73,18 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     if (!connection?.saveData) void photo.prepare();
   }, [photo]);
   function preparePhoto() { void photo.prepare(); }
+  async function shareInstagramDirect() {
+    const result = await openInstagramDirect(slug, navigator.clipboard, (inbox) => {
+      window.open(inbox, '_blank', 'noopener,noreferrer');
+    });
+    setShowFallback(true);
+    setMessage(result.copied
+      ? 'Lien du produit copié — choisissez un contact sur Instagram puis collez-le. Si le nouvel onglet est bloqué, utilisez « Ouvrir Instagram Direct ».'
+      : `Instagram Direct s’ouvre dans un nouvel onglet. Choisissez un contact puis copiez ce lien : ${result.text}`);
+  }
   function prepareFallback() {
     setShowFallback(true);
-    setMessage('Pour partager ce produit sur Instagram, utilisez votre mobile et choisissez Instagram dans le partage de votre appareil. Vous pouvez aussi copier le nom et le lien ou enregistrer la photo avec les boutons ci-dessous.');
+    setMessage('Le partage de photo n’est pas disponible sur cet appareil. Utilisez « Ouvrir Instagram Direct » pour copier le lien et choisir votre contact. Rien n’est envoyé automatiquement.');
   }
   function downloadPhoto() {
     const link = document.createElement('a');
@@ -93,7 +102,7 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
     setShowFallback(false);
     setSharing(true);
     try {
-      if (!mobilePhotoSharingAvailable(navigator)) { prepareFallback(); return; }
+      if (!mobilePhotoSharingAvailable(navigator)) { await shareInstagramDirect(); return; }
       const ready = photo.peek();
       if (!ready && typeof navigator.canShare === 'function') {
         setMessage('Préparation de la photo du produit…');
@@ -103,11 +112,11 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
         else prepareFallback();
         return;
       }
-      const file = ready && navigator.canShare?.({files: [ready]}) ? ready : undefined;
-      if (!file) { prepareFallback(); return; }
-      await navigator.share(instagramNativeShareData(name, slug, file, navigator));
+      const handoff = ready ? shareInstagramPhoto(name, slug, ready, navigator) : null;
+      if (!handoff) { prepareFallback(); return; }
+      await handoff;
       setShowFallback(true);
-      setMessage('Photo transmise au partage de votre appareil. Choisissez Instagram si proposé. Sur iPhone/iPad, copiez le nom et le lien ci-dessous et collez-les séparément dans Instagram. Si Instagram est absent, enregistrez la photo puis ouvrez l’application. Aucune publication automatique n’a été effectuée.');
+      setMessage('Partage de votre appareil ouvert avec la photo du produit. Choisissez Instagram si proposé, puis votre contact si Instagram le permet. Sur iPhone/iPad, le nom et le lien peuvent devoir être copiés séparément. Rien n’est envoyé automatiquement.');
     } catch (error) {
       if (!(error instanceof Error && error.name === 'AbortError')) prepareFallback();
     } finally {
@@ -132,7 +141,7 @@ export function ProductShare({ name, slug }: { name: string; slug: string }) {
       <button type="button" onClick={shareWhatsapp} disabled={whatsappBusy} aria-busy={whatsappBusy} onPointerEnter={prepareWhatsapp} onFocus={prepareWhatsapp} onTouchStart={prepareWhatsapp} aria-label="Partager sur WhatsApp"><MessageCircle size={18} />WhatsApp</button>
     </div>
     {whatsappMessage && <div className="product-share-status" role="status">{whatsappMessage}<button type="button" onClick={copyWhatsappCaption}>Copier le nom et le lien pour WhatsApp</button>{whatsappFallback && <button type="button" onClick={() => social('whatsapp')}>Partager uniquement le lien</button>}</div>}
-    {message && <div className="product-share-status" role="status">{message}{showFallback && <><button type="button" onClick={downloadPhoto}>Enregistrer la photo</button><button type="button" onClick={copyUrl}>Copier le nom et le lien</button></>}</div>}
+    {message && <div className="product-share-status" role="status">{message}{showFallback && <><button type="button" onClick={shareInstagramDirect}>Ouvrir Instagram Direct</button><button type="button" onClick={downloadPhoto}>Enregistrer la photo</button><button type="button" onClick={copyUrl}>Copier le nom et le lien</button></>}</div>}
   </section>;
 }
 
