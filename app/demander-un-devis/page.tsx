@@ -4,9 +4,11 @@ import { FileText, Phone, Check } from 'lucide-react';
 import { getCategories } from '@/lib/catalog';
 import { QuoteRequestForm } from './quote-request-form';
 import styles from './quote-request.module.css';
+import { requireUser } from '@/lib/auth';
 
 export const metadata: Metadata = {title: 'Demander un devis', description: 'Décrivez votre projet et demandez un devis personnalisé à GO ELEC.'};
 export default async function QuoteRequestPage() {
+  await requireUser('/demander-un-devis');
   const categories = await getCategories();
   const byId = new Map(categories.map(c => [c.id, c]));
   const label = (id: string, seen = new Set<string>()): string => {

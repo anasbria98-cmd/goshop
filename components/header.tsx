@@ -26,6 +26,7 @@ import { useStore } from "./store-provider";
 import { BrandLogo } from "./brand-logo";
 import { NavigationFeedback } from "./navigation-feedback";
 import { MobileCategoryMenu } from "./mobile-category-menu";
+import { useQuoteAccess } from "./use-quote-access";
 
 function SubmenuLinks({ items, onNavigate, mobile = false }: {
   items: CategoryMenuNode[];
@@ -48,6 +49,7 @@ function SubmenuLinks({ items, onNavigate, mobile = false }: {
 
 export function Header({navigation}:{navigation:CategoryNavigation}) {
   const { t } = useStorefrontLanguage();
+  const canRequestQuote = useQuoteAccess();
   const { count, total, favorites } = useStore();
   const [active, setActive] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -139,7 +141,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
           </form>
           <div className={quoteEntry.desktopGroup}>
             <a href="https://wa.me/212644605258" target="_blank" rel="noopener noreferrer" className={`${quoteEntry.technician} ${quoteEntry.desktopTechnician}`} aria-label="Technicien confirmé sur WhatsApp (nouvel onglet)"><span aria-hidden="true">👷🏻‍♂️</span><StoreText>Technicien confirmé</StoreText></a>
-            <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.desktop}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+            {canRequestQuote && <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.desktop}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>}
           </div>
           <div className="header-actions">
             <Link href="/compte" prefetch={true} className="header-action account navigation-link">
@@ -176,7 +178,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
         </div>
         <div className={`wrap ${quoteEntry.mobileHeader}`}>
           <a href="https://wa.me/212644605258" target="_blank" rel="noopener noreferrer" className={quoteEntry.technician} aria-label="Technicien confirmé sur WhatsApp (nouvel onglet)"><span aria-hidden="true">👷🏻‍♂️</span><StoreText>Technicien confirmé</StoreText></a>
-          <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobileHeaderLink}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+          {canRequestQuote && <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobileHeaderLink}><FileText size={17} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>}
         </div>
         <nav
           className="desktop-nav"
@@ -318,7 +320,7 @@ export function Header({navigation}:{navigation:CategoryNavigation}) {
             <X />
           </button>
         </div>
-        <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobile} onClick={() => setMobile(false)}><FileText size={18} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>
+        {canRequestQuote && <Link href="/demander-un-devis" prefetch={false} className={quoteEntry.mobile} onClick={() => setMobile(false)}><FileText size={18} aria-hidden="true"/><StoreText>Demander un devis</StoreText></Link>}
         {mobile && <MobileCategoryMenu nodes={navigation.mobile} onNavigate={() => setMobile(false)} />}
         <Link href="/compte" prefetch={true} className="navigation-link" onClick={() => setMobile(false)}><StoreText>
           Mon compte

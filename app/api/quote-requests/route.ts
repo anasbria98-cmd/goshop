@@ -6,6 +6,7 @@ import { getSecretSupabaseKey } from '@/lib/env';
 import { MAX_QUOTE_TOTAL_SIZE, quoteFileError, quoteFileMatchesContent, quoteRequestSchema, quoteReference } from '@/lib/quote-request';
 import { processQuoteRequest, type QuoteClaim, type QuoteUpload } from '@/lib/quote-processing';
 import { notifyQuoteRequest } from '@/lib/quote-delivery';
+import { getCurrentUser } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 const MAX_BODY = MAX_QUOTE_TOTAL_SIZE + 128 * 1024;
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest) {
   try { sameOrigin = !!origin && (origin === request.nextUrl.origin || new URL(origin).host === request.headers.get('host')); } catch { /* Invalid origins are rejected. */ }
   if (!sameOrigin) return reply({error: 'Origine de la demande invalide.'}, 403);
   try {
+    const user = await getCurrentUser();
+    if (!user) return reply({error: 'Connectez-vous pour demander un devis.'}, 401);
     const form = await boundedForm(request);
     if (form.get('website')) return reply({error: 'La demande n’a pas pu être envoyée.'}, 400);
     const parsed = quoteRequestSchema.safeParse(Object.fromEntries(form));
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       if (!data) return reply({error: 'Cette catégorie n’est plus disponible. Choisissez un autre type de demande.'}, 400);
       category = data.name;
     }
-    const payloadHash = hash(JSON.stringify({input, files: files.map(f => ({name: f.name, path: f.path, type: f.type}))}));
+    const payloadHash = hash(JSON.stringify({userId: user.id, input, files: files.map(f => ({name: f.name, path: f.path, type: f.type}))}));
     const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
     const rateKey = createHmac('sha256', getSecretSupabaseKey()).update(`quote-rate:${address}`).digest('hex');
     const result = await processQuoteRequest({id, files,
