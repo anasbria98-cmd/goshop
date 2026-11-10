@@ -22,7 +22,7 @@ export default async function SignInPage({
         <label><StoreText>E-mail</StoreText><input required type="email" name="email" autoComplete="email" /></label>
         <label><StoreText>Mot de passe</StoreText><input required minLength={8} type="password" name="password" autoComplete="current-password" /></label>
         <AuthSubmitButton />
-        <Link href="/auth/sign-up"><StoreText>Créer un compte</StoreText></Link>
+        <Link href={params.next ? `/auth/sign-up?next=${encodeURIComponent(params.next)}` : "/auth/sign-up"}><StoreText>Créer un compte</StoreText></Link>
       </form>
     </section>
   );

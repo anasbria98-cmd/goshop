@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { resolvePostAuthPath } from "@/lib/auth-routing";
+import { safeInternalPath, resolvePostAuthPath } from "@/lib/auth-routing";
 
 const credentials = z.object({
   email: z.string().email(),
@@ -44,16 +44,19 @@ export async function signIn(formData: FormData) {
 }
 
 export async function signUp(formData: FormData) {
+  const requestedNext = formData.get("next");
+  const next = safeInternalPath(requestedNext, "/compte");
+  const nextQuery = requestedNext ? `&next=${encodeURIComponent(next)}` : "";
   const schema = credentials.extend({
     first_name: z.string().trim().min(2).max(80),
     last_name: z.string().trim().min(2).max(80),
   });
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success)
-    redirect(`/auth/sign-up?error=${encodeURIComponent("Vérifiez les informations saisies")}`);
+    redirect(`/auth/sign-up?error=${encodeURIComponent("Vérifiez les informations saisies")}${nextQuery}`);
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -61,12 +64,13 @@ export async function signUp(formData: FormData) {
         first_name: parsed.data.first_name,
         last_name: parsed.data.last_name,
       },
-      emailRedirectTo: `${origin}/auth/callback?next=/compte`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
   if (error)
-    redirect(`/auth/sign-up?error=${encodeURIComponent(error.message)}`);
-  redirect("/auth/sign-in?message=Vérifiez votre e-mail pour activer votre compte");
+    redirect(`/auth/sign-up?error=${encodeURIComponent(error.message)}${nextQuery}`);
+  if (requestedNext && data.session) redirect(resolvePostAuthPath("customer", next));
+  redirect(`/auth/sign-in?message=${encodeURIComponent("Vérifiez votre e-mail pour activer votre compte")}${nextQuery}`);
 }
 
 export async function signOut() {

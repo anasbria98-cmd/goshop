@@ -7,12 +7,13 @@ export const metadata = { title: "Créer un compte" };
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
   return (
     <section className="auth-page wrap">
       <form action={signUp} className="auth-card">
+        {next ? <input type="hidden" name="next" value={next} /> : null}
         <h1><StoreText>Créer mon compte</StoreText></h1>
         <p><StoreText>Suivez vos commandes et retrouvez vos sélections.</StoreText></p>
         {error && <div className="form-error"><StoreText>{error}</StoreText></div>}
@@ -23,7 +24,7 @@ export default async function SignUpPage({
         <label><StoreText>E-mail</StoreText><input required type="email" name="email" autoComplete="email" /></label>
         <label><StoreText>Mot de passe</StoreText><input required minLength={8} type="password" name="password" autoComplete="new-password" /></label>
         <button className="button orange" type="submit"><StoreText>Créer mon compte</StoreText></button>
-        <Link href="/auth/sign-in"><StoreText>J’ai déjà un compte</StoreText></Link>
+        <Link href={next ? `/auth/sign-in?next=${encodeURIComponent(next)}` : "/auth/sign-in"}><StoreText>J’ai déjà un compte</StoreText></Link>
       </form>
     </section>
   );

@@ -34,7 +34,7 @@ test('Auth outages fail closed before service-role processing; authenticated req
  assert.equal((await api.POST(request())).status,200);assert.deepEqual(api.events,['verify-user','verify-user','admin-client','claim']);
  const other=await endpoint({id:'customer-b'});assert.equal((await other.POST(request())).status,200);assert.notEqual(api.hashes[0],other.hashes[0],'idempotency is bound to the verified user, not supplied form identity');
 });
-test('all desktop/mobile quote links render only for verified signed-in access',async()=>{
+test('all desktop/mobile quote links are always available without an Auth lookup',async()=>{
  const empty=()=>null,Text=({children})=>children,Link=({href,children})=>React.createElement('a',{href},children);
  for(const allowed of [false,true]){
   const {Header}=await compile('../components/header.tsx',{
@@ -47,17 +47,18 @@ test('all desktop/mobile quote links render only for verified signed-in access',
    './use-quote-access':{useQuoteAccess:()=>allowed},
   });
   const html=renderToStaticMarkup(React.createElement(Header,{navigation:{all:[],top:[],mobile:[]}}));
-  assert.equal((html.match(/href="\/demander-un-devis"/g)||[]).length,allowed?3:0);
+  assert.equal((html.match(/href="\/demander-un-devis"/g)||[]).length,3);
   assert.equal((html.match(/https:\/\/wa.me\/212644605258/g)||[]).length,2,'technician actions remain unchanged');
  }
 });
 
-test('direct quote page access runs the existing login guard before fetching categories or rendering the form',async()=>{
+test('anonymous quote page access redirects to signup before fetching categories or rendering the form',async()=>{
  const events=[],redirect=new Error('existing sign-in redirect');
  const {default:Page}=await compile('../app/demander-un-devis/page.tsx',{
-  '@/lib/auth':{requireUser:async next=>{events.push(next);throw redirect;}},
+  '@/lib/auth':{getCurrentUser:async()=>null},
+  'next/navigation':{redirect:path=>{events.push(path);throw redirect;}},
   '@/lib/catalog':{getCategories:async()=>assert.fail('anonymous visitor must not load the protected form')},
   './quote-request-form':{QuoteRequestForm:()=>null},'./quote-request.module.css':{default:{}},'next/link':{default:()=>null},
  });
- await assert.rejects(Page(),redirect);assert.deepEqual(events,['/demander-un-devis']);
+ await assert.rejects(Page(),redirect);assert.deepEqual(events,['/auth/sign-up?next=%2Fdemander-un-devis']);
 });
