@@ -4,6 +4,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { socialCrawlerPath } from "./lib/product-social-model";
 
 export async function proxy(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim().toLowerCase();
+  const requestHost = (forwardedHost || request.headers.get("host") || "").split(":")[0].toLowerCase();
+  if (requestHost === "goelec.ma") {
+    const canonicalUrl = request.nextUrl.clone();
+    canonicalUrl.protocol = "https:";
+    canonicalUrl.host = "www.goelec.ma";
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
   if (socialCrawlerPath(request.nextUrl.pathname, request.headers.get('user-agent') ?? '', request.method, request.headers.has('rsc'))) {
     const target=request.nextUrl.clone();
     target.pathname='/api/product-social/'+request.nextUrl.pathname.split('/')[2];
