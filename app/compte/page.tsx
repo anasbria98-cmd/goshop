@@ -20,7 +20,7 @@ export default async function Page({searchParams}: {searchParams: Promise<{page?
   const requestedPage = Number((await searchParams).page ?? 1);
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 10000 ? requestedPage : 1;
   const [{data:orders,count,error:ordersError},{data:addresses,error:addressesError}] = await Promise.all([
-    supabase.from('orders').select('id,order_number,status,grand_total,currency,created_at',{count:'exact'}).eq('user_id',user.id).order('created_at',{ascending:false}).range((page-1)*10,page*10-1),
+    supabase.from('orders').select('id,order_number,status,grand_total,currency,created_at,customer_note',{count:'exact'}).eq('user_id',user.id).order('created_at',{ascending:false}).range((page-1)*10,page*10-1),
     supabase.from('addresses').select('*').eq('user_id',user.id).order('created_at'),
   ]);
   const name = [profile?.first_name,profile?.last_name].filter(Boolean).join(' ');
@@ -37,6 +37,7 @@ export default async function Page({searchParams}: {searchParams: Promise<{page?
         {ordersError ? <p className={styles.empty}><StoreText>Impossible de charger vos commandes. Réessayez dans quelques instants.</StoreText></p> : orders?.length ? <div className={styles.orders}>{orders.map(order => <article className={styles.order} key={String(order.id)}>
           <strong>{String(order.order_number)}</strong><time dateTime={String(order.created_at)}>{new Intl.DateTimeFormat('fr-MA',{day:'2-digit',month:'short',year:'numeric',timeZone:'Africa/Casablanca'}).format(new Date(String(order.created_at)))}</time>
           <span className={styles.status}><StoreText>{statuses[String(order.status)] ?? String(order.status)}</StoreText></span><b dir="ltr">{new Intl.NumberFormat('fr-MA',{style:'currency',currency:String(order.currency)}).format(Number(order.grand_total))}</b>
+          {order.customer_note?.trim() && <details className={styles.orderComment}><summary><StoreText>Commentaire sur la commande</StoreText></summary><p dir="auto">{order.customer_note}</p></details>}
         </article>)}</div> : <p className={styles.empty}><StoreText>Aucune commande pour le moment.</StoreText></p>}
         {page > 1 && <Link className={styles.more} href={`/compte?page=${page-1}#commandes`}><StoreText>Commandes précédentes</StoreText></Link>}
         {count !== null && count > page*10 && <Link className={styles.more} href={`/compte?page=${page+1}#commandes`}><StoreText>Voir les commandes suivantes</StoreText></Link>}

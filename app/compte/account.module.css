@@ -16,6 +16,9 @@
 .order { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto; align-items:center; gap:18px; padding:16px; border:1px solid #e7eaf0; border-radius:8px; font-size:14px; }
 .order strong { overflow-wrap:anywhere; }
 .order time { color:#66717e; }
+.orderComment { grid-column:1/-1; min-width:0; border-top:1px solid #e7eaf0; padding-top:12px; }
+.orderComment summary { cursor:pointer; color:var(--blue); font-weight:600; }
+.orderComment p { margin:10px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6; }
 .status { padding:5px 10px; border-radius:6px; background:#edf2fa; color:var(--blue); width:fit-content; font-size:13px; }
 .address { border-top:1px solid #e7eaf0; padding-block:16px; font-style:normal; line-height:1.7; overflow-wrap:anywhere; }
 .address:first-of-type { border:0; padding-top:0; }
