@@ -9,6 +9,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: category?.name ?? "Catégorie",
     description: category?.description ?? undefined,
+    alternates: { canonical: `https://www.goelec.ma/categorie/${slug.map(encodeURIComponent).join("/")}` },
   };
 }
 
