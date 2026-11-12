@@ -30,6 +30,26 @@ export default async function Page({
   const { slug } = await params;
   const product = await getPageProduct(slug);
   if (!product) notFound();
+  const productUrl = `https://www.goelec.ma/produit/${encodeURIComponent(product.slug)}`;
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDescription || product.description || product.name,
+    sku: product.sku,
+    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+    ...(product.imageUrl ? { image: [product.imageUrl] } : {}),
+    url: productUrl,
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "MAD",
+      price: product.price,
+      availability: product.stock > 0 || product.allowBackorder
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    },
+  };
   const [reviewData, candidates, brands] = await Promise.all([
     getProductReviews(product.id),
     product.categoryIds.length ? Promise.all([
@@ -38,7 +58,7 @@ export default async function Page({
     ]).then((groups) => [...new Map(groups.flat().map((p) => [p.id, p])).values()]) : Promise.resolve([]),
     getStorefrontBrands(),
   ]);
-  return <><ProductDetail key={product.id} product={product} /><div className="wrap detail-page-extras">
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd).replace(/</g, "\\u003c") }} /><ProductDetail key={product.id} product={product} /><div className="wrap detail-page-extras">
     <ProductReviews key={product.id} productId={product.id} slug={product.slug} {...reviewData} />
     <ProductRecommendations title="Articles similaires" products={rankSimilarProducts(candidates, product)} />
     <RecentlyViewed productId={product.id} />
