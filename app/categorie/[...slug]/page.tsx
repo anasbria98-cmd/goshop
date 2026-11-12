@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: "Découvrez les disjoncteurs Hager et Schneider Electric chez GO ELEC au Maroc : modèles modulaires, moteurs et différentiels. Comparez les références du catalogue.",
     },
     "cables-fils": {
-      title: "Câble électrique au Maroc",
-      description: "Découvrez notre sélection de câbles et fils électriques pour vos installations et chantiers au Maroc chez GO ELEC.",
+      title: "Câble électrique et fils au Maroc",
+      description: "Découvrez les câbles et fils électriques chez GO ELEC au Maroc : U-1000 R2V, H07V-U et références Nexans. Comparez les sections et conditionnements du catalogue.",
     },
     "gaines-conduits/goulotte": {
       title: "Goulotte électrique perforée Ingelec au Maroc",
@@ -60,6 +60,25 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "cables-fils") {
+    const family = (familySlug: string) => categories.find((item) => item.parentId === category.id && item.slug === familySlug);
+    const u500v = family("cable-u500v"), u500sv = family("cable-u500sv"), ro2v = family("cable-ro2v"), informatique = family("cable-informatique"), incendie = family("cable-incendie");
+    const reference = (sku: string) => products.find((item) => item.sku.trim() === sku);
+    const metre = reference("10097156"), couronne = reference("10027486"), fil = reference("GS1006");
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.goelec.ma/" },
+        { "@type": "ListItem", position: 2, name: category.name, item: `https://www.goelec.ma/categorie/${category.path}` },
+      ],
+    };
+    const content = <div className="category-description">
+      <p>Retrouvez nos câbles et fils électriques, dont des références Nexans.{u500v && u500sv && ro2v && <> Les familles <Link className="text-link" href={`/categorie/${u500v.path}`}>{u500v.name}</Link> et <Link className="text-link" href={`/categorie/${u500sv.path}`}>{u500sv.name}</Link> côtoient les références U-1000 R2V, regroupées dans <Link className="text-link" href={`/categorie/${ro2v.path}`}>{ro2v.name}</Link>.</>}{informatique && <> Le catalogue comprend aussi du <Link className="text-link" href={`/categorie/${informatique.path}`}>câble informatique</Link> LANmark-6 U/UTP CAT6</>}{incendie && <>{informatique ? " et une référence " : " Le catalogue comprend une référence "}<Link className="text-link" href={`/categorie/${incendie.path}`}>câble incendie</Link> FIRE ALARM 2XAWG20</>}{(informatique || incendie) && "."}</p>
+      <p>Comparez la désignation, la section et le conditionnement indiqués sur chaque fiche.{metre && couronne && <> Les références U-1000 R2V 3G2.5² sont notamment proposées <Link className="text-link" href={`/produit/${metre.slug}`}>au mètre</Link> et <Link className="text-link" href={`/produit/${couronne.slug}`}>en couronne de 50 m</Link>.</>}{fil && <> Le <Link className="text-link" href={`/produit/${fil.slug}`}>fil H07V-U 2,5 mm²</Link> est présenté en 100 m.</>} D’autres fiches précisent leurs longueurs de couronne, bobine ou touret : vérifiez celle de l’article choisi.</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Câbles et fils électriques" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "appareillage") {
     const lap = categories.find((item) => item.parentId === category.id && item.slug === "lap");
     const ranges = lap ? categories.filter((item) => item.parentId === lap.id && ["galaxy", "millenium", "optimo", "aqua"].includes(item.slug)) : [];
