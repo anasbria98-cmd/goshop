@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogView } from "@/components/catalog-view";
 import { getCategories, getCategoryFilters, getProducts } from "@/lib/catalog";
@@ -17,8 +18,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: "Découvrez notre sélection de câbles et fils électriques pour vos installations et chantiers au Maroc chez GO ELEC.",
     },
     "gaines-conduits/goulotte": {
-      title: "Goulotte électrique au Maroc",
-      description: "Découvrez nos goulottes électriques pour organiser et protéger vos câbles dans vos installations au Maroc.",
+      title: "Goulotte électrique perforée Ingelec au Maroc",
+      description: "Découvrez les goulottes électriques perforées Ingelec de 2 m chez GO ELEC au Maroc. Comparez les références pour le passage des câbles dans vos coffrets de commande.",
     },
     "appareillage": {
       title: "Appareillage électrique au Maroc",
@@ -55,5 +56,23 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "gaines-conduits/goulotte") {
+    const parent = categories.find((item) => item.id === category.parentId);
+    const breadcrumbs = [
+      { name: "Accueil", url: "https://www.goelec.ma/" },
+      ...(parent ? [{ name: parent.name, url: `https://www.goelec.ma/categorie/${parent.path}` }] : []),
+      { name: category.name, url: `https://www.goelec.ma/categorie/${category.path}` },
+    ];
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
+    };
+    const content = <div className="category-description">
+      <p>Retrouvez nos goulottes électriques perforées Ingelec de 2 m. Avec leur couvercle, elles permettent de guider les conducteurs isolés ou les câbles dans un coffret de commande et d’assurer leur protection mécanique.</p>
+      <p>Pour choisir votre goulotte, comparez les références disponibles{products.length > 0 && <> : {products.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.sku || product.name}</Link></span>)}</>}. Consultez chaque fiche produit et vérifiez l’espace disponible dans votre coffret avant de choisir.{parent && <> Retrouvez les autres solutions de cheminement dans notre catégorie <Link className="text-link" href={`/categorie/${parent.path}`}>{parent.name}</Link>.</>}</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Goulotte électrique" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   return <Suspense><CatalogView category={category} categories={categories} products={products} availableFilters={filters} /></Suspense>;
 }

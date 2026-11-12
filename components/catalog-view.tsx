@@ -1,7 +1,7 @@
 "use client";
 import { StoreText, useStorefrontLanguage } from "@/components/storefront-language";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { SlidersHorizontal, SearchX } from "lucide-react";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
@@ -18,6 +18,7 @@ export function CatalogView({
   products,
   query = "",
   title: suppliedTitle,
+  categoryContent,
   availableFilters = [],
   favoritesOnly = false,
 }: {
@@ -26,6 +27,7 @@ export function CatalogView({
   products: CatalogProduct[];
   query?: string;
   title?: string;
+  categoryContent?: ReactNode;
   availableFilters?: CatalogFilter[];
   favoritesOnly?: boolean;
 }) {
@@ -97,6 +99,7 @@ export function CatalogView({
       </div>
       <h1><StoreText>{title}</StoreText></h1>
       {cat?.description && <p className="category-description">{cat.description}</p>}
+      {categoryContent}
       {cat && <div className="subcategory-tags">
         {categories.filter((item) => item.parentId === cat.id).map((item) => (
           <Link href={`/categorie/${item.path}`} key={item.id}><StoreText>{item.name}</StoreText></Link>
