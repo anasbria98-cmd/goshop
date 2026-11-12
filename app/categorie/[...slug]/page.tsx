@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: "Découvrez les goulottes électriques perforées Ingelec de 2 m chez GO ELEC au Maroc. Comparez les références pour le passage des câbles dans vos coffrets de commande.",
     },
     "appareillage": {
-      title: "Appareillage électrique au Maroc",
-      description: "Découvrez notre sélection d’appareillage électrique pour équiper vos installations résidentielles et professionnelles au Maroc.",
+      title: "Appareillage électrique : prises et interrupteurs au Maroc",
+      description: "Découvrez l’appareillage électrique LAP chez GO ELEC au Maroc : prises de courant, interrupteurs, poussoirs et cadres des gammes Galaxy, Millenium, Optimo et Aqua.",
     },
     "eclairage/exterieur": {
       title: "Éclairage extérieur au Maroc",
@@ -60,6 +60,27 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "appareillage") {
+    const lap = categories.find((item) => item.parentId === category.id && item.slug === "lap");
+    const ranges = lap ? categories.filter((item) => item.parentId === lap.id && ["galaxy", "millenium", "optimo", "aqua"].includes(item.slug)) : [];
+    const examples = ["20218", "20219", "20955"].flatMap((sku) => {
+      const product = products.find((item) => item.sku.trim() === sku);
+      return product ? [product] : [];
+    });
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.goelec.ma/" },
+        { "@type": "ListItem", position: 2, name: category.name, item: `https://www.goelec.ma/categorie/${category.path}` },
+      ],
+    };
+    const content = <div className="category-description">
+      <p>Cette sélection d’appareillage électrique réunit des prises de courant, interrupteurs, poussoirs, prises RJ45, RJ12 et télévision, ainsi que des chargeurs USB, variateurs et cadres.{lap && <> Retrouvez la sélection <Link className="text-link" href={`/categorie/${lap.path}`}>LAP</Link>{ranges.length > 0 && <> et ses gammes {ranges.map((item, index) => <span key={item.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/categorie/${item.path}`}>{item.name}</Link></span>)}</>}.</>}</p>
+      <p>Pour choisir une prise électrique, comparez les modèles 2P, 2P + Terre et les doubles prises 2P + Terre.{examples.length > 0 && <> Quelques exemples : {examples.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.name}</Link></span>)}.</>} Distinguez les prises de courant des prises réseau ou télévision, puis vérifiez la gamme et le type d’appareil indiqués sur chaque fiche.</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Appareillage électrique : interrupteurs et prises" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "materiel-electrique/disjoncteur-interrupteur") {
     const parent = categories.find((item) => item.id === category.parentId);
     const brandCategories = categories.filter((item) => item.parentId === category.id && ["hager", "schneider"].includes(item.slug));
