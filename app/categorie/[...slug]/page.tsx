@@ -6,7 +6,10 @@ import { getCategories, getCategoryFilters, getProducts } from "@/lib/catalog";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
-  const category = (await getCategories()).find((item) => item.path === slug.join("/"));
+  const categories = await getCategories();
+  const category = categories.find((item) => item.path === slug.join("/"));
+  const emptyDomotique = category && slug[0] === "domotique"
+    && (await getProducts({ categoryPath: slug }, categories)).length === 0;
   const path = slug.join("/");
   const seo: Record<string, { title: string; description: string }> = {
     "materiel-electrique": {
@@ -50,6 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: optimized?.title ?? category?.name ?? "Catégorie",
     description: optimized?.description ?? category?.description ?? fallbackDescription,
     alternates: { canonical: `https://www.goelec.ma/categorie/${slug.map(encodeURIComponent).join("/")}` },
+    ...(emptyDomotique ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
