@@ -38,9 +38,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
   };
   const optimized = seo[path];
+  const fallbackDescription = category
+    ? `Découvrez notre sélection ${category.name.toLowerCase()} pour vos projets et installations au Maroc chez GO ELEC.`
+    : undefined;
   return {
     title: optimized?.title ?? category?.name ?? "Catégorie",
-    description: optimized?.description ?? category?.description ?? undefined,
+    description: optimized?.description ?? category?.description ?? fallbackDescription,
     alternates: { canonical: `https://www.goelec.ma/categorie/${slug.map(encodeURIComponent).join("/")}` },
   };
 }
