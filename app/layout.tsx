@@ -6,6 +6,7 @@ import "./globals.css";
 import { ApplicationShell } from "@/components/application-shell";
 import { getPublicStoreSettings } from "@/lib/settings";
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.goelec.ma"),
   title: {
     default: "GO ELEC | Matériel électrique au Maroc",
     template: "%s | GO ELEC",
