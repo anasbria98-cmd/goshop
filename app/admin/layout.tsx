@@ -2,6 +2,7 @@ import { getCurrentUser, requireRole } from "@/lib/auth";
 import { Suspense } from "react";
 import { LoaderCircle } from "lucide-react";
 import { AdminShell } from "./_admin-shell";
+export const metadata = { robots: { index: false, follow: true } };
 export const dynamic = "force-dynamic";
 
 async function AuthorizedAdmin({ children }: { children: React.ReactNode }) {

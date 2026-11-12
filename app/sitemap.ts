@@ -30,6 +30,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: slug === "a-propos" ? 0.5 : 0.3,
     })),
-    { url: `${origin}/demander-un-devis`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 }
