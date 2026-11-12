@@ -11,6 +11,7 @@ const seoDescription = "Votre sélection de matériel électrique informatique, 
 export const metadata: Metadata = {
   title: { absolute: seoTitle },
   description: seoDescription,
+  alternates: { canonical: "https://www.goelec.ma/" },
   openGraph: { title: seoTitle, description: seoDescription },
   twitter: { title: seoTitle, description: seoDescription },
   verification: { google: "TU5zh8WIPU3FED_RxpbjERgQuXfgVotP8Hd2l62nDDU" },
