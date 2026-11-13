@@ -41,8 +41,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: "Découvrez nos solutions de domotique pour piloter, automatiser et moderniser vos installations au Maroc avec GO ELEC.",
     },
     "eclairage/interieur/douille": {
-      title: "Douilles électriques",
-      description: "Découvrez notre sélection de douilles électriques pour vos luminaires et installations d’éclairage chez GO ELEC.",
+      title: "Douille électrique E14, E27 et B22 au Maroc",
+      description: "Découvrez les douilles électriques E14, E27 et B22 et les patères chez GO ELEC au Maroc, dont des références LAP. Comparez les modèles et leurs fiches produit.",
     },
   };
   const optimized = seo[path];
@@ -64,6 +64,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "eclairage/interieur/douille") {
+    const parent = categories.find((item) => item.id === category.parentId);
+    const grandparent = parent ? categories.find((item) => item.id === parent.parentId) : undefined;
+    const examples = ["1014", "1027", "1022"].flatMap((sku) => {
+      const product = products.find((item) => item.sku.trim() === sku);
+      return product ? [product] : [];
+    });
+    const breadcrumbs = [
+      { name: "Accueil", url: "https://www.goelec.ma/" },
+      ...[grandparent, parent, category].flatMap((item) => item ? [{ name: item.name, url: `https://www.goelec.ma/categorie/${item.path}` }] : []),
+    ];
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
+    };
+    const content = <div className="category-description">
+      <p>Cette sélection de douilles électriques comprend des modèles simples E14 et E27 à filetage, une douille B22 à baïonnette avec simple bague, ainsi que des patères droites et inclinées. Vous y trouverez notamment des références <Link className="text-link" href="/recherche?marque=lap">LAP</Link>.</p>
+      <p>Pour choisir, distinguez le type de culot indiqué sur la fiche : E14, E27 ou B22.{examples.length > 0 && <> Comparez les modèles {examples.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.name}</Link></span>)}.</>} Pour une patère, vérifiez aussi la forme et la variante sélectionnée sur sa fiche.{parent && <> Retrouvez les autres articles d’<Link className="text-link" href={`/categorie/${parent.path}`}>éclairage intérieur</Link></>}{grandparent && <> dans notre sélection <Link className="text-link" href={`/categorie/${grandparent.path}`}>{grandparent.name}</Link></>}{(parent || grandparent) && "."}</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Douilles électriques" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "cables-fils") {
     const family = (familySlug: string) => categories.find((item) => item.parentId === category.id && item.slug === familySlug);
     const u500v = family("cable-u500v"), u500sv = family("cable-u500sv"), ro2v = family("cable-ro2v"), informatique = family("cable-informatique"), incendie = family("cable-incendie");

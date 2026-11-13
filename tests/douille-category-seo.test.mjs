@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import ts from 'typescript';
+const require=createRequire(import.meta.url),React=require('react');
+const {renderToStaticMarkup}=require('react-dom/server');
+const paths=['eclairage','eclairage/interieur','eclairage/interieur/douille'];
+const categories=paths.map((path,i)=>({id:String(i),name:['Éclairage','Intérieur','Douille'][i],path,slug:path.split('/').at(-1),parentId:i?String(i-1):null}));
+const products=[['1014','douille-e14-simple','Douille E14 simple'],['1027','douille-e27-simple','Douille E27 simple'],['1022','douille-b22-simple-bague','Douille B22 simple bague'],['D2027','patere-droite','Patère droite'],['INI2028','patere-inclinee-e27','Patère inclinée']].map(([sku,slug,name])=>({id:sku,sku,slug,name}));
+const filters=[{slug:'existing'}],params=path=>({params:Promise.resolve({slug:path.split('/')})});
+async function load(list=products){let props;const source=await readFile(new URL('../app/categorie/[...slug]/page.tsx',import.meta.url),'utf8');const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}),exports={};const mocks={
+ 'next/navigation':{notFound(){throw new Error('NOT_FOUND');}},'next/link':{default:({href,children,...rest})=>React.createElement('a',{href,...rest},children)},
+ '@/components/catalog-view':{CatalogView:p=>{props=p;return React.createElement('main',null,React.createElement('h1',null,p.title||p.category.name),p.categoryContent);}},
+ '@/lib/catalog':{getCategories:async()=>categories,getProducts:async(q,known)=>{assert.equal(known,categories);assert.deepEqual(q.categoryPath,paths[2].split('/'));return list;},getCategoryFilters:async id=>{assert.equal(id,'0');return filters;}}};new Function('require','exports',outputText)(name=>name in mocks?mocks[name]:require(name),exports);return {...exports,props:()=>props};}
+test('Douille metadata targets electrical intent without changing canonical or indexability',async()=>{const mod=await load(),meta=await mod.generateMetadata(params(paths[2]));assert.equal(meta.title,'Douille électrique E14, E27 et B22 au Maroc');assert.match(meta.description,/E14, E27 et B22/);assert.equal(meta.alternates.canonical,'https://www.goelec.ma/categorie/'+paths[2]);assert.equal(meta.robots,undefined);});
+test('Douille copy and factual four-level breadcrumbs preserve existing catalogue inputs/order',async()=>{const mod=await load();const html=renderToStaticMarkup(await mod.default(params(paths[2])));assert.equal((html.match(/<h1/g)||[]).length,1);assert.match(html,/<h1>Douilles électriques<\/h1>/);assert.match(html,/à baïonnette/);assert.match(html,/recherche\?marque=lap/);for(const p of products.slice(0,3))assert.ok(html.includes('/produit/'+p.slug));for(const path of paths.slice(0,2))assert.ok(html.includes('/categorie/'+path));assert.equal(mod.props().products,products);assert.equal(mod.props().availableFilters,filters);assert.equal(mod.props().categories,categories);const schema=JSON.parse(html.match(/<script[^>]*>(.*?)<\/script>/s)[1]);assert.equal(schema['@type'],'BreadcrumbList');assert.deepEqual(schema.itemListElement.map(x=>x.name),['Accueil','Éclairage','Intérieur','Douille']);assert.deepEqual(schema.itemListElement.map(x=>x.position),[1,2,3,4]);assert.doesNotMatch(html,/"offers"|"aggregateRating"|livraison|certifié/);});
+test('Removed product references are not emitted as stale links',async()=>{const mod=await load([]);const html=renderToStaticMarkup(await mod.default(params(paths[2])));assert.doesNotMatch(html,/href="\/produit\//);});
