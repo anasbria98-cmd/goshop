@@ -20,6 +20,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: "Disjoncteur Hager et Schneider Electric au Maroc",
       description: "Découvrez les disjoncteurs Hager et Schneider Electric chez GO ELEC au Maroc : modèles modulaires, moteurs et différentiels. Comparez les références du catalogue.",
     },
+    "materiel-electrique/coffret-electrique": {
+      title: "Coffret électrique LAP et Hager au Maroc",
+      description: "Découvrez les coffrets électriques LAP encastrés et le Hager FWB42S chez GO ELEC au Maroc. Comparez les configurations, dimensions et références du catalogue.",
+    },
     "cables-fils": {
       title: "Câble électrique et fils au Maroc",
       description: "Découvrez les câbles et fils électriques chez GO ELEC au Maroc : U-1000 R2V, H07V-U et références Nexans. Comparez les sections et conditionnements du catalogue.",
@@ -64,6 +68,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "materiel-electrique/coffret-electrique") {
+    const parent = categories.find((item) => item.id === category.parentId);
+    const protection = categories.find((item) => item.parentId === category.parentId && item.slug === "disjoncteur-interrupteur");
+    const examples = ["6013", "6039", "FWB42S"].flatMap((sku) => {
+      const product = products.find((item) => item.sku.trim() === sku);
+      return product ? [product] : [];
+    });
+    const breadcrumbs = [
+      { name: "Accueil", url: "https://www.goelec.ma/" },
+      ...[parent, category].flatMap((item) => item ? [{ name: item.name, url: `https://www.goelec.ma/categorie/${item.path}` }] : []),
+    ];
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
+    };
+    const content = <div className="category-description">
+      <p>Retrouvez des coffrets électriques encastrés <Link className="text-link" href="/recherche?marque=lap">LAP</Link> et le coffret <Link className="text-link" href="/recherche?marque=hager">Hager</Link> FWB42S de la gamme universN, présenté en saillie. Plusieurs modèles LAP sont proposés avec une porte opaque.</p>
+      <p>Pour comparer les références, regardez le mode de pose, le nombre de modules et les dimensions précisés sur chaque fiche.{examples.length > 0 && <> Consultez notamment {examples.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.sku.trim() === "FWB42S" ? "Hager FWB42S — 650 × 550 × 161 mm" : product.name}</Link></span>)}.</>}{protection && <> Pour les appareils de protection, consultez la catégorie <Link className="text-link" href={`/categorie/${protection.path}`}>Disjoncteur et interrupteur</Link>.</>}{parent && <> Retrouvez les autres équipements dans <Link className="text-link" href={`/categorie/${parent.path}`}>{parent.name}</Link>.</>}</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Coffrets électriques" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "eclairage/interieur/douille") {
     const parent = categories.find((item) => item.id === category.parentId);
     const grandparent = parent ? categories.find((item) => item.id === parent.parentId) : undefined;
