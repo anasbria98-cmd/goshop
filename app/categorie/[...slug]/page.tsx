@@ -37,8 +37,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: "Découvrez l’appareillage électrique LAP chez GO ELEC au Maroc : prises de courant, interrupteurs, poussoirs et cadres des gammes Galaxy, Millenium, Optimo et Aqua.",
     },
     "eclairage/exterieur": {
-      title: "Éclairage extérieur au Maroc",
-      description: "Découvrez nos solutions d’éclairage extérieur pour vos projets résidentiels et professionnels au Maroc chez GO ELEC.",
+      title: "Éclairage extérieur : piquets et spots au Maroc",
+      description: "Découvrez l’éclairage extérieur Fumagalli et COMBO chez GO ELEC au Maroc : piquets de jardin et spots encastrables au sol. Comparez les modèles du catalogue.",
     },
     "domotique": {
       title: "Domotique au Maroc",
@@ -68,6 +68,30 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "eclairage/exterieur") {
+    const parent = categories.find((item) => item.id === category.parentId);
+    const populatedChild = (slug: string) => categories.find((item) => item.parentId === category.id && item.slug === slug && products.some((product) => product.categoryIds.includes(item.id)));
+    const piquets = populatedChild("pique-jardin"), spots = populatedChild("spot-au-sol");
+    const solar = categories.find((item) => item.parentId === category.parentId && item.slug === "eclairage-solaire");
+    const examples = ["FUM002", "CB0009", "CB0010"].flatMap((sku) => {
+      const product = products.find((item) => item.sku.trim() === sku);
+      return product ? [product] : [];
+    });
+    const breadcrumbs = [
+      { name: "Accueil", url: "https://www.goelec.ma/" },
+      ...[parent, category].flatMap((item) => item ? [{ name: item.name, url: `https://www.goelec.ma/categorie/${item.path}` }] : []),
+    ];
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
+    };
+    const content = <div className="category-description">
+      <p>Découvrez nos {piquets ? <Link className="text-link" href={`/categorie/${piquets.path}`}>piquets de jardin</Link> : "piquets de jardin"} <Link className="text-link" href="/recherche?marque=fumagalli">Fumagalli</Link> et <Link className="text-link" href="/recherche?marque=combo">COMBO</Link>, ainsi que nos {spots ? <Link className="text-link" href={`/categorie/${spots.path}`}>spots encastrables au sol</Link> : "spots encastrables au sol"} COMBO. Les piquets comprennent les modèles Mini Tommy GU10 CCT et Tommy LED 10 W CCT ; les spots au sol sont proposés en 20 W et 30 W.</p>
+      <p>Pour comparer les modèles, consultez le type de lampe, la puissance et les caractéristiques indiquées sur chaque fiche.{examples.length > 0 && <> Quelques références : {examples.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.name}</Link></span>)}.</>}{solar && <> Pour les projecteurs solaires, consultez la sélection <Link className="text-link" href={`/categorie/${solar.path}`}>{solar.name}</Link>.</>}{parent && <> Retrouvez les autres familles dans notre catégorie <Link className="text-link" href={`/categorie/${parent.path}`}>{parent.name}</Link>.</>}</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Éclairage extérieur" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "materiel-electrique/coffret-electrique") {
     const parent = categories.find((item) => item.id === category.parentId);
     const protection = categories.find((item) => item.parentId === category.parentId && item.slug === "disjoncteur-interrupteur");
