@@ -7,6 +7,7 @@ import { SlidersHorizontal, SearchX } from "lucide-react";
 import type { CatalogCategory, CatalogFilter, CatalogProduct } from "@/lib/catalog-model";
 import { ProductCard } from "./product-card";
 import { useStore } from "./store-provider";
+import { catalogBrandName } from "@/lib/catalog-brand";
 const normalize = (s: string) =>
   s
     .normalize("NFD")
@@ -76,12 +77,12 @@ export function CatalogView({
           ].join(" "),
         ).includes(normalize(q))),
   );
-  const brands = [...new Set(list.map((p) => p.brand).filter(Boolean))];
+  const brands = [...new Set(list.map((p) => catalogBrandName(p.brand)).filter(Boolean))];
   const departmentPath = categories.find((category) => category.id === department)?.path;
   const departmentIds = new Set(categories.filter((category) => category.id === department || (departmentPath && category.path.startsWith(`${departmentPath}/`))).map((category) => category.id));
   list = list.filter(
     (p) =>
-      (!brand || p.brand === brand) &&
+      (!brand || catalogBrandName(p.brand) === catalogBrandName(brand)) &&
       (!department || p.categoryIds.some((id) => departmentIds.has(id))) &&
       (!available || p.stock > 0) &&
       (!maxPrice || p.price <= Number(maxPrice)),
@@ -152,7 +153,7 @@ export function CatalogView({
             </StoreText><select value={brand} onChange={(e) => setBrand(e.target.value)}>
               <option value=""><StoreText>Toutes les marques</StoreText></option>
               {brands.map((b) => (
-                <option key={b}>{b}</option>
+                <option key={b} value={b}>{b}</option>
               ))}
             </select>
           </label>

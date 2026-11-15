@@ -34,8 +34,8 @@ type RawProduct = {
   is_best_seller: boolean;
   is_on_sale: boolean;
   featured: boolean;
-  short_description: string | null;
-  description: string | null;
+  short_description?: string | null;
+  description?: string | null;
   brands: { name: string; slug: string } | null;
   product_categories: Array<{
     is_primary: boolean;
@@ -161,8 +161,8 @@ function mapProduct(row: RawProduct, categories: CatalogCategory[], baseUrl: str
     isBestSeller: row.is_best_seller,
     isOnSale: row.is_on_sale,
     featured: row.featured,
-    shortDescription: row.short_description,
-    description: row.description,
+    shortDescription: row.short_description ?? null,
+    description: row.description ?? null,
     attributes: row.product_attribute_values.flatMap((value) => {
       if (!value.attributes) return [];
       const displayed = value.attribute_options?.label
@@ -198,6 +198,17 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
   if (!hasSupabaseEnv()) return [];
   const supabase = await createSupabaseServerClient();
   const categories = knownCategories ?? await getCategories();
+  // Resolve the same active hierarchy used by navigation before querying products.
+  // A separate membership alias filters parent rows without trimming the complete
+  // category assignments used for primary category, search and cart rendering.
+  let categoryPathIds: string[] | undefined;
+  if (query.categoryPath?.length) {
+    const path = query.categoryPath.join("/");
+    if (!categories.some((category) => category.path === path)) return [];
+    categoryPathIds = categories
+      .filter((category) => category.path === path || category.path.startsWith(`${path}/`))
+      .map((category) => category.id);
+  }
   let relatedProductIds: string[] = [];
   let matchingBrandIds: string[] = [];
   if (query.search?.trim()) {
@@ -221,7 +232,18 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
   }
   let builder = supabase
     .from("products")
-    .select(`
+    .select(categoryPathIds ? `
+      id,name,slug,sku,manufacturer_reference,main_image_url,display_colors,color_variants_enabled,
+      price,compare_at_price,allow_backorder,is_new,is_best_seller,is_on_sale,featured,
+      brands(name,slug),
+      category_match:product_categories!inner(category_id),
+      product_categories(is_primary,categories(id)),
+      product_images(storage_path,alt_text,sort_order),
+      inventory(variant_id,quantity,reserved_quantity),
+      product_variants(id,name,sku,barcode,price,compare_at_price,is_active,color_name,color_hex,finish,image_path),
+      reviews!left(rating),
+      product_attribute_values(text_value,number_value,boolean_value,attributes(name,slug,unit),attribute_options(label))
+    ` : `
       *,
       brands(name,slug),
       product_categories(is_primary,categories(id,name,slug,description,parent_id,image_url,sort_order)),
@@ -234,6 +256,7 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
     .eq("status", "active")
     .not("published_at", "is", null)
     .order("created_at", { ascending: false });
+  if (categoryPathIds) builder = builder.in("category_match.category_id", categoryPathIds);
   if (query.ids) builder = builder.in("id", query.ids);
   if (categoryProductIds) builder = builder.in("id", categoryProductIds);
   if (query.excludeId) builder = builder.neq("id", query.excludeId);
@@ -258,17 +281,6 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
     mapProduct(row, categories, process.env.NEXT_PUBLIC_SUPABASE_URL!),
   );
   if (query.brand) products = products.filter((product) => product.brandSlug === query.brand);
-  if (query.categoryPath?.length) {
-    const path = query.categoryPath.join("/");
-    const selected = categories.find((category) => category.path === path);
-    if (!selected) return [];
-    const childIds = new Set(
-      categories
-        .filter((category) => category.path === path || category.path.startsWith(`${path}/`))
-        .map((category) => category.id),
-    );
-    products = products.filter((product) => product.categoryIds.some((id) => childIds.has(id)));
-  }
   return products;
 }
 
