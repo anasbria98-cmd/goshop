@@ -36,6 +36,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: "Appareillage électrique : prises et interrupteurs au Maroc",
       description: "Découvrez l’appareillage électrique LAP chez GO ELEC au Maroc : prises de courant, interrupteurs, poussoirs et cadres des gammes Galaxy, Millenium, Optimo et Aqua.",
     },
+    "securite/cameras": {
+      title: "Caméra de surveillance Hikvision et DVR au Maroc",
+      description: "Découvrez les caméras de surveillance 3K et DVR Hikvision chez GO ELEC au Maroc. Comparez les références, formats et nombres de canaux indiqués sur les fiches.",
+    },
     "eclairage/exterieur": {
       title: "Éclairage extérieur : piquets et spots au Maroc",
       description: "Découvrez l’éclairage extérieur Fumagalli et COMBO chez GO ELEC au Maroc : piquets de jardin et spots encastrables au sol. Comparez les modèles du catalogue.",
@@ -68,6 +72,27 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound();
   const filterCategory = categories.find((item) => item.path === slug[0]) ?? category;
   const [products, filters] = await Promise.all([getProducts({ categoryPath: slug }, categories), getCategoryFilters(filterCategory.id)]);
+  if (category.path === "securite/cameras") {
+    const parent = categories.find((item) => item.id === category.parentId);
+    const examples = ["DS-2CE76K0T-EXLMF", "DS-2CE16K0T-EXLF", "DS-7204HTHI-K1", "DS40HKVS-VX1"].flatMap((sku) => {
+      const product = products.find((item) => item.sku.trim() === sku);
+      return product ? [product] : [];
+    });
+    const breadcrumbs = [
+      { name: "Accueil", url: "https://www.goelec.ma/" },
+      ...[parent, category].flatMap((item) => item ? [{ name: item.name, url: `https://www.goelec.ma/categorie/${item.path}` }] : []),
+    ];
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
+    };
+    const content = <div className="category-description">
+      <p>Cette sélection de vidéosurveillance <Link className="text-link" href="/recherche?marque=hikvision">Hikvision</Link> réunit deux caméras 3K : un modèle présenté pour l’intérieur et un modèle bullet. Elle comprend aussi des enregistreurs DVR de 4, 8 et 16 canaux, ainsi que le disque dur DS40HKVS-VX1 de 4 To.</p>
+      <p>Pour choisir une caméra de surveillance, comparez le format et la résolution indiqués sur sa fiche. Pour un enregistreur, vérifiez le nombre de canaux et ses caractéristiques détaillées.{examples.length > 0 && <> Consultez notamment les références {examples.map((product, index) => <span key={product.id}>{index > 0 ? ", " : ""}<Link className="text-link" href={`/produit/${product.slug}`}>{product.sku.trim()}</Link></span>)}.</>}{parent && <> Retrouvez les autres équipements dans notre catégorie <Link className="text-link" href={`/categorie/${parent.path}`}>{parent.name}</Link>.</>}</p>
+    </div>;
+    return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }} /><Suspense><CatalogView title="Caméras de surveillance et DVR" categoryContent={content} category={category} categories={categories} products={products} availableFilters={filters} /></Suspense></>;
+  }
   if (category.path === "eclairage/exterieur") {
     const parent = categories.find((item) => item.id === category.parentId);
     const populatedChild = (slug: string) => categories.find((item) => item.parentId === category.id && item.slug === slug && products.some((product) => product.categoryIds.includes(item.id)));
