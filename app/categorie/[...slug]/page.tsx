@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getCategorySharingImage } from "@/lib/category-sharing";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogView } from "@/components/catalog-view";
@@ -57,7 +58,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const fallbackDescription = category
     ? `Découvrez notre sélection ${category.name.toLowerCase()} pour vos projets et installations au Maroc chez GO ELEC.`
     : undefined;
+  const shareImage = await getCategorySharingImage(path, categories);
+  const shareTitle = optimized?.title ?? category?.name ?? "Catégorie";
+  const shareDescription = optimized?.description ?? category?.description ?? fallbackDescription;
   return {
+    openGraph: { type: "website" as const, siteName: "GO ELEC", locale: "fr_MA", title: shareTitle, description: shareDescription, url: `https://www.goelec.ma/categorie/${slug.map(encodeURIComponent).join("/")}`, images: [{ ...shareImage, secureUrl: shareImage.url }] },
+    twitter: { card: "summary_large_image" as const, title: shareTitle, description: shareDescription, images: [{ url: shareImage.url, alt: shareImage.alt }] },
     title: optimized?.title ?? category?.name ?? "Catégorie",
     description: optimized?.description ?? category?.description ?? fallbackDescription,
     alternates: { canonical: `https://www.goelec.ma/categorie/${slug.map(encodeURIComponent).join("/")}` },

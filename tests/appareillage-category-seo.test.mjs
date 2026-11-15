@@ -20,7 +20,7 @@ async function load(list=products,cats=categories){
   '@/components/catalog-view':{CatalogView:p=>{props=p;return React.createElement('main',null,React.createElement('h1',null,p.title||p.category.name),p.categoryContent);}},
   '@/lib/catalog':{getCategories:async()=>cats,getProducts:async(q,known)=>{assert.ok(cats.some(c=>c.path===q.categoryPath.join('/')));assert.equal(known,cats);return list;},getCategoryFilters:async id=>{assert.equal(id,root.id);return filters;}},
  };
- new Function('require','exports',outputText)(name=>name in mocks?mocks[name]:require(name),exports);
+ new Function('require','exports',outputText)(name=>name === '@/lib/category-sharing' ? {getCategorySharingImage:async()=>({url:'https://www.goelec.ma/test-share.jpg',alt:'Test'})} : name in mocks?mocks[name]:require(name),exports);
  return {...exports,props:()=>props};
 }
 test('Appareillage keeps broad intent, established canonical and indexability without optimizing brand/range pages for the same generic keyword',async()=>{

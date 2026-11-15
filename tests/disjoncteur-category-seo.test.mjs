@@ -23,7 +23,7 @@ async function load(list=products,cats=categories){
   '@/components/catalog-view':{CatalogView:p=>{props=p;return React.createElement('main',null,React.createElement('h1',null,p.title||p.category.name),p.categoryContent);}},
   '@/lib/catalog':{getCategories:async()=>cats,getProducts:async(q,known)=>{assert.deepEqual(q.categoryPath,category.path.split('/'));assert.equal(known,cats);return list;},getCategoryFilters:async id=>{assert.equal(id,parent.id);return filters;}},
  };
- new Function('require','exports',outputText)(name=>name in mocks?mocks[name]:require(name),exports);
+ new Function('require','exports',outputText)(name=>name === '@/lib/category-sharing' ? {getCategorySharingImage:async()=>({url:'https://www.goelec.ma/test-share.jpg',alt:'Test'})} : name in mocks?mocks[name]:require(name),exports);
  return {...exports,props:()=>props};
 }
 test('Disjoncteur title and description target the verified brands without changing canonical/indexability',async()=>{

@@ -11,7 +11,7 @@ const categories=[...domotique,...others],params=path=>({params:Promise.resolve(
 async function compile(path,mocks={}){
  const source=await readFile(new URL(path,import.meta.url),'utf8');
  const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}),exports={};
- new Function('require','exports',outputText)(name=>name in mocks?mocks[name]:require(name),exports);return exports;
+ new Function('require','exports',outputText)(name=>name === '@/lib/category-sharing' ? {getCategorySharingImage:async()=>({url:'https://www.goelec.ma/test-share.jpg',alt:'Test'})} : name in mocks?mocks[name]:require(name),exports);return exports;
 }
 async function load(products=[],cats=categories,{failure=false}={}){
  const requests=[];
