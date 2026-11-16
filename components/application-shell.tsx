@@ -10,6 +10,7 @@ import { StoreProvider } from "./store-provider";
 import { WebMCP } from "./webmcp";
 import type { CategoryNavigation } from "@/lib/category-navigation";
 import { CustomerAssistant } from "./customer-assistant";
+import { BackToTop } from "./back-to-top";
 
 export function ApplicationShell({
   children,
@@ -36,6 +37,7 @@ export function ApplicationShell({
       <main id="main">{children}</main>
       <Footer settings={settings} />
       <CustomerAssistant />
+      <BackToTop />
     </StoreProvider>}</StorefrontLanguage>
   );
 }

@@ -1,0 +1,30 @@
+.button {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  /* Clear the existing 52px assistant launcher, its safe-area inset and a 12px gap. */
+  bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 64px);
+  z-index: 39;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--orange);
+  border-radius: 2px;
+  background: white;
+  color: var(--orange);
+  box-shadow: 0 2px 8px #0000000d;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.button[hidden] { display: none; }
+/* The expanded chat occupies the same edge; leave it unobstructed. */
+:global(body:has(#goelec-assistant-panel:not([hidden]))) .button { visibility: hidden; }
+@media (hover: hover) {
+  .button:hover { background: #fff8f3; box-shadow: 0 3px 10px #00000014; transform: translateY(-2px); }
+}
+.button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+  .button:hover { transform: none; }
+}
