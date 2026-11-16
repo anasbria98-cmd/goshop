@@ -55,7 +55,7 @@ test('robots lets crawlers read public noindex pages while restricting private r
  assert.equal(data.sitemap,'https://www.goelec.ma/sitemap.xml');
 });
 test('sitemap excludes only the protected quote page and preserves public catalogue and information URLs',async()=>{
- const {default:sitemap}=await compile('../app/sitemap.ts',{
+ const {default:sitemap}=await compile('../app/sitemap.ts',{'@/lib/brand-page-model':require('../lib/brand-page-model.ts'),
   '@/lib/catalog':{getCategories:async()=>[{path:'eclairage/interieur',parentId:'root'}],getProducts:async()=>[{slug:'barrette-de-terre'}]},
   '@/data/information':{information:{contact:{}}},
  });assert.deepEqual((await sitemap()).map(x=>x.url),['https://www.goelec.ma/','https://www.goelec.ma/categorie/eclairage/interieur','https://www.goelec.ma/produit/barrette-de-terre','https://www.goelec.ma/informations/contact']);

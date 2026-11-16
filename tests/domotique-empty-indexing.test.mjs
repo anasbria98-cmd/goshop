@@ -24,7 +24,7 @@ async function load(products=[],cats=categories,{failure=false}={}){
   return products.filter(p=>p.categoryIds.some(id=>ids.has(id)));
  }};
  const page=await compile('../app/categorie/[...slug]/page.tsx',{'@/lib/catalog':catalog,'@/components/catalog-view':{CatalogView:()=>null},'next/navigation':{notFound(){throw new Error('NOT_FOUND');}},'next/link':{default:()=>null}});
- const map=await compile('../app/sitemap.ts',{'@/lib/catalog':catalog,'@/data/information':{information:{contact:{}}}});
+ const map=await compile('../app/sitemap.ts',{'@/lib/brand-page-model':require('../lib/brand-page-model.ts'),'@/lib/catalog':catalog,'@/data/information':{information:{contact:{}}}});
  return {page,sitemap:map.default,requests};
 }
 const categoryUrl=c=>'https://www.goelec.ma/categorie/'+c.path;

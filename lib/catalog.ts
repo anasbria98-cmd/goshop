@@ -188,6 +188,7 @@ export type ProductQuery = {
   isNew?: boolean;
   onSale?: boolean;
   brand?: string;
+  brandId?: string;
   limit?: number;
   ids?: string[];
   categoryIds?: string[];
@@ -232,11 +233,11 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
   }
   let builder = supabase
     .from("products")
-    .select(categoryPathIds ? `
+    .select(categoryPathIds || query.brandId ? `
       id,name,slug,sku,manufacturer_reference,main_image_url,display_colors,color_variants_enabled,
       price,compare_at_price,allow_backorder,is_new,is_best_seller,is_on_sale,featured,
       brands(name,slug),
-      category_match:product_categories!inner(category_id),
+      ${categoryPathIds ? "category_match:product_categories!inner(category_id)," : ""}
       product_categories(is_primary,categories(id)),
       product_images(storage_path,alt_text,sort_order),
       inventory(variant_id,quantity,reserved_quantity),
@@ -257,6 +258,7 @@ export async function getProducts(query: ProductQuery = {}, knownCategories?: Ca
     .not("published_at", "is", null)
     .order("created_at", { ascending: false });
   if (categoryPathIds) builder = builder.in("category_match.category_id", categoryPathIds);
+  if (query.brandId) builder = builder.eq("brand_id", query.brandId).lte("published_at", new Date().toISOString());
   if (query.ids) builder = builder.in("id", query.ids);
   if (categoryProductIds) builder = builder.in("id", categoryProductIds);
   if (query.excludeId) builder = builder.neq("id", query.excludeId);

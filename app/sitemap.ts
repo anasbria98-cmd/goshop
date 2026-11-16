@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { brandSitemapSlugs } from "@/lib/brand-page-model";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { information } from "@/data/information";
 
@@ -32,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
+    ...brandSitemapSlugs(products).map((slug) => ({ url: `${origin}/marque/${slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.7 })),
     ...Object.keys(information).map((slug) => ({
       url: `${origin}/informations/${encodeURIComponent(slug)}`,
       lastModified: now,
