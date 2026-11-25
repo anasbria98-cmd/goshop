@@ -1,5 +1,6 @@
 import { cache } from "react";
-import { productShareImage, productSharingMetadata } from "@/lib/product-sharing";
+import { productShareDescription, productShareImage, productSharingMetadata } from "@/lib/product-sharing";
+import { productBreadcrumbSchema } from "@/lib/product-indexing-seo";
 import { productShareImageChecker } from "@/lib/product-sharing-server";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts, getStorefrontBrands } from "@/lib/catalog";
@@ -35,8 +36,9 @@ export default async function Page({
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.shortDescription || product.description || product.name,
+    description: productShareDescription(product),
     sku: product.sku,
+    ...(product.manufacturerReference ? { mpn: product.manufacturerReference } : {}),
     ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
     ...(product.imageUrl ? { image: [product.imageUrl] } : {}),
     url: productUrl,
@@ -58,7 +60,7 @@ export default async function Page({
     ]).then((groups) => [...new Map(groups.flat().map((p) => [p.id, p])).values()]) : Promise.resolve([]),
     getStorefrontBrands(),
   ]);
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd).replace(/</g, "\\u003c") }} /><ProductDetail key={product.id} product={product} /><div className="wrap detail-page-extras">
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd).replace(/</g, "\\u003c") }} /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productBreadcrumbSchema(product)).replace(/</g, "\\u003c") }} /><ProductDetail key={product.id} product={product} /><div className="wrap detail-page-extras">
     <ProductReviews key={product.id} productId={product.id} slug={product.slug} {...reviewData} />
     <ProductRecommendations title="Articles similaires" products={rankSimilarProducts(candidates, product)} />
     <RecentlyViewed productId={product.id} />

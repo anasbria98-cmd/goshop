@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Metadata } from 'next';
 import type { CatalogProduct } from './catalog-model';
 import { canonicalProductUrl, STOREFRONT_ORIGIN } from './product-url.js';
+import { productIndexingSeo } from './product-indexing-seo.js';
 
 export { STOREFRONT_ORIGIN } from './product-url.js';
 export const DEFAULT_PRODUCT_SHARE_IMAGE = `${STOREFRONT_ORIGIN}/branding/goelec_electrical_security_logo.png`;
@@ -39,6 +40,8 @@ export async function productShareImage(product: ShareProduct, check: (url: stri
   return uncertain ?? DEFAULT_PRODUCT_SHARE_IMAGE;
 }
 export function productShareDescription(product: ShareProduct): string {
+  const editorial = productIndexingSeo(product);
+  if (editorial) return editorial.description;
   const plain = (value: string | null) => (value || '')
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
@@ -53,7 +56,7 @@ export function productSharingMetadata(product: ShareProduct, image: string): Me
   const description = productShareDescription(product);
   const preview = productSocialPreviewUrl(product.slug, image);
   return {
-    title: product.name,
+    title: productIndexingSeo(product)?.title ?? product.name,
     description,
     alternates: {canonical: url},
     openGraph: {type: 'website', siteName: 'GO ELEC', locale: 'fr_MA', title: product.name, description, url, images: [{url: preview, secureUrl: preview, type: 'image/jpeg', width: PRODUCT_SHARE_WIDTH, height: PRODUCT_SHARE_HEIGHT, alt: product.name}]},

@@ -51,7 +51,8 @@ test('private noindex headers preserve Auth refresh and cookies; public pages an
 test('robots lets crawlers read public noindex pages while restricting private roots and descendants',async()=>{
  const {default:robots}=await compile('../app/robots.ts');const data=robots();
  for(const path of ['/recherche','/recherche?q=hager&promo=1','/recherche?marque=hager','/panier','/favoris','/checkout','/commande-confirmee','/categorie/eclairage','/produit/barrette-de-terre'])assert.ok(!data.rules.disallow.some(rule=>path.startsWith(rule)),path);
- for(const path of ['/admin','/admin/products','/compte','/compte/adresses','/auth/sign-in','/api/quote-requests'])assert.ok(data.rules.disallow.some(rule=>path.startsWith(rule)),path);
+ for(const path of ['/admin','/admin/products','/compte','/compte/adresses','/auth/callback','/api/quote-requests'])assert.ok(data.rules.disallow.some(rule=>path.startsWith(rule)),path);
+ for(const path of ['/auth/sign-in','/auth/sign-in?next=/produit/barrette-de-terre','/auth/sign-up?next=%2Fdemander-un-devis']){const allowed=data.rules.allow.filter(rule=>path.startsWith(rule)).sort((a,b)=>b.length-a.length)[0];const blocked=data.rules.disallow.filter(rule=>path.startsWith(rule)).sort((a,b)=>b.length-a.length)[0];assert.ok(allowed.length>blocked.length,path);}
  assert.equal(data.sitemap,'https://www.goelec.ma/sitemap.xml');
 });
 test('sitemap excludes only the protected quote page and preserves public catalogue and information URLs',async()=>{
@@ -59,4 +60,19 @@ test('sitemap excludes only the protected quote page and preserves public catalo
   '@/lib/catalog':{getCategories:async()=>[{path:'eclairage/interieur',parentId:'root'}],getProducts:async()=>[{slug:'barrette-de-terre'}]},
   '@/data/information':{information:{contact:{}}},
  });assert.deepEqual((await sitemap()).map(x=>x.url),['https://www.goelec.ma/','https://www.goelec.ma/categorie/eclairage/interieur','https://www.goelec.ma/produit/barrette-de-terre','https://www.goelec.ma/informations/contact']);
+});
+
+test('only verified historical categories redirect permanently, preserving queries before Auth work',async()=>{
+ const {proxy,checks}=await loadProxy();
+ const replacements={
+  '/categorie/multiprise-enrouleur':'/categorie/materiel-electrique/multiprise-enrouleur',
+  '/categorie/eclairage/exterieur/poteau-jardin':'/categorie/eclairage/exterieur/poteau',
+  '/categorie/eclairage/exterieur/applique-jardin':'/categorie/eclairage/exterieur/applique-ext',
+ };
+ for(const [from,to] of Object.entries(replacements)){
+  const response=await proxy(new NextRequest('https://www.goelec.ma'+from+'?marque=lap&x=1&x=2'));
+  assert.equal(response.status,301);assert.equal(response.headers.get('location'),'https://www.goelec.ma'+to+'?marque=lap&x=1&x=2');
+ }
+ assert.equal(checks(),0);
+ for(const path of ['/$','/&','/categorie/unknown']){const r=await proxy(new NextRequest('https://www.goelec.ma'+path));assert.equal(r.headers.get('location'),null);}
 });

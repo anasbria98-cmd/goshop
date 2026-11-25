@@ -6,7 +6,9 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
+      // Public login forms must be crawlable for their noindex directive to work.
+      // Longer Allow paths override /auth; callbacks and private routes stay blocked.
+      allow: ["/", "/auth/sign-in", "/auth/sign-up"],
       disallow: [
         "/admin",
         "/api",

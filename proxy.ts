@@ -13,6 +13,18 @@ export async function proxy(request: NextRequest) {
     canonicalUrl.search = request.nextUrl.search;
     return NextResponse.redirect(canonicalUrl, 308);
   }
+  // Historical category paths verified against the current active hierarchy.
+  const categoryReplacements: Record<string, string> = {
+    "/categorie/multiprise-enrouleur": "/categorie/materiel-electrique/multiprise-enrouleur",
+    "/categorie/eclairage/exterieur/poteau-jardin": "/categorie/eclairage/exterieur/poteau",
+    "/categorie/eclairage/exterieur/applique-jardin": "/categorie/eclairage/exterieur/applique-ext",
+  };
+  const replacement = categoryReplacements[request.nextUrl.pathname];
+  if (replacement) {
+    const target = new URL(replacement, "https://www.goelec.ma");
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target, 301);
+  }
   if (socialCrawlerPath(request.nextUrl.pathname, request.headers.get('user-agent') ?? '', request.method, request.headers.has('rsc'))) {
     const target=request.nextUrl.clone();
     target.pathname='/api/product-social/'+request.nextUrl.pathname.split('/')[2];
